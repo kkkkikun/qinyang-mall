@@ -22,6 +22,9 @@ RSYNC_EXCLUDES=(
   --exclude='catalog/products/'
   --exclude='catalog/.cache/'
   --exclude='media/'
+  # 顺序重要：先 include 模板（无密钥，需正常同步），
+  # 再排除真实密钥文件；rsync 的 --delete 不会删除被排除的文件。
+  --include='.env.example'
   --exclude='.env'
   --exclude='.env.*'
   --exclude='infra/logs/'
