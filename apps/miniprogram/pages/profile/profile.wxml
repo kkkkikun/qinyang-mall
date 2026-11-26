@@ -1,0 +1,109 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back"></view>
+      <view class="nav__brand">个人中心</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <!-- 顾客信息 -->
+  <view class="me-head">
+    <view class="me-head__ava">客</view>
+    <view class="grow">
+      <view class="me-head__nm">{{nickname || '顾客'}}</view>
+      <view class="me-head__sub" wx:if="{{phoneMasked}}">{{phoneMasked}}</view>
+      <view class="me-head__sub" wx:else>定制记录以登录身份保存</view>
+    </view>
+  </view>
+
+  <view class="notice notice--red" wx:if="{{error}}">{{error}}</view>
+
+  <!-- 定制记录统计 -->
+  <view class="me-stats">
+    <view class="me-stats__s" bindtap="goRequests">
+      <text class="me-stats__b">{{requestTotal}}</text>
+      <text class="me-stats__t">定制申请</text>
+    </view>
+    <view class="me-stats__s" bindtap="goOrders">
+      <text class="me-stats__b">{{orderTotal}}</text>
+      <text class="me-stats__t">全部订单</text>
+    </view>
+    <view class="me-stats__s" bindtap="goRequests">
+      <text class="me-stats__b">{{makingTotal}}</text>
+      <text class="me-stats__t">制作中</text>
+    </view>
+  </view>
+
+  <!-- 定制记录（重点） -->
+  <view class="me-card">
+    <view class="me-card__hd">
+      <text class="me-card__t">我的定制记录</text>
+      <text class="me-card__go" bindtap="goRequests">查看全部</text>
+    </view>
+    <view class="me-card__body">
+      <view wx:if="{{recentError}}" class="fs12 muted-2">{{recentError}}</view>
+      <view wx:elif="{{!recent.length}}" class="empty" style="padding:30px 0">
+        <view class="empty__t">还没有定制记录</view>
+        <view class="empty__d">完成一次定制申请后，量体数据与报价会显示在这里</view>
+        <view class="empty__act"><button class="btn btn--tan btn--sm" bindtap="goCategory">去挑选款式</button></view>
+      </view>
+      <view wx:else class="rec-item" wx:for="{{recent}}" wx:key="id" bindtap="goRequestDetail" data-id="{{item.id}}">
+        <view class="row row-b">
+          <text class="fs13">{{item.productName}}</text>
+          <text class="rec-item__st">{{item.statusLabel}}</text>
+        </view>
+        <view class="fs11 muted-2" style="margin-top:5px">{{item.requestNo}} · {{item.createdAt}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="me-card">
+    <view class="me-card__hd"><text class="me-card__t">定制服务</text></view>
+    <view class="me-grid">
+      <view class="me-grid__g" bindtap="goRequests">
+        <view class="me-grid__ic me-grid__ic--red"><image src="/assets/icons/clipboard_gray.png" mode="aspectFit" /></view>
+        <text>定制申请</text>
+      </view>
+      <view class="me-grid__g" bindtap="goOrders">
+        <view class="me-grid__ic me-grid__ic--red"><image src="/assets/icons/box_ink.png" mode="aspectFit" /></view>
+        <text>我的订单</text>
+      </view>
+      <view class="me-grid__g" bindtap="goGuide" data-slug="guide-top">
+        <view class="me-grid__ic me-grid__ic--green"><image src="/assets/icons/ruler_gold.png" mode="aspectFit" /></view>
+        <text>量体指南</text>
+      </view>
+      <view class="me-grid__g" bindtap="goGuide" data-slug="guide-care">
+        <view class="me-grid__ic me-grid__ic--green"><image src="/assets/icons/scissors_green.png" mode="aspectFit" /></view>
+        <text>洗护指南</text>
+      </view>
+      <view class="me-grid__g" bindtap="goContact">
+        <view class="me-grid__ic me-grid__ic--blue"><image src="/assets/icons/headset_blue.png" mode="aspectFit" /></view>
+        <text>联系客服</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务器地址（后台切换） -->
+  <view class="me-card">
+    <view class="me-card__hd"><text class="me-card__t">服务器地址</text></view>
+    <view class="me-card__body">
+      <view class="fs11 muted-2" style="margin-bottom:8px">用于连接商家后台接口，修改后立即生效</view>
+      <view class="row gap8">
+        <input class="me-input grow" value="{{baseUrl}}" placeholder="http://127.0.0.1:18110/api/v1" bindinput="onBaseUrlInput" />
+        <button class="btn btn--ghost btn--sm" bindtap="saveBaseUrl">保存</button>
+      </view>
+      <view class="fs11 muted-2" style="margin-top:8px">{{baseUrlSaved ? '已保存' : '当前：' + baseUrl}}</view>
+    </view>
+  </view>
+
+  <view class="footer-band">
+    <image class="footer-band__wm" src="/assets/brand/qinyang-word.png" mode="widthFix" />
+    <view class="footer-band__cn">琴 扬</view>
+  </view>
+  <view class="wx-footer">
+    <view class="wx-footer__t">琴扬精纺羊绒</view>
+    <view class="wx-footer__t2">— 微信小店提供技术支持 —</view>
+  </view>
+</view>

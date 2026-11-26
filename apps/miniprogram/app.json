@@ -1,0 +1,64 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/category/category",
+    "pages/custom/custom",
+    "pages/profile/profile",
+    "pages/search/search",
+    "pages/product/product",
+    "pages/guide-top/guide-top",
+    "pages/guide-bottom/guide-bottom",
+    "pages/guide-care/guide-care",
+    "pages/guide-material/guide-material",
+    "pages/apply/apply",
+    "pages/requests/requests",
+    "pages/request-detail/request-detail",
+    "pages/quote/quote",
+    "pages/orders/orders",
+    "pages/order-detail/order-detail",
+    "pages/contact/contact"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#F2F2F2",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#D29B5E",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/tab_home.png",
+        "selectedIconPath": "assets/icons/tab_home_on.png"
+      },
+      {
+        "pagePath": "pages/category/category",
+        "text": "分类",
+        "iconPath": "assets/icons/tab_category.png",
+        "selectedIconPath": "assets/icons/tab_category_on.png"
+      },
+      {
+        "pagePath": "pages/custom/custom",
+        "text": "定制",
+        "iconPath": "assets/icons/tab_custom.png",
+        "selectedIconPath": "assets/icons/tab_custom_on.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/tab_mine.png",
+        "selectedIconPath": "assets/icons/tab_mine_on.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {}
+}

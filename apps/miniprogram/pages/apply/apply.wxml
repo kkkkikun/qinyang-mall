@@ -1,0 +1,127 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goBack">
+        <image src="/assets/icons/back_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">定制申请</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">正在加载量体模板…</view>
+  <view wx:elif="{{error}}" class="state">
+    <view class="state__t">{{error}}</view>
+    <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
+  </view>
+
+  <block wx:else>
+    <!-- 商品信息 -->
+    <view class="sec sec-pad" wx:if="{{detail}}">
+      <view class="row gap10">
+        <view class="pd-thumb">
+          <image wx:if="{{detail.coverUrl}}" src="{{detail.coverUrl}}" mode="aspectFill" />
+          <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
+        </view>
+        <view class="grow">
+          <view class="fs13">QINYANG｜{{detail.name}}</view>
+          <view class="fs11 muted-2" style="margin-top:3px">量体模板：{{templateName}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 模板说明 -->
+    <view class="notice" wx:if="{{templateSummary}}">{{templateSummary}}</view>
+
+    <!-- 进度 -->
+    <view class="prog">
+      <view class="prog__bar"><view class="prog__fill" style="width:{{progress}}%"></view></view>
+      <view class="sec-pad fs12 muted" style="padding-top:8px;padding-bottom:8px">
+        必填项完成 {{requiredDone}}/{{requiredTotal}} 项
+      </view>
+    </view>
+
+    <!-- 量体字段（按模板动态渲染） -->
+    <view class="sec" wx:for="{{sections}}" wx:key="key" wx:for-index="si">
+      <view class="sec-pad sec-pad--tight">
+        <view class="row row-b">
+          <text class="serif msec-title">{{item.title}}</text>
+          <text class="tag {{item.typeLabel === '身体测量' ? '' : 'tag--gray'}}">{{item.typeLabel}}</text>
+        </view>
+      </view>
+
+      <view class="mcard" wx:for="{{item.fields}}" wx:key="code" wx:for-item="field" wx:for-index="fi">
+        <view class="mcard__head">
+          <view class="mcard__ill">
+            <image wx:if="{{field.image && !imgErr[field.code]}}" src="{{field.image}}" mode="aspectFit" binderror="onImgErr" data-key="{{field.code}}" />
+            <view wx:else class="guide-fig__ph">示意图</view>
+          </view>
+          <view class="mcard__info">
+            <view class="mcard__name">{{field.name}}<text class="{{field.required ? 'mcard__req' : 'mcard__opt'}}">{{field.required ? '必填' : '选填'}}</text></view>
+            <view class="mcard__type">{{field.typeLabel}} · 单位 {{field.unit}}</view>
+            <view class="mcard__ins">{{field.instruction}}</view>
+            <view class="mcard__tips" wx:if="{{field.tips.length}}">
+              <view class="mcard__tip" wx:for="{{field.tips}}" wx:for-item="tip" wx:key="*this">· {{tip}}</view>
+            </view>
+            <view class="mfield">
+              <input class="mfield__input {{field.error ? 'mfield__input--bad' : ''}}" type="digit" value="{{field.value}}"
+                placeholder="请输入" data-si="{{si}}" data-fi="{{fi}}" bindinput="onFieldInput" />
+              <text class="mfield__unit">{{field.unit}}</text>
+            </view>
+            <view class="mfield__range" wx:if="{{field.min !== null || field.max !== null}}">
+              合理范围 {{field.min !== null ? field.min : '不限'}} ~ {{field.max !== null ? field.max : '不限'}} {{field.unit}}
+            </view>
+            <view class="mfield__err" wx:if="{{field.error}}">{{field.error}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 联系方式 -->
+    <view class="sec">
+      <view class="sec-pad sec-pad--tight"><text class="serif msec-title">联系方式</text></view>
+      <view class="form">
+        <view class="form__row">
+          <text class="form__label">称呼</text>
+          <input class="form__input" value="{{contact.name}}" placeholder="怎么称呼您" data-key="name" bindinput="onContactInput" />
+        </view>
+        <view class="form__row">
+          <text class="form__label">电话</text>
+          <input class="form__input" type="number" value="{{contact.phone}}" placeholder="用于商家与您联系" data-key="phone" bindinput="onContactInput" />
+        </view>
+        <view class="form__row">
+          <text class="form__label">省/市/区</text>
+          <input class="form__input" value="{{contact.region}}" placeholder="例如：浙江省 杭州市 西湖区" data-key="region" bindinput="onContactInput" />
+        </view>
+        <view class="form__row">
+          <text class="form__label">详细地址</text>
+          <input class="form__input" value="{{contact.detail}}" placeholder="街道、门牌号" data-key="detail" bindinput="onContactInput" />
+        </view>
+      </view>
+      <view class="form__err" wx:if="{{contactError.name || contactError.phone || contactError.region || contactError.detail}}">
+        {{contactError.name || contactError.phone || contactError.region || contactError.detail}}
+      </view>
+    </view>
+
+    <!-- 留言 -->
+    <view class="sec">
+      <view class="sec-pad sec-pad--tight"><text class="serif msec-title">留言（选填）</text></view>
+      <view class="sec-pad" style="padding-top:6px">
+        <textarea class="textarea" rows="3" value="{{remark}}" placeholder="例如：袖长请按 58cm 制作" bindinput="onRemarkInput"></textarea>
+      </view>
+    </view>
+
+    <view class="notice notice--gold">
+      提交后商家会按您填写的量体数据审核并报价；价格与运费以商家正式报价为准。本页不显示未经确认的价格。
+    </view>
+
+    <!-- 底部提交 -->
+    <view class="pd-bar">
+      <button class="btn btn--ghost" style="flex:0 0 104px" bindtap="goGuide">量体指南</button>
+      <button class="btn btn--tan" style="flex:1" bindtap="submit" disabled="{{submitting}}">
+        {{submitting ? '提交中…' : '提交定制申请'}}
+      </button>
+    </view>
+    <view class="pd-bar-holder"></view>
+  </block>
+</view>

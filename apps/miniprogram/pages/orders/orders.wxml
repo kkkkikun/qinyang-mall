@@ -1,0 +1,49 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goBack">
+        <image src="/assets/icons/back_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">我的订单</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <scroll-view class="tabs" scroll-x enable-flex>
+    <view wx:for="{{tabs}}" wx:key="key" class="tabs__item {{status === item.key ? 'tabs__item--on' : ''}}"
+      bindtap="switchTab" data-key="{{item.key}}">{{item.label}}</view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="state">正在加载订单…</view>
+  <view wx:elif="{{error}}" class="state">
+    <view class="state__t">{{error}}</view>
+    <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
+  </view>
+  <view wx:elif="{{!items.length}}" class="empty">
+    <view class="empty__t">没有相关订单</view>
+    <view class="empty__d">确认报价后由商家安排制作，订单会显示在这里</view>
+    <view class="empty__act"><button class="btn btn--tan btn--sm" bindtap="goCustom">去看定制款式</button></view>
+  </view>
+
+  <view wx:else class="order-list">
+    <view class="order-card" wx:for="{{items}}" wx:key="id" wx:for-index="idx" bindtap="goDetail" data-id="{{item.id}}">
+      <view class="order-card__hd">
+        <text>{{item.orderNo}}</text>
+        <text class="order-card__st">{{item.statusLabel}}</text>
+      </view>
+      <view class="order-card__body">
+        <view class="order-card__thumb">
+          <image wx:if="{{item.coverUrl && !imgErr[idx]}}" src="{{item.coverUrl}}" mode="aspectFill" binderror="onImgErr" data-index="{{idx}}" />
+          <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
+        </view>
+        <view class="grow">
+          <view class="order-card__name">{{item.productName}}</view>
+          <view class="order-card__meta">申请单号 {{item.requestNo}}</view>
+          <view class="order-card__meta">{{item.createdAt}}</view>
+        </view>
+        <view class="order-card__amt">{{item.total}}</view>
+      </view>
+    </view>
+    <view class="hint">{{hasMore ? '上拉加载更多' : '没有更多了'}}</view>
+  </view>
+</view>

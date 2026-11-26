@@ -1,0 +1,134 @@
+/* 图文指南页 */
+
+.guide-hero {
+  background: var(--band);
+  padding: 16px 16px 18px;
+}
+
+.guide-hero__eyebrow {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.guide-hero__h1 {
+  font-family: var(--serif);
+  font-size: 30px;
+  letter-spacing: 0.1em;
+  margin: 6px 0 8px;
+  color: var(--text);
+}
+
+.guide-hero__desc {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-2);
+}
+
+.guide-sec {
+  background: var(--card);
+  padding: 22px 16px;
+}
+
+.guide-sec__h2 {
+  font-family: var(--serif);
+  font-size: 21px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.guide-sec__d {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+
+.guide-fig {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.guide-fig__item {
+  width: 48%;
+  margin-bottom: 16px;
+}
+
+.guide-fig__item--wide {
+  width: 100%;
+  text-align: center;
+}
+
+.guide-fig__ill {
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--field);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.guide-fig__item--wide .guide-fig__ill {
+  height: 250px;
+}
+
+.guide-fig__ill image {
+  width: 100%;
+  height: 100%;
+}
+
+.guide-fig__ph {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.guide-fig__cap {
+  font-family: var(--serif);
+  font-size: 16px;
+  margin-top: 10px;
+  color: var(--text);
+  text-align: center;
+}
+
+.guide-fig__type {
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 3px;
+}
+
+.guide-fig__sub {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.7;
+  margin-top: 4px;
+}
+
+.guide-tips {
+  margin-top: 6px;
+}
+
+.guide-tips__item {
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+
+.guide-list__item {
+  font-size: 13.5px;
+  line-height: 2;
+  color: var(--text-2);
+}
+
+.guide-note {
+  background: var(--band);
+  padding: 14px 16px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.guide-foot {
+  padding: 16px 14px calc(20px + env(safe-area-inset-bottom));
+}

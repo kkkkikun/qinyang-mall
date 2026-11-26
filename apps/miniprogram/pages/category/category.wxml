@@ -1,0 +1,80 @@
+<view class="page">
+  <!-- 导航 -->
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goSearch">
+        <image src="/assets/icons/search_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">商品分类</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">正在加载分类…</view>
+  <view wx:elif="{{error}}" class="state">
+    <view class="state__t">{{error}}</view>
+    <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
+  </view>
+
+  <view wx:else class="cat-wrap">
+    <!-- 左侧：一级分类 + 二级分组 -->
+    <scroll-view class="side-cat" scroll-y enable-flex>
+      <view class="side-head {{curGroup ? 'side-head--drilled' : ''}}">{{curCatName}}</view>
+      <view wx:for="{{rail}}" wx:key="key" wx:for-index="idx"
+        class="side-item {{item.active ? 'on' : ''}} {{item.type === 'cat' ? 'side-item--other' : ''}}"
+        bindtap="pickCat" data-id="{{item.id}}" data-code="{{item.code}}" data-type="{{item.type}}">
+        <text>{{item.name}}</text>
+      </view>
+    </scroll-view>
+
+    <!-- 右侧：分组页签 + 商品网格 -->
+    <view class="cat-right">
+      <view class="cat-tabs-row">
+        <scroll-view class="cat-tabs" scroll-x enable-flex>
+          <view class="tabs__item tabs__item--red {{!curGroup ? 'tabs__item--on' : ''}}" bindtap="pickTab" data-code="">全部</view>
+          <view wx:for="{{tabs}}" wx:key="id" wx:for-index="idx"
+            class="tabs__item tabs__item--red {{curGroup === item.code ? 'tabs__item--on' : ''}}"
+            bindtap="pickTab" data-code="{{item.code}}">{{item.name}}</view>
+        </scroll-view>
+        <view class="cat-toggle" bindtap="toggleGroupPop">
+          <image src="/assets/icons/down_gray.png" mode="aspectFit" />
+        </view>
+      </view>
+
+      <view wx:if="{{groupPop}}" class="pop-mask" bindtap="closeGroupPop"></view>
+      <view wx:if="{{groupPop}}" class="group-pop" style="top:{{nav.statusBarHeight + nav.barHeight + 6}}px">
+        <view class="gp-title">{{curCatName}} · 全部分组</view>
+        <view class="gp-item {{!curGroup ? 'on' : ''}}" bindtap="pickTab" data-code="">
+          <text>全部</text><text class="gp-count">{{curCatCount}} 件</text>
+        </view>
+        <view wx:for="{{groups}}" wx:key="id" class="gp-item {{curGroup === item.code ? 'on' : ''}}"
+          bindtap="pickTab" data-code="{{item.code}}">
+          <text>{{item.name}}</text><text class="gp-count">{{item.count}} 件</text>
+        </view>
+      </view>
+
+      <scroll-view class="cat-main" scroll-y enable-flex>
+        <view class="pgrid">
+          <view class="pgrid__cell" wx:for="{{items}}" wx:key="id" wx:for-index="idx" bindtap="goProduct" data-id="{{item.id}}">
+            <view class="pcard pcard--square">
+              <view class="pcard__ph pcard__ph--cat">
+                <text class="pcard__wm">QINYANG</text>
+                <image wx:if="{{item.coverUrl && !imgErr[idx]}}" src="{{item.coverUrl}}" mode="aspectFill" binderror="onImgErr" data-index="{{idx}}" />
+                <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
+              </view>
+              <view class="pcard__body">
+                <view class="pcard__name clamp2">{{item.name}}</view>
+                <view class="pcard__foot">
+                  <text class="{{item.priceCents !== null ? 'price' : 'price--tbd'}}">{{item.priceLabel}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{!items.length && !loading}}" class="hint">该分组暂无商品</view>
+        <view wx:elif="{{items.length}}" class="hint">{{hasMore ? '上拉加载更多' : '没有更多了'}}</view>
+        <view class="cat-bottom"></view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

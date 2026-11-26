@@ -1,0 +1,49 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goBack">
+        <image src="/assets/icons/back_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">联系客服</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <view class="sec sec-pad" style="margin-top:8px">
+    <view class="row gap10">
+      <view class="contact__ic"><image src="/assets/icons/headset_blue.png" mode="aspectFit" /></view>
+      <view class="grow">
+        <view style="font-size:15px;font-weight:600">琴扬精纺羊绒 · 店铺客服</view>
+        <view class="fs12 muted-2" style="margin-top:3px">可咨询量体方法、定制细节、报价与发货进度</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="sec sec-pad">
+    <view class="fs13 mb8">发送消息</view>
+    <button class="btn btn--tan btn--block" open-type="contact">联系店铺客服</button>
+    <view class="fs11 muted-2" style="margin-top:10px;line-height:1.8">
+      点击后将在微信内打开客服会话窗口，由客服人工回复。客服工作时间与联系方式待商家提供，本页面不做虚构展示。
+    </view>
+  </view>
+
+  <view class="sec sec-pad">
+    <view class="fs13 mb8">常见问题</view>
+    <view class="list-row" bindtap="goCustom">
+      <text>量体怎么测？在哪里看指南</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+    <view class="list-row">
+      <text>价格多久能确定</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+    <view class="list-row">
+      <text>制作周期与发货</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+  </view>
+
+  <view class="notice notice--gold">
+    量体资料、联系方式与收货地址属于隐私信息，仅用于本次定制制作；订单归属以本人账号为准，他人无法查看。
+  </view>
+</view>

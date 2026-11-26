@@ -1,0 +1,140 @@
+/* 个人中心 */
+
+.me-head {
+  background: var(--card);
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.me-head__ava {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #f3ced2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 19px;
+  flex: 0 0 54px;
+}
+
+.me-head__nm {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.me-head__sub {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.me-stats {
+  background: var(--card);
+  display: flex;
+  padding: 16px 0;
+}
+
+.me-stats__s {
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid var(--line);
+}
+
+.me-stats__s:last-child {
+  border-right: none;
+}
+
+.me-stats__b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 400;
+}
+
+.me-stats__t {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+
+.me-card {
+  background: var(--card);
+  margin-top: 8px;
+}
+
+.me-card__hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 4px;
+}
+
+.me-card__t {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.me-card__go {
+  font-size: 12px;
+  color: var(--text-3);
+  text-decoration: underline;
+}
+
+.me-card__body {
+  padding: 4px 14px 14px;
+}
+
+.rec-item {
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+
+.rec-item__st {
+  font-size: 12px;
+  color: var(--gold);
+}
+
+.me-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 14px 4px 16px;
+}
+
+.me-grid__g {
+  width: 20%;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+.me-grid__ic {
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--field);
+}
+
+.me-grid__ic image {
+  width: 18px;
+  height: 18px;
+}
+
+.me-grid__ic--red { background: #fdecec; }
+.me-grid__ic--blue { background: #e9f1fd; }
+.me-grid__ic--green { background: #e8f5ea; }
+
+.me-input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--field);
+  font-size: 12.5px;
+}

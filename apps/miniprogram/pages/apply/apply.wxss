@@ -1,0 +1,196 @@
+/* 定制申请表 */
+
+.pd-thumb {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  position: relative;
+  overflow: hidden;
+  background: var(--field);
+}
+
+.pd-thumb image {
+  width: 100%;
+  height: 100%;
+}
+
+.prog {
+  background: var(--card);
+}
+
+.prog__bar {
+  height: 2px;
+  background: var(--line);
+}
+
+.prog__fill {
+  height: 100%;
+  background: var(--gold);
+}
+
+.msec-title {
+  font-size: 17px;
+  letter-spacing: 0.1em;
+}
+
+.mcard {
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  padding: 14px;
+}
+
+.mcard__head {
+  display: flex;
+  gap: 12px;
+}
+
+.mcard__ill {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  background: var(--field);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mcard__ill image {
+  width: 100%;
+  height: 100%;
+}
+
+.mcard__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mcard__name {
+  font-family: var(--serif);
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.mcard__req {
+  font-size: 10.5px;
+  color: var(--red);
+  margin-left: 4px;
+}
+
+.mcard__opt {
+  font-size: 10.5px;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+
+.mcard__type {
+  font-size: 11px;
+  color: var(--text-3);
+  margin: 3px 0 8px;
+}
+
+.mcard__ins {
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--text-2);
+  background: var(--field);
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+
+.mcard__tips {
+  margin-top: 6px;
+}
+
+.mcard__tip {
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+
+.mfield {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mfield__input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: var(--card);
+  font-size: 15px;
+}
+
+.mfield__input--bad {
+  border-color: var(--red);
+}
+
+.mfield__unit {
+  font-size: 13px;
+  color: var(--text-3);
+  flex: 0 0 auto;
+}
+
+.mfield__range {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+.mfield__err {
+  font-size: 11.5px;
+  color: var(--red);
+  margin-top: 5px;
+}
+
+.form {
+  background: var(--card);
+}
+
+.form__row {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.form__label {
+  flex: 0 0 76px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+
+.form__input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  font-size: 14px;
+}
+
+.form__err {
+  background: var(--card);
+  padding: 0 14px 12px;
+  font-size: 11.5px;
+  color: var(--red);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 76px;
+  padding: 11px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--card);
+  font-size: 13px;
+}
+
+.pd-bar-holder {
+  height: calc(64px + env(safe-area-inset-bottom));
+}

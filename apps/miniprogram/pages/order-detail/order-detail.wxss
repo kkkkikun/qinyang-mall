@@ -1,0 +1,97 @@
+/* 订单详情 */
+
+.od-status {
+  font-size: 19px;
+  letter-spacing: 0.08em;
+}
+
+.od-title {
+  font-size: 17px;
+  letter-spacing: 0.1em;
+}
+
+.od-thumb {
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  position: relative;
+  overflow: hidden;
+  background: var(--field);
+}
+
+.od-thumb image {
+  width: 100%;
+  height: 100%;
+}
+
+.timeline {
+  padding-left: 4px;
+}
+
+.timeline__item {
+  position: relative;
+  padding: 0 0 18px 22px;
+  border-left: 1px solid var(--line);
+}
+
+.timeline__item--last {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.timeline__dot {
+  position: absolute;
+  left: -5px;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.timeline__title {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.timeline__time {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.timeline__note {
+  font-size: 12.5px;
+  color: var(--text-2);
+  margin-top: 5px;
+  line-height: 1.7;
+}
+
+.rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+
+.rd-row__k {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.rd-row__v {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.rd-go {
+  font-size: 12px;
+  color: var(--text-2);
+  text-decoration: underline;
+}
+
+.pd-bar-holder-sm {
+  height: calc(24px + env(safe-area-inset-bottom));
+}

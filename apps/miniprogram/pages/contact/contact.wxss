@@ -1,0 +1,21 @@
+/* 客服入口 */
+
+.contact__ic {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e9f1fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+}
+
+.contact__ic image {
+  width: 22px;
+  height: 22px;
+}
+
+.mb8 {
+  margin-bottom: 8px;
+}

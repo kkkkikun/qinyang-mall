@@ -1,0 +1,347 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  CustomizationRequestCreateRequest,
+  CustomizationRequestDto,
+  CustomizationRequestListQuery,
+  ERROR_CODES,
+  MeasurementField,
+  MeasurementFieldValue,
+  MeasurementSection,
+  MeasurementSnapshot,
+  Paginated,
+  ProductSnapshot,
+  REQUEST_STATUS_LABELS,
+  RequestStatus,
+} from '@qinyang/contracts';
+import { randomBytes } from 'node:crypto';
+import { In, Repository } from 'typeorm';
+import { CustomizationRequest } from '../../database/entities/customization-request.entity';
+import { Product } from '../../database/entities/product.entity';
+import { ProductStatus } from '@qinyang/contracts';
+import { BusinessException } from '../../common/errors/business.exception';
+import { AuditService } from '../audit/audit.service';
+import { ProductsService } from '../catalog/products.service';
+import { TemplatesService } from '../templates/templates.service';
+import { QuoteService } from '../quote/quotes.service';
+import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
+import {
+  MeasurementValidationException,
+  validateMeasurements,
+} from './measurement-validator';
+
+@Injectable()
+export class CustomizationService {
+  constructor(
+    @InjectRepository(CustomizationRequest)
+    private readonly requests: Repository<CustomizationRequest>,
+    @InjectRepository(Product)
+    private readonly products: Repository<Product>,
+    private readonly productService: ProductsService,
+    private readonly templates: TemplatesService,
+    private readonly quotes: QuoteService,
+    private readonly audit: AuditService,
+  ) {}
+
+  // ───────────────────────── 顾客端 ─────────────────────────
+
+  async create(
+    dto: CustomizationRequestCreateRequest,
+    customerId: string,
+  ): Promise<CustomizationRequestDto> {
+    // 幂等：同一 submitId 直接返回既有申请（防重复点击）
+    const existing = await this.requests.findOne({ where: { submitId: dto.submitId } });
+    if (existing) {
+      if (existing.customerId !== customerId) {
+        throw BusinessException.conflict('该提交标识已被使用', ERROR_CODES.DUPLICATED_SUBMIT);
+      }
+      return this.toDto(existing);
+    }
+
+    const product = await this.products.findOne({ where: { id: dto.productId } });
+    if (!product) throw BusinessException.notFound('商品不存在');
+    if (product.status !== ProductStatus.PUBLISHED) {
+      throw BusinessException.conflict('商品已下架，无法提交定制申请', ERROR_CODES.PRODUCT_NOT_PUBLISHED);
+    }
+
+    const template = product.measurementTemplateId
+      ? await this.templates.get(product.measurementTemplateId)
+      : await this.templates.resolveForCategory(product.categoryId);
+    if (!template) {
+      throw BusinessException.conflict(
+        '该商品尚未配置量体模板，请联系客服',
+        ERROR_CODES.TEMPLATE_NOT_FOUND,
+      );
+    }
+
+    const sections = (template.measurementSections ?? []) as MeasurementSection[];
+    let validated: MeasurementFieldValue[];
+    try {
+      validated = validateMeasurements(sections, dto.measurements);
+    } catch (error) {
+      if (error instanceof MeasurementValidationException) {
+        throw BusinessException.badRequest(error.message, error.code);
+      }
+      throw error;
+    }
+
+    const productSnapshot = await this.productService.buildSnapshot(product.id);
+    const measurementSnapshot: MeasurementSnapshot = {
+      templateId: template.id,
+      templateCode: template.code,
+      templateName: template.name,
+      templateVersion: template.version,
+      sections,
+      fields: validated,
+    };
+
+    const entity = this.requests.create({
+      requestNo: this.generateRequestNo(),
+      customerId,
+      productId: product.id,
+      productSnapshot,
+      templateId: template.id,
+      templateName: template.name,
+      templateVersion: template.version,
+      measurementSnapshot,
+      contact: dto.contact,
+      remark: dto.remark ?? null,
+      status: RequestStatus.PENDING_REVIEW,
+      submitId: dto.submitId,
+    });
+
+    const saved = await this.requests.save(entity);
+    return this.toDto(saved);
+  }
+
+  async listMine(
+    customerId: string,
+    query: CustomizationRequestListQuery,
+  ): Promise<Paginated<CustomizationRequestDto>> {
+    const page = Math.max(1, Number(query.page ?? 1));
+    const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
+
+    const qb = this.requests
+      .createQueryBuilder('r')
+      .where('r.customerId = :customerId', { customerId });
+    if (query.status) {
+      qb.andWhere('r.status = :status', { status: query.status });
+    }
+    qb.orderBy('r.createdAt', 'DESC').skip((page - 1) * pageSize).take(pageSize);
+
+    const [items, total] = await qb.getManyAndCount();
+    return {
+      items: await Promise.all(items.map((item) => this.toDto(item))),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  /** 顾客只能看自己的申请；越权一律 404，不泄露存在性 */
+  async getMine(id: string, customerId: string): Promise<CustomizationRequestDto> {
+    const request = await this.requests.findOne({ where: { id } });
+    if (!request || request.customerId !== customerId) {
+      throw BusinessException.notFound('定制申请不存在');
+    }
+    return this.toDto(request);
+  }
+
+  async cancelByCustomer(
+    id: string,
+    customerId: string,
+  ): Promise<CustomizationRequestDto> {
+    const request = await this.requests.findOne({ where: { id } });
+    if (!request || request.customerId !== customerId) {
+      throw BusinessException.notFound('定制申请不存在');
+    }
+    const allowed = [RequestStatus.PENDING_REVIEW, RequestStatus.PENDING_QUOTE];
+    if (!allowed.includes(request.status)) {
+      throw BusinessException.conflict(
+        '当前状态不能取消，请联系客服处理',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+    request.status = RequestStatus.CANCELLED;
+    const saved = await this.requests.save(request);
+    return this.toDto(saved);
+  }
+
+  // ───────────────────────── 管理端 ─────────────────────────
+
+  async listAdmin(
+    query: CustomizationRequestListQuery,
+  ): Promise<Paginated<CustomizationRequestDto>> {
+    const page = Math.max(1, Number(query.page ?? 1));
+    const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
+
+    const qb = this.requests.createQueryBuilder('r');
+    if (query.status) qb.andWhere('r.status = :status', { status: query.status });
+    if (query.productId) {
+      qb.andWhere('r.productId = :productId', { productId: query.productId });
+    }
+    if (query.keyword) {
+      qb.andWhere('(r.requestNo LIKE :kw)', { kw: `%${query.keyword}%` });
+    }
+    qb.orderBy('r.createdAt', 'DESC').skip((page - 1) * pageSize).take(pageSize);
+
+    const [items, total] = await qb.getManyAndCount();
+    return {
+      items: await Promise.all(items.map((item) => this.toDto(item))),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  async getAdmin(id: string): Promise<CustomizationRequestDto> {
+    const request = await this.requests.findOne({ where: { id } });
+    if (!request) throw BusinessException.notFound('定制申请不存在');
+    return this.toDto(request);
+  }
+
+  /** 审核申请：通过 → 待报价；谢绝 → 已谢绝 */
+  async review(
+    id: string,
+    action: 'APPROVE' | 'REJECT',
+    note: string | undefined,
+    admin: AdminPrincipal,
+  ): Promise<CustomizationRequestDto> {
+    const request = await this.requests.findOne({ where: { id } });
+    if (!request) throw BusinessException.notFound('定制申请不存在');
+
+    const target =
+      action === 'APPROVE' ? RequestStatus.PENDING_QUOTE : RequestStatus.REJECTED;
+    if (request.status !== RequestStatus.PENDING_REVIEW) {
+      throw BusinessException.conflict(
+        `当前状态 ${REQUEST_STATUS_LABELS[request.status]} 不能执行审核`,
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
+    const before = { status: request.status };
+    request.status = target;
+    const saved = await this.requests.save(request);
+
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: `request.review.${action.toLowerCase()}`,
+      targetType: 'customization_request',
+      targetId: saved.id,
+      before,
+      after: { status: saved.status },
+      ip: null,
+    });
+
+    return this.toDto(saved);
+  }
+
+  async changeStatus(
+    id: string,
+    target: RequestStatus,
+    note: string | undefined,
+    admin: AdminPrincipal,
+  ): Promise<CustomizationRequestDto> {
+    const request = await this.requests.findOne({ where: { id } });
+    if (!request) throw BusinessException.notFound('定制申请不存在');
+
+    const allowed = this.allowedTransitions(request.status, target);
+    if (!allowed) {
+      throw BusinessException.conflict(
+        `不允许从 ${REQUEST_STATUS_LABELS[request.status]} 变更为 ${REQUEST_STATUS_LABELS[target]}`,
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
+    const before = { status: request.status };
+    request.status = target;
+    const saved = await this.requests.save(request);
+
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: `request.status.${target.toLowerCase()}`,
+      targetType: 'customization_request',
+      targetId: saved.id,
+      before,
+      after: { status: saved.status },
+      ip: null,
+    });
+
+    return this.toDto(saved);
+  }
+
+  // ───────────────────────── 内部实现 ─────────────────────────
+
+  private allowedTransitions(from: RequestStatus, to: RequestStatus): boolean {
+    const map: Record<RequestStatus, RequestStatus[]> = {
+      [RequestStatus.PENDING_REVIEW]: [
+        RequestStatus.PENDING_QUOTE,
+        RequestStatus.REJECTED,
+        RequestStatus.CANCELLED,
+      ],
+      [RequestStatus.PENDING_QUOTE]: [RequestStatus.QUOTED, RequestStatus.CANCELLED],
+      [RequestStatus.QUOTED]: [
+        RequestStatus.CONFIRMED,
+        RequestStatus.PENDING_QUOTE,
+        RequestStatus.CANCELLED,
+      ],
+      [RequestStatus.CONFIRMED]: [RequestStatus.IN_PRODUCTION, RequestStatus.CANCELLED],
+      [RequestStatus.IN_PRODUCTION]: [RequestStatus.SHIPPED, RequestStatus.CANCELLED],
+      [RequestStatus.SHIPPED]: [RequestStatus.COMPLETED],
+      [RequestStatus.COMPLETED]: [],
+      [RequestStatus.CANCELLED]: [],
+      [RequestStatus.REJECTED]: [],
+    };
+    return map[from]?.includes(to) ?? false;
+  }
+
+  private generateRequestNo(): string {
+    const now = new Date();
+    const stamp =
+      `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
+        now.getDate(),
+      ).padStart(2, '0')}`;
+    return `QR-${stamp}-${randomBytes(3).toString('hex').toUpperCase()}`;
+  }
+
+  private async toDto(
+    request: CustomizationRequest,
+  ): Promise<CustomizationRequestDto> {
+    const snapshot = (request.productSnapshot ?? {}) as Partial<ProductSnapshot>;
+    const activeQuote = await this.quotes.findActiveByRequest(request.id);
+    const order = await this.quotes.findOrderByRequest(request.id);
+
+    return {
+      id: request.id,
+      requestNo: request.requestNo,
+      customerId: request.customerId,
+      productId: request.productId,
+      productCode: snapshot.code ?? '',
+      productName: snapshot.name ?? '',
+      productCoverUrl: snapshot.coverUrl ?? null,
+      templateId: request.templateId,
+      templateName: request.templateName,
+      templateVersion: request.templateVersion,
+      status: request.status,
+      statusLabel: REQUEST_STATUS_LABELS[request.status],
+      measurements: request.measurementSnapshot as MeasurementSnapshot,
+      contact: request.contact as never,
+      remark: request.remark,
+      activeQuote,
+      orderId: order?.id ?? null,
+      orderNo: order?.orderNo ?? null,
+      createdAt: request.createdAt.toISOString(),
+      updatedAt: request.updatedAt.toISOString(),
+    };
+  }
+
+  /** 批量取商品，供管理端列表展示（避免 N+1） */
+  async findProductsByIds(ids: string[]): Promise<Product[]> {
+    if (ids.length === 0) return [];
+    return this.products.find({ where: { id: In(ids) } });
+  }
+}

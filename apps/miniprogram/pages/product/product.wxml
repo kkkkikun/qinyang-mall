@@ -1,0 +1,163 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goBack">
+        <image src="/assets/icons/back_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">{{detail ? detail.name : '商品详情'}}</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">正在加载商品…</view>
+  <view wx:elif="{{error}}" class="state">
+    <view class="state__t">{{error}}</view>
+    <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
+  </view>
+
+  <block wx:else>
+    <!-- 品牌带 -->
+    <view class="pd-brand">
+      <image class="pd-brand__wm" src="/assets/brand/qinyang-word.png" mode="widthFix" />
+    </view>
+
+    <!-- 多图轮播 -->
+    <view class="pd-gallery" style="height:{{galleryHeight}}px">
+      <swiper wx:if="{{media.length}}" class="pd-gallery__swiper" style="height:{{galleryHeight}}px"
+        circular indicator-dots indicator-color="rgba(0,0,0,0.2)" indicator-active-color="#D29B5E" bindchange="onGalleryChange">
+        <swiper-item wx:for="{{media}}" wx:key="key" wx:for-index="idx">
+          <view class="pd-gallery__slide" bindtap="preview" data-index="{{idx}}">
+            <image wx:if="{{!item.failed}}" src="{{item.url}}" mode="aspectFit" binderror="onMediaErr" data-index="{{idx}}" />
+            <view wx:else class="img-fallback"><view class="img-fallback__mark"></view><text>图片加载失败</text></view>
+          </view>
+        </swiper-item>
+      </swiper>
+      <view wx:else class="pd-gallery__slide">
+        <view class="img-fallback"><view class="img-fallback__mark"></view><text>暂无商品图片</text></view>
+      </view>
+      <view class="pd-gallery__count">{{galleryIndex}} / {{media.length || 0}}</view>
+    </view>
+
+    <!-- 价格 / 报价状态 -->
+    <view class="pd-price">
+      <view class="pd-price__p {{pricePending ? 'pd-price__tbd' : ''}}">{{priceLabel}}</view>
+      <view class="fs12 muted-2" style="margin-top:4px">
+        {{pricePending ? '本款按量体报价，金额以商家报价为准' : '商品价格以商家确认为准'}}
+      </view>
+    </view>
+
+    <!-- 标题 -->
+    <view class="pd-title">
+      <view class="pd-title__h1">QINYANG｜{{detail.name}}</view>
+      <view class="pd-title__sub" wx:if="{{detail.subtitle}}">{{detail.subtitle}}</view>
+      <view class="pd-title__sub">{{detail.categoryName}} · 专属定制</view>
+      <view class="row gap8" style="margin-top:9px;flex-wrap:wrap">
+        <text class="tag">按量体定制</text>
+        <text class="tag tag--gray">{{detail.code}}</text>
+        <text class="tag tag--gray" wx:if="{{detail.measurementTemplateName}}">量体模板：{{detail.measurementTemplateName}}</text>
+      </view>
+    </view>
+
+    <!-- 参数 -->
+    <view class="pd-kv">
+      <view class="kv">
+        <text class="kv__k">配送</text>
+        <text class="kv__v">快递配送，运费与时效以商家确认为准</text>
+      </view>
+      <view class="kv">
+        <text class="kv__k">运费</text>
+        <text class="kv__v">待确认</text>
+      </view>
+      <view class="kv">
+        <text class="kv__k">材质</text>
+        <text class="kv__v">{{materialText || '待确认'}}</text>
+      </view>
+      <view class="kv">
+        <text class="kv__k">洗护</text>
+        <text class="kv__v">{{careText || '待确认'}}</text>
+      </view>
+      <view class="kv">
+        <text class="kv__k">定制</text>
+        <text class="kv__v">按量体数据制作，不选颜色与尺码</text>
+      </view>
+      <view class="kv">
+        <text class="kv__k">状态</text>
+        <text class="kv__v">{{isOffline ? '已下架' : '在售'}}</text>
+      </view>
+    </view>
+
+    <!-- 服务 -->
+    <view class="svc">
+      <view class="svc__item"><image src="/assets/icons/truck_gold.png" mode="aspectFit" /><text>配送</text></view>
+      <view class="svc__item"><image src="/assets/icons/refresh_gold.png" mode="aspectFit" /><text>退换</text></view>
+      <view class="svc__item"><image src="/assets/icons/shield_gold.png" mode="aspectFit" /><text>品质</text></view>
+      <view class="svc__item"><image src="/assets/icons/ruler_gold.png" mode="aspectFit" /><text>专属定制</text></view>
+    </view>
+
+    <!-- 品牌故事 -->
+    <view class="pd-story">
+      <view class="pd-story__eyebrow">QINYANG</view>
+      <view class="pd-story__h3">{{detail.name}}</view>
+      <view class="pd-story__p" wx:if="{{descText}}">{{descText}}</view>
+      <view class="pd-story__p" wx:else>商品简短介绍、商品特点、材质与工艺信息<text class="pd-story__accent">以商家后续提供的资料为准</text>，本页面不做任何推测性描述。</view>
+    </view>
+
+    <view class="pd-story" style="padding-top:4px">
+      <view class="pd-story__eyebrow">THE WARDROBE</view>
+      <view class="pd-story__h3">羊绒衣橱</view>
+      <view class="pd-story__p">一件一码的定制体验。您提交的量体数据会随申请送达商家，<text class="pd-story__accent">按您的尺寸制作</text>。</view>
+    </view>
+
+    <!-- 实拍图集 -->
+    <view class="sec sec-pad">
+      <view class="row row-b" style="margin-bottom:12px">
+        <text style="font-size:15px;font-weight:600">商品实拍</text>
+        <text class="fs12 muted">共 {{media.length}} 张</text>
+      </view>
+      <view class="gal4">
+        <view class="gal4__cell" wx:for="{{media}}" wx:key="key" wx:for-index="idx" bindtap="preview" data-index="{{idx}}">
+          <image wx:if="{{!item.failed}}" src="{{item.url}}" mode="aspectFill" binderror="onMediaErr" data-index="{{idx}}" />
+          <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 专属定制说明 -->
+    <view class="pd-story" style="text-align:left">
+      <view class="pd-story__eyebrow">MAKE TO MEASURE</view>
+      <view class="pd-story__h3" style="text-align:left">专属定制说明</view>
+      <view class="pd-story__p">· 本商品不提供常规 S/M/L 尺码选择，商家依据您提交的量体数据制作。<br />· 可自行测量身体尺寸，或量取一件合身衣物的平铺尺寸作为参考。<br />· 提交前每一项数据都可返回修改。<br />· 相同商品的不同量体数据会作为独立申请制作，不会合并。</view>
+    </view>
+
+    <!-- 量体指南入口 -->
+    <view class="dark-card" bindtap="goGuide">
+      <view>
+        <view class="dark-card__t">量体指南</view>
+        <view class="dark-card__d">查看测量方法与示意图</view>
+      </view>
+      <view class="dark-card__arrow"><image src="/assets/icons/arrowlong_white.png" mode="aspectFit" /></view>
+    </view>
+
+    <!-- 联系商家 -->
+    <view class="sec sec-pad">
+      <view class="row row-b">
+        <view>
+          <view style="font-size:15px;font-weight:600">联系商家</view>
+          <view class="fs12 muted-2" style="margin-top:3px">沟通定制细节 / 咨询量体问题</view>
+        </view>
+        <button class="btn btn--ghost btn--sm" bindtap="goContact">联系</button>
+      </view>
+    </view>
+
+    <!-- 底部操作栏 -->
+    <view class="pd-bar">
+      <button class="pd-bar__ico pd-bar__ico--btn" bindtap="goContact">
+        <image src="/assets/icons/chat_ink.png" mode="aspectFit" />
+        <text>联系客服</text>
+      </button>
+      <button class="btn btn--ghost" style="flex:0 0 120px" bindtap="goGuide">量体指南</button>
+      <button class="btn btn--tan" bindtap="goApply" disabled="{{isOffline}}">提交定制申请</button>
+    </view>
+    <view class="pd-bar-holder"></view>
+  </block>
+</view>

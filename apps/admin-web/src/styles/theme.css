@@ -1,0 +1,476 @@
+/*
+ * 琴扬精纺羊绒 QINYANG · 管理后台主题
+ * 色板基线来自 prototype/assets/css/app.css（同一套品牌色）。
+ *   主色金 #D29B5E / 主要按钮麦金 #CD9150 / 次要按钮炭黑 #272727
+ *   强调红 #F53939 / 页面底 #F2F2F2
+ */
+:root {
+  --qy-gold: #d29b5e;
+  --qy-gold-light: #e8c7a4;
+  --qy-tan: #cd9150;
+  --qy-ink: #272727;
+  --qy-ink-2: #3a3a3a;
+  --qy-red: #f53939;
+  --qy-bg: #f2f2f2;
+  --qy-card: #ffffff;
+  --qy-field: #f7f7f7;
+  --qy-line: #ebebeb;
+  --qy-line-2: #e2e2e2;
+  --qy-text: #1a1a1a;
+  --qy-text-2: #666666;
+  --qy-text-3: #999999;
+  --qy-serif: 'Songti SC', 'STSong', 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', Georgia, serif;
+  --qy-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+
+  /* TDesign 品牌色覆盖：主要按钮使用麦金 */
+  --td-brand-color: var(--qy-tan);
+  --td-brand-color-hover: var(--qy-gold);
+  --td-brand-color-focus: var(--qy-gold-light);
+  --td-brand-color-active: #b57e42;
+  --td-brand-color-light: #faf2e8;
+  --td-bg-color-page: var(--qy-bg);
+  --td-bg-color-container: var(--qy-card);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--qy-bg);
+  color: var(--qy-text);
+  font-family: var(--qy-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+}
+
+/* ---------- 框架布局 ---------- */
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  height: 56px;
+  padding: 0 20px;
+  background: var(--qy-card);
+  border-bottom: 1px solid var(--qy-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.app-brand-cn {
+  font-family: var(--qy-serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--qy-ink);
+  letter-spacing: 2px;
+}
+
+.app-brand-en {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--qy-gold);
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-user-name {
+  color: var(--qy-text);
+  font-weight: 500;
+}
+
+.app-body {
+  min-height: calc(100vh - 56px);
+}
+
+.app-aside {
+  background: var(--qy-card);
+  border-right: 1px solid var(--qy-line);
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.app-content {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+/* ---------- 通用页面块 ---------- */
+.page-block {
+  background: var(--qy-card);
+  border: 1px solid var(--qy-line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.page-block + .page-block {
+  margin-top: 16px;
+}
+
+.page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.section-title {
+  font-family: var(--qy-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--qy-ink);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: var(--qy-gold);
+  border-radius: 2px;
+}
+
+.muted {
+  color: var(--qy-text-3);
+}
+
+.text-gold {
+  color: var(--qy-tan);
+  font-weight: 600;
+}
+
+.text-red {
+  color: var(--qy-red);
+  font-weight: 600;
+}
+
+/* ---------- 表单 ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+
+.form-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+/* ---------- 详情 / 快照 ---------- */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+
+.snapshot-card {
+  border: 1px solid var(--qy-line);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--qy-field);
+}
+
+.snapshot-title {
+  font-weight: 600;
+  color: var(--qy-ink);
+  margin-bottom: 8px;
+}
+
+/* 量体资料分节 */
+.measure-section {
+  border: 1px solid var(--qy-line);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.measure-section-head {
+  background: var(--qy-field);
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--qy-ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.measure-field-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 16px;
+  padding: 12px;
+}
+
+.measure-field {
+  font-size: 13px;
+  color: var(--qy-text-2);
+}
+
+.measure-field-value {
+  color: var(--qy-text);
+  font-weight: 500;
+}
+
+/* 时间线 */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 16px;
+  border-left: 1px solid var(--qy-line-2);
+}
+
+.timeline-item {
+  position: relative;
+  padding: 0 0 16px 12px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -21px;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--qy-gold);
+}
+
+.timeline-title {
+  font-weight: 500;
+  color: var(--qy-text);
+}
+
+.timeline-meta {
+  font-size: 12px;
+  color: var(--qy-text-3);
+}
+
+/* 报价历史 */
+.quote-item {
+  border: 1px solid var(--qy-line);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.quote-item.is-active {
+  border-color: var(--qy-gold);
+  background: #fdf8f1;
+}
+
+.quote-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.quote-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-size: 13px;
+  color: var(--qy-text-2);
+}
+
+/* 图集 */
+.media-group {
+  margin-bottom: 16px;
+}
+
+.media-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.media-card {
+  width: 132px;
+  border: 1px solid var(--qy-line);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--qy-card);
+}
+
+.media-card.is-cover {
+  border-color: var(--qy-gold);
+}
+
+.media-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.media-role-select {
+  width: 160px;
+}
+
+/* 审计日志前后对比 */
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.diff-block {
+  border: 1px solid var(--qy-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.diff-block-head {
+  background: var(--qy-field);
+  padding: 8px 12px;
+  font-weight: 600;
+}
+
+.diff-key {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--qy-line);
+  font-size: 13px;
+}
+
+.diff-key.is-changed {
+  background: #fff7e6;
+}
+
+.diff-value {
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--qy-text-2);
+}
+
+/* 登录页 */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #f6efe6 0%, var(--qy-bg) 55%, #ececec 100%);
+  padding: 24px;
+}
+
+.login-card {
+  width: 380px;
+  max-width: 100%;
+  background: var(--qy-card);
+  border: 1px solid var(--qy-line);
+  border-radius: 10px;
+  padding: 32px 28px;
+  box-shadow: 0 12px 32px rgba(39, 39, 39, 0.08);
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-brand-cn {
+  font-family: var(--qy-serif);
+  font-size: 24px;
+  letter-spacing: 3px;
+  color: var(--qy-ink);
+}
+
+.login-brand-en {
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--qy-gold);
+  margin-top: 6px;
+}
+
+.login-tip {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--qy-text-3);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* 工作台 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--qy-card);
+  border: 1px solid var(--qy-line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--qy-line);
+  font-size: 13px;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+.empty-text {
+  color: var(--qy-text-3);
+  text-align: center;
+  padding: 24px 0;
+}
+
+@media (max-width: 1200px) {
+  .stat-grid,
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

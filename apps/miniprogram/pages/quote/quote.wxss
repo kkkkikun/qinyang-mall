@@ -1,0 +1,43 @@
+/* 报价确认页 */
+
+.q-title {
+  font-size: 19px;
+  letter-spacing: 0.08em;
+}
+
+.q-total {
+  font-size: 28px;
+  color: var(--text);
+  font-weight: 600;
+  margin: 12px 0 4px;
+}
+
+.q-snap {
+  background: var(--field);
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+.q-snap__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.q-snap__row:last-child {
+  border-bottom: none;
+}
+
+.q-snap__k {
+  color: var(--text-2);
+}
+
+.q-snap__v {
+  color: var(--text);
+}
+
+.pd-bar-holder {
+  height: calc(64px + env(safe-area-inset-bottom));
+}

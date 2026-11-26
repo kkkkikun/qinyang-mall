@@ -1,0 +1,189 @@
+/* 商品分类页 */
+
+.cat-wrap {
+  display: flex;
+  background: var(--card);
+  height: calc(100vh - 44px - env(safe-area-inset-bottom));
+}
+
+.side-cat {
+  flex: 0 0 87px;
+  width: 87px;
+  background: #f5f5f5;
+  height: 100%;
+}
+
+.side-head {
+  padding: 13px 6px;
+  font-size: 13.5px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--card);
+  position: relative;
+  line-height: 1.4;
+}
+
+.side-head::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  background: var(--gold);
+}
+
+.side-head--drilled {
+  background: #f0f0f0;
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+.side-head--drilled::before {
+  display: none;
+}
+
+.side-item {
+  padding: 13px 6px;
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: center;
+  position: relative;
+  line-height: 1.4;
+  background: transparent;
+}
+
+.side-item.on {
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.side-item.on::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  background: var(--gold);
+}
+
+.side-item--other {
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+
+.cat-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.cat-tabs-row {
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+
+.cat-tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.cat-tabs .tabs__item {
+  padding: 12px 13px 10px;
+}
+
+.cat-toggle {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cat-toggle image {
+  width: 17px;
+  height: 17px;
+}
+
+.pop-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 44;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.group-pop {
+  position: fixed;
+  right: 10px;
+  z-index: 46;
+  min-width: 160px;
+  max-width: 68vw;
+  background: var(--card);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  padding: 4px 0;
+}
+
+.gp-title {
+  font-size: 11px;
+  color: var(--text-3);
+  padding: 8px 14px 6px;
+}
+
+.gp-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.gp-item.on {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.gp-count {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+
+.gp-item.on .gp-count {
+  color: var(--red);
+}
+
+.cat-main {
+  flex: 1;
+  min-height: 0;
+  background: var(--card);
+  padding: 10px 12px 10px 14px;
+}
+
+.cat-main .pgrid {
+  gap: 0;
+}
+
+.cat-bottom {
+  height: 20px;
+}
+
+.hint {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-3);
+  padding: 10px 0 2px;
+}

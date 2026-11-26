@@ -1,0 +1,11 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm 10+ 声明允许执行安装脚本的依赖（原生构建）
+onlyBuiltDependencies:
+  - esbuild
+  - '@scarf/scarf'
+
+# 不因个别依赖缺少构建脚本而中断安装
+strictDepBuilds: false

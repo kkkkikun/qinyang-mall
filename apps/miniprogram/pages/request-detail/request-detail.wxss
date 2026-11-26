@@ -1,0 +1,61 @@
+/* 定制申请详情 */
+
+.rd-status {
+  font-size: 19px;
+  letter-spacing: 0.08em;
+}
+
+.rd-title {
+  font-size: 17px;
+  letter-spacing: 0.1em;
+}
+
+.rd-thumb {
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  position: relative;
+  overflow: hidden;
+  background: var(--field);
+}
+
+.rd-thumb image {
+  width: 100%;
+  height: 100%;
+}
+
+.rd-go {
+  font-size: 12px;
+  color: var(--text-2);
+  text-decoration: underline;
+}
+
+.rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+
+.rd-row__k {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.rd-row__t {
+  display: block;
+  color: var(--text-3);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.rd-row__v {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.pd-bar-holder-sm {
+  height: calc(24px + env(safe-area-inset-bottom));
+}

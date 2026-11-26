@@ -1,0 +1,97 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goBack">
+        <image src="/assets/icons/back_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">报价确认</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">正在加载报价…</view>
+  <view wx:elif="{{error}}" class="state">
+    <view class="state__t">{{error}}</view>
+    <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
+  </view>
+
+  <block wx:elif="{{quote}}">
+    <!-- 报价主体 -->
+    <view class="sec sec-pad" style="margin-top:8px">
+      <view class="row row-b">
+        <text class="serif q-title">商家报价</text>
+        <text class="tag">第 {{version}} 版</text>
+      </view>
+      <view class="q-total">{{total}}</view>
+      <view class="fs12 muted-2">含运费合计金额，确认后进入制作流程</view>
+    </view>
+
+    <view class="sec sec-pad">
+      <view class="kv"><text class="kv__k">商品金额</text><text class="kv__v">{{amount}}</text></view>
+      <view class="kv"><text class="kv__k">运费</text><text class="kv__v">{{freight}}</text></view>
+      <view class="kv"><text class="kv__k">制作周期</text><text class="kv__v">{{quote.productionDays}} 天</text></view>
+      <view class="kv"><text class="kv__k">有效期</text><text class="kv__v">{{valid}}</text></view>
+      <view class="kv"><text class="kv__k">币种</text><text class="kv__v">{{quote.currency}}</text></view>
+      <view class="kv"><text class="kv__k">报价时间</text><text class="kv__v">{{quote.createdAt}}</text></view>
+      <view class="kv" wx:if="{{quote.createdByName}}">
+        <text class="kv__k">报价人</text><text class="kv__v">{{quote.createdByName}}</text>
+      </view>
+    </view>
+
+    <view class="sec sec-pad" wx:if="{{quote.note}}">
+      <view class="row row-b" style="margin-bottom:8px">
+        <text style="font-size:15px;font-weight:600">报价说明</text>
+      </view>
+      <view class="fs13" style="line-height:1.9">{{quote.note}}</view>
+    </view>
+
+    <!-- 商品快照 -->
+    <view class="sec sec-pad" wx:if="{{quote.productSnapshot}}">
+      <view class="row row-b" style="margin-bottom:10px">
+        <text style="font-size:15px;font-weight:600">报价商品</text>
+        <text class="fs12 muted">{{quote.productSnapshot.code}}</text>
+      </view>
+      <view class="fs13">{{quote.productSnapshot.name}}</view>
+      <view class="fs12 muted-2" style="margin-top:4px">{{quote.productSnapshot.categoryName}}</view>
+    </view>
+
+    <!-- 量体快照摘要 -->
+    <view class="sec sec-pad" wx:if="{{quote.measurementSnapshot}}">
+      <view class="row row-b" style="margin-bottom:10px">
+        <text style="font-size:15px;font-weight:600">量体资料快照</text>
+        <text class="fs12 muted">{{quote.measurementSnapshot.templateName}}</text>
+      </view>
+      <view class="q-snap">
+        <view class="q-snap__row" wx:for="{{quote.measurementSnapshot.fields}}" wx:key="fieldCode">
+          <text class="q-snap__k">{{item.fieldName}}</text>
+          <text class="q-snap__v">{{item.value}} {{item.unit}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="notice notice--gold">
+      确认报价即表示认可以上金额、运费与制作周期。V1 阶段不接入真实支付，线下结算方式以商家确认为准。
+    </view>
+
+    <view class="sec sec-pad">
+      <view class="row gap10">
+        <button class="btn btn--ghost" style="flex:1" bindtap="goContact">联系客服</button>
+        <button class="btn btn--ghost" style="flex:1" bindtap="goRequest">返回申请</button>
+      </view>
+    </view>
+
+    <!-- 底部确认 -->
+    <view class="pd-bar">
+      <button class="btn btn--tan btn--block" bindtap="confirm" disabled="{{confirming}}">
+        {{confirming ? '确认中…' : '确认报价（第 ' + version + ' 版）'}}
+      </button>
+    </view>
+    <view class="pd-bar-holder"></view>
+  </block>
+
+  <view wx:elif="{{!loading}}" class="empty">
+    <view class="empty__t">当前没有可确认的报价</view>
+    <view class="empty__d">商家尚未报价，或报价已被更新，请返回申请详情查看</view>
+    <view class="empty__act"><button class="btn btn--ghost btn--sm" bindtap="goBack">返回</button></view>
+  </view>
+</view>

@@ -1,0 +1,35 @@
+/* 定制 Tab 页 */
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.step__no {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  line-height: 22px;
+}
+
+.step__t {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.step__d {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.custom-foot {
+  padding: 16px 14px 8px;
+}

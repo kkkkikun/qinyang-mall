@@ -1,0 +1,73 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back" bindtap="goBack">
+        <image src="/assets/icons/back_ink.png" mode="aspectFit" />
+      </view>
+      <view class="nav__title" style="right:{{nav.capsuleGap}}px">{{vm ? vm.title : '指南'}}</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">正在加载指南…</view>
+  <view wx:elif="{{error}}" class="state">
+    <view class="state__t">{{error}}</view>
+    <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
+  </view>
+
+  <block wx:elif="{{vm}}">
+    <!-- 指南头 -->
+    <view class="guide-hero">
+      <view class="guide-hero__eyebrow">{{vm.eyebrow}}</view>
+      <view class="guide-hero__h1">{{vm.title}}</view>
+      <view class="guide-hero__desc" wx:if="{{vm.summary}}">{{vm.summary}}</view>
+    </view>
+
+    <!-- 分节 -->
+    <view class="guide-sec" wx:for="{{vm.sections}}" wx:key="key" wx:for-index="si">
+      <view class="guide-sec__h2" wx:if="{{item.title}}">{{item.title}}</view>
+      <view class="guide-sec__d" wx:if="{{item.description}}">{{item.description}}</view>
+
+      <view class="guide-fig" wx:if="{{item.fields.length}}">
+        <view class="guide-fig__item {{index === 0 ? 'guide-fig__item--wide' : ''}}" wx:for="{{item.fields}}" wx:key="key" wx:for-index="idx">
+          <view class="guide-fig__ill">
+            <image wx:if="{{item.image && !imgErr[item.key]}}" src="{{item.image}}" mode="aspectFit" binderror="onImgErr" data-key="{{item.key}}" />
+            <view wx:else class="guide-fig__ph">示意图</view>
+          </view>
+          <view class="guide-fig__cap">{{item.name}}</view>
+          <view class="guide-fig__type">{{item.typeLabel}}</view>
+          <view class="guide-fig__sub">{{item.instruction}}</view>
+          <view class="guide-tips" wx:if="{{item.tips.length}}">
+            <view class="guide-tips__item" wx:for="{{item.tips}}" wx:for-item="tip" wx:key="*this">· {{tip}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="guide-list" wx:if="{{item.items.length}}">
+        <view class="guide-list__item" wx:for="{{item.items}}" wx:for-item="line" wx:key="*this">{{line}}</view>
+      </view>
+    </view>
+
+    <view class="guide-note" wx:if="{{vm.isMeasure}}">同时记录身高（cm）和体重（kg）。</view>
+
+    <!-- 内容来源说明 -->
+    <view class="notice notice--gold" wx:if="{{vm.source === 'local'}}">
+      当前展示的是量体说明的本地基础版本，最新指南内容以商家提供为准，可在「定制」页提交定制申请时按模板逐项填写。
+    </view>
+
+    <view class="sec sec-pad">
+      <view class="row row-b">
+        <view>
+          <view style="font-size:15px;font-weight:600">需要帮助？</view>
+          <view class="fs12 muted-2" style="margin-top:3px">量体方法有疑问，可直接联系店铺客服</view>
+        </view>
+        <button class="btn btn--ghost btn--sm" bindtap="goContact">联系客服</button>
+      </view>
+    </view>
+
+    <view class="guide-foot">
+      <button class="btn btn--tan btn--block" wx:if="{{vm.isMeasure}}" bindtap="goCustom">去挑选款式并开始定制</button>
+      <button class="btn btn--tan btn--block" wx:else bindtap="goContact">联系店铺客服</button>
+    </view>
+  </block>
+</view>

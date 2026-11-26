@@ -1,0 +1,26 @@
+{
+  "description": "琴扬精纺羊绒 QINYANG 微信商城 V1 · 顾客端（微信原生小程序，无运行时 npm 依赖）",
+  "appid": "touristappid",
+  "projectname": "clothing-mall-miniapp-miniprogram",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.0",
+  "miniprogramRoot": "./",
+  "setting": {
+    "useCompilerPlugins": ["typescript"],
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": false,
+    "coverView": true,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {},
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  }
+}

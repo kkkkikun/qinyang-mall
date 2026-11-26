@@ -1,0 +1,84 @@
+<view class="page">
+  <view class="nav" style="padding-top:{{nav.statusBarHeight}}px">
+    <view class="nav__bar" style="height:{{nav.barHeight}}px">
+      <view class="nav__back"></view>
+      <view class="nav__brand">专属定制</view>
+      <view class="nav__right" style="width:{{nav.capsuleGap}}px"></view>
+    </view>
+  </view>
+
+  <!-- 量体定制 -->
+  <view class="sec" style="margin-top:0">
+    <view class="mod-title"><text class="mod-title__t">量体定制</text></view>
+    <view class="mod-body" style="padding-bottom:6px">
+      <view class="fs13 muted-2">从一件合身的衣物开始。</view>
+    </view>
+    <view class="guide-2">
+      <view class="guide-item" bindtap="goGuide" data-slug="guide-top">
+        <view class="guide-item__ill"><image src="/assets/guide/top.png" mode="aspectFit" /></view>
+        <view class="guide-item__t">上装</view>
+        <view class="guide-item__go">查看量体说明</view>
+      </view>
+      <view class="guide-item" bindtap="goGuide" data-slug="guide-bottom">
+        <view class="guide-item__ill"><image src="/assets/guide/bottom.png" mode="aspectFit" /></view>
+        <view class="guide-item__t">长裤</view>
+        <view class="guide-item__go">查看量体说明</view>
+      </view>
+    </view>
+    <view class="mod-note mod-note--left">自然平铺，不拉伸。依商品页的量体图记录尺寸。</view>
+    <view class="mod-line mod-line--hair"></view>
+    <view class="mod-hint">订购前，与店铺客服核对尺寸及定制细节。</view>
+  </view>
+
+  <!-- 材质定制 -->
+  <view class="dark-card" bindtap="goGuide" data-slug="guide-material">
+    <view>
+      <view class="dark-card__t">材质定制</view>
+      <view class="dark-card__d">查看定制说明</view>
+    </view>
+    <view class="dark-card__arrow"><image src="/assets/icons/arrowlong_white.png" mode="aspectFit" /></view>
+  </view>
+
+  <!-- 定制流程 -->
+  <view class="sec" style="margin-top:8px">
+    <view class="mod-title"><text class="mod-title__t">定制流程</text></view>
+    <view class="mod-body">
+      <view class="step" wx:for="{{steps}}" wx:key="no">
+        <text class="step__no">{{item.no}}</text>
+        <view class="grow">
+          <view class="step__t">{{item.t}}</view>
+          <view class="step__d">{{item.d}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 记录入口 -->
+  <view class="sec">
+    <view class="list-row" bindtap="goRequests">
+      <text>我的定制申请</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+    <view class="list-row" bindtap="goOrders">
+      <text>我的订单</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+    <view class="list-row" bindtap="goGuide" data-slug="guide-care">
+      <text>衣物养护 · 洗护指南</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+    <view class="list-row" bindtap="goContact">
+      <text>联系客服</text>
+      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
+    </view>
+  </view>
+
+  <view class="custom-foot">
+    <button class="btn btn--tan btn--block" bindtap="goCategory">去挑选款式并开始定制</button>
+  </view>
+
+  <view class="footer-band">
+    <image class="footer-band__wm" src="/assets/brand/qinyang-word.png" mode="widthFix" />
+    <view class="footer-band__cn">琴 扬</view>
+  </view>
+</view>

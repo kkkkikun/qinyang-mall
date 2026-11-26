@@ -1,0 +1,16 @@
+{
+  "name": "@qinyang/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "琴扬商城 V1 · API 契约与共享类型（纯类型，无运行时依赖）",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.7.2"
+  }
+}

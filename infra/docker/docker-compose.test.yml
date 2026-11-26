@@ -1,0 +1,102 @@
+name: qinyang
+
+services:
+  mysql:
+    image: ${MYSQL_IMAGE:-swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/mysql:8.4}
+    container_name: qinyang-mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+      - --max-connections=150
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-qinyang-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-qinyang_mall}
+      MYSQL_USER: ${DB_USERNAME:-qinyang}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-qinyang}
+    ports:
+      # 仅绑定 127.0.0.1，不暴露校园网
+      - "127.0.0.1:13316:3306"
+    volumes:
+      - qinyang_mysql_data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 2G
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.api
+    image: qinyang/api:${IMAGE_TAG:-local}
+    container_name: qinyang-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: "3000"
+      API_PREFIX: api/v1
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USERNAME: ${DB_USERNAME:-qinyang}
+      DB_PASSWORD: ${DB_PASSWORD:-qinyang}
+      DB_DATABASE: ${DB_DATABASE:-qinyang_mall}
+      JWT_ADMIN_SECRET: ${JWT_ADMIN_SECRET:-dev-only-admin-secret-change-me}
+      JWT_CUSTOMER_SECRET: ${JWT_CUSTOMER_SECRET:-dev-only-customer-secret-change-me}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_LOCAL_ROOT: /app/storage
+      STORAGE_PUBLIC_BASE_URL: ${STORAGE_PUBLIC_BASE_URL:-http://127.0.0.1:18110/static}
+      WECHAT_MOCK_AUTH: ${WECHAT_MOCK_AUTH:-true}
+      PAYMENT_ENABLED: "false"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://127.0.0.1:18111}
+    ports:
+      - "127.0.0.1:18110:3000"
+    volumes:
+      - qinyang_media:/app/media
+      - qinyang_storage:/app/storage
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1500M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  admin-web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.admin-web
+    image: qinyang/admin-web:${IMAGE_TAG:-local}
+    container_name: qinyang-admin-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:18111:80"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  qinyang_mysql_data:
+  qinyang_media:
+  qinyang_storage:

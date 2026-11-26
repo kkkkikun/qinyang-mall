@@ -1,0 +1,147 @@
+/* 商品详情页 */
+
+.pd-brand {
+  background: var(--card);
+  text-align: center;
+  padding: 14px 0 6px;
+}
+
+.pd-brand__wm {
+  height: 26px;
+  margin: 0 auto;
+}
+
+.pd-gallery {
+  position: relative;
+  background: var(--field);
+}
+
+.pd-gallery__swiper {
+  width: 100%;
+}
+
+.pd-gallery__slide {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--field);
+}
+
+.pd-gallery__slide image {
+  width: 100%;
+  height: 100%;
+}
+
+.pd-gallery__count {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(26, 26, 26, 0.62);
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 11px;
+  letter-spacing: 0.04em;
+}
+
+.pd-price {
+  padding: 12px 14px 6px;
+  background: var(--card);
+}
+
+.pd-price__p {
+  font-size: 25px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.pd-price__tbd {
+  font-size: 19px;
+  color: var(--gold);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.pd-title {
+  padding: 8px 14px 12px;
+  background: var(--card);
+}
+
+.pd-title__h1 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.pd-title__sub {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+.pd-kv {
+  background: var(--card);
+  padding: 4px 14px 10px;
+}
+
+.gal4 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.gal4__cell {
+  width: 48.5%;
+  height: 0;
+  padding-bottom: 48.5%;
+  position: relative;
+  margin-bottom: 6px;
+  background: var(--field);
+  overflow: hidden;
+}
+
+.gal4__cell image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pd-story {
+  background: var(--card);
+  padding: 26px 18px;
+  text-align: center;
+}
+
+.pd-story__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--text-3);
+}
+
+.pd-story__h3 {
+  font-family: var(--serif);
+  font-size: 22px;
+  letter-spacing: 0.16em;
+  margin: 8px 0 12px;
+  color: var(--text);
+}
+
+.pd-story__p {
+  font-size: 13.5px;
+  line-height: 2;
+  color: var(--text-2);
+  text-align: left;
+}
+
+.pd-story__accent {
+  color: var(--gold);
+}
+
+.pd-bar-holder {
+  height: calc(64px + env(safe-area-inset-bottom));
+}

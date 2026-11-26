@@ -24,6 +24,10 @@ catalog/products/
 catalog/.cache/
 media/
 
+# ── 服务器运行产物（备份 / 日志，不入库）────────────────────────────
+infra/backups/
+infra/logs/
+
 # ── 测试与临时产物 ────────────────────────────────────────────────
 coverage/
 *.log

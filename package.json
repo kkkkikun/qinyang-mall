@@ -1,0 +1,27 @@
+{
+  "name": "qinyang-mall",
+  "version": "1.0.0",
+  "private": true,
+  "description": "琴扬精纺羊绒 QINYANG 微信商城 V1 · 原生小程序 + Vue3 管理后台 + NestJS API",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter=./packages/* build",
+    "build:api": "pnpm --filter @qinyang/api build",
+    "build:admin": "pnpm --filter @qinyang/admin-web build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:api": "pnpm --filter @qinyang/api test",
+    "test:integration": "pnpm --filter @qinyang/api test:integration",
+    "db:migrate": "pnpm --filter @qinyang/api db:migrate",
+    "db:revert": "pnpm --filter @qinyang/api db:revert",
+    "db:seed": "pnpm --filter @qinyang/api db:seed",
+    "typeorm": "pnpm --filter @qinyang/api typeorm"
+  },
+  "devDependencies": {
+    "typescript": "5.7.2"
+  }
+}
