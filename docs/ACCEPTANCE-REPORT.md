@@ -16,15 +16,16 @@
 | P3 | 报价版本、顾客确认、订单快照、制作/发货状态机、审计 | ✅ 完成 |
 | P4 | 服务器构建全绿、备份恢复演练、运行手册、交付文档 | ✅ 完成（微信侧验收待 Windows 环境） |
 
-**自动化验证总计：62 个自动化用例（29 单元 + 33 集成）全部通过，
-28 项真实环境垂直切片验收在「独立进程」与「Docker Compose 隔离栈」两种部署形态下各通过一次，
-小程序静态自检通过。**
+**自动化验证总计：76 个自动化用例（37 单元 + 39 集成）全部通过，
+30 项真实环境垂直切片验收在「独立进程」与「Docker Compose 隔离栈」两种部署形态下各通过一次，
+20 项小程序真实流程验证（在 Node 中执行小程序自身代码打真实 API）全部通过，
+小程序静态自检与前后端接口契约核对均通过。**
 
 ---
 
 ## 2. 自动化测试证据
 
-### 2.1 单元测试（29 例，纯业务规则）
+### 2.1 单元测试（37 例，纯业务规则）
 
 | 文件 | 覆盖内容 |
 | --- | --- |
@@ -32,8 +33,9 @@
 | `test/unit/measurement-validator.spec.ts` | 量体校验：必填缺失提示具体字段、数值越界、单位不一致拒绝、模板外字段拒绝、错误码、快照结构完整可回溯 |
 | `test/unit/pricing.spec.ts` | 价格规则：`QUOTE_ONLY` 恒为 null（绝不落 0）、固定价必须正整数分、拒绝浮点分、合计为整数分求和 |
 | `test/unit/static-assets.spec.ts` | 静态资源挂载：前缀推导（带端口 / https / 多级路径 / 空值回退）、可写存储根与只读媒体根共用同一前缀且媒体根兜底排在后面、空白媒体根视为未配置 |
+| `test/unit/measurement-shape.spec.ts` | 量体模板形状归一化：原型 snake_case → 契约 camelCase、幂等、混合形状、缺省值兜底、非法输入不抛异常、空模板写入被拦截 |
 
-### 2.2 集成测试（33 例，真实 MySQL 测试库）
+### 2.2 集成测试（39 例，真实 MySQL 测试库）
 
 `test/integration/vertical-slice.spec.ts` —— 跑在 `qinyang_mall_test` 独立库上
 （`global-setup.ts` 在检测到指向开发库时直接报错），测试前自动清空测试表。
@@ -77,7 +79,7 @@
 
 ---
 
-## 3. 真实环境垂直切片验收（28 项全通过）
+## 3. 真实环境垂直切片验收（30 项全通过）
 
 `infra/scripts/acceptance.mjs` 对**运行中的真实 API**执行，使用**真实种子商品**与**真实图片文件**：
 
@@ -95,21 +97,26 @@
 ✅ 分类树含二级分组 — 5 个一级分类
 ✅ 图文说明页 measure-top / measure-bottom / care / material
 ✅ 顾客登录
-✅ 按商品解析量体模板 — template=TPL-OUTER
+✅ 按商品解析量体模板 — template=TPL-BOTTOM
+✅ 量体模板带得出可填字段与必填项 — 字段 7 个（必填 5 个）
 ✅ 顾客提交定制申请 — 状态=PENDING_REVIEW
+✅ 申请快照带回真实量体数值 — 快照字段 7 个
 ✅ 重复提交同一 submitId 幂等
 ✅ 店员登录
 ✅ 店员审核通过 — 状态=PENDING_QUOTE
 ✅ 店主创建报价 — 版本=1
 ✅ 顾客确认报价 — 状态=ACTIVE
-✅ 由申请生成订单 — 订单=QO-20261126-3715CF
+✅ 由申请生成订单 — 订单=QO-20261126-3E5D29
 ✅ 店员填写物流并发货 — 状态=SHIPPED
 ✅ 顾客查看订单进度 — 3 条进度
 ✅ 支付接口返回 PAYMENT_DISABLED
-✅ 关键操作留有审计记录 — 32 条
+✅ 关键操作留有审计记录 — 100 条
 
-=== 结果：28/28 项通过 ===
+=== 结果：30/30 项通过 ===
 ```
+
+> 本轮新增的两项断言（「量体模板带得出可填字段与必填项」「申请快照带回真实量体数值」）
+> 正是上一版**空洞通过**的地方 —— 详见 §4.2。
 
 ### 3.1 两种部署形态各验收一次
 
@@ -131,6 +138,46 @@
 ✅ 容器内直连服务名：http://api:3000/api/v1/health → 200
 ```
 
+### 3.2 小程序真实流程验证（20 项全通过）
+
+小程序是三端里唯一**从未被执行过**的一端：微信开发者工具不在本环境，
+此前所有验收都是直接调 HTTP 接口，**一行小程序代码都没跑过**。
+
+`tools/verify_miniprogram_flow.mjs` 的做法：用工作区的 `tsc` 把
+`apps/miniprogram` 编译到临时目录（不做类型跳过，因此顺带把小程序类型检查
+也变成真实关卡），注入 `wx` / `Page` / `App` 等全局桩件，
+其中 `wx.request` 用 fetch 打到**真实运行中的 API**，
+然后用小程序**自己的** `utils/api.ts` 与 `pages/apply/apply.ts` 跑完整流程：
+
+```
+✅ 顾客端 wx.login → POST /auth/login 取得 token
+✅ 顾客端商品列表取到已发布商品 — 13 件
+✅ 商品可解析出量体模板 — ED-0062 / 裤装 / 裙装量体模板
+✅ 量体模板带得出可填字段与必填项 — 字段 7 个（必填 5 个）
+✅ 申请页加载出商品与量体字段 — 2 个测量分区 / 必填 5 项
+✅ 必填项未填时客户端校验拦截 — 请填写腰围
+✅ 填写合法值后客户端校验通过
+✅ 申请页提交触发真实请求 — submitCalls=1
+✅ payload 含 productId / measurements / contact / submitId — measurements=5 项
+✅ payload 的量体字段数与必填项一致 — 5 vs 必填 5
+✅ 服务端可查到该申请 — 状态=PENDING_REVIEW
+✅ 申请初始状态为待审核 — PENDING_REVIEW
+✅ 重复提交同一 submitId 幂等（返回同一条申请）
+✅ 重复提交未产生第二条记录 — 匹配 1 条
+✅ 越界值：客户端拦截 — waist
+✅ 越界值：服务端同样拒绝 — MEASUREMENT_INVALID
+✅ 联系方式缺失被客户端拦截 — 请填写联系电话
+✅ 校验不通过时不发起提交 — submitCalls=1
+✅ 提交成功后跳转申请详情页 — /pages/request-detail/request-detail?id=…
+✅ 顾客可查到自己的定制申请列表 — 2 条
+
+=== 结果：20/20 项通过 ===
+```
+
+其中的「越界值：客户端拦截 / 服务端同样拒绝」是一对**一致性断言**：
+同一个越界数值，客户端表单与服务端校验必须都拒绝 —— 只有两端规则一致，
+顾客才不会遇到「表单能填、提交被拒」。
+
 ---
 
 ## 4. 构建与工程验证
@@ -142,14 +189,16 @@
 | 后台类型检查 | `pnpm --filter @qinyang/admin-web typecheck`（vue-tsc） | ✅ 0 错误 |
 | API 构建 | `pnpm --filter @qinyang/api build`（nest build） | ✅ |
 | 后台构建 | `pnpm --filter @qinyang/admin-web build`（vite） | ✅ 3941 模块 |
-| 全量流水线 | `bash infra/scripts/build.sh`（限核 0-3） | ✅ **72.30 s**，峰值内存 **1.54 GB** |
-| 单元测试 | `pnpm --filter @qinyang/api test:unit` | ✅ 29 例 |
-| 集成测试 | `pnpm --filter @qinyang/api test`（含集成） | ✅ **62 例**（29 单元 + 33 集成） |
+| 全量流水线 | `bash infra/scripts/build.sh`（限核 0-3） | ✅ **79.05 s**，峰值内存 **1.59 GB** |
+| 单元测试 | `pnpm --filter @qinyang/api test:unit` | ✅ 37 例 |
+| 集成测试 | `pnpm --filter @qinyang/api test`（含集成） | ✅ **76 例**（37 单元 + 39 集成） |
 | API 镜像构建 | `docker build -f infra/docker/Dockerfile.api -t qinyang/api:local .` | ✅ 1.08 GB |
 | 后台镜像构建 | `docker build -f infra/docker/Dockerfile.admin-web -t qinyang/admin-web:local .` | ✅ 74.6 MB |
 | Compose 隔离栈 | `docker compose -f infra/docker/docker-compose.test.yml up -d` | ✅ 三容器均 healthy / Up |
 | 小程序静态自检 | `python3 tools/check_miniprogram.py` | ✅ 0 阻塞问题 |
 | **前后端接口契约核对** | `python3 tools/check_api_contract.py` | ✅ **0 阻塞**：55 条 API 路由 ↔ 小程序 15 处 + 后台 35 处调用全部匹配 |
+| **小程序类型检查** | `pnpm typecheck:miniprogram` | ✅ 0 错误（17 个页面首次纳入类型检查） |
+| **小程序真实流程验证** | `node tools/verify_miniprogram_flow.mjs` | ✅ 20/20（小程序自身代码打真实 API） |
 | 小程序契约副本一致性 | `python3 tools/sync_contracts_to_miniprogram.py --check` | ✅ 与源文件一致 |
 | 后台源码 lint | `node apps/admin-web/scripts/lint.mjs` | ✅ 25 个源文件无问题 |
 | 数据库迁移 | `pnpm --filter @qinyang/api db:migrate` | ✅ 2 个迁移已应用 |
@@ -213,6 +262,84 @@
   express 静态中间件 fallthrough，媒体根兜底在后），后台容器同步挂载媒体目录到 `/var/www/media`。
 - 回归保护：抽取 `apps/api/src/common/static-assets.ts` 并新增 7 例单元测试
   （前缀推导、双根顺序、空白媒体根），避免同类问题复发。
+
+### 4.2 本轮发现并修复的四个真实缺陷（量体环节）
+
+这一组缺陷是**在小程序代码第一次被真正执行**时暴露的。
+它们的共同特征是：编译通过、类型通过、接口返回 200、验收全绿 ——
+但业务实际上是断的。
+
+#### 缺陷一：小程序从未被类型检查（12 个错误）
+
+小程序没有 `package.json`（原生小程序不引入 npm 依赖），
+因此不在 `pnpm -r typecheck` 的覆盖范围内 —— 17 个页面的 TypeScript
+**从未被任何类型检查器看过**。首次纳入检查即报出 12 个错误：
+
+| 错误 | 位置 | 实质 |
+| --- | --- | --- |
+| `TS2393 Duplicate function implementation` | `utils/format.ts` | `formatDate` 被声明两次：导出的 `string` 版与内部的 `Date` 版。**后者会覆盖前者** —— 任何外部调用 `formatDate(iso)` 都会拿到 `Date` 版，运行时 `date.getFullYear is not a function` |
+| `TS2345 Date → string` | `utils/format.ts` ×4 | `formatDateTime` 被传入 `Date` 对象（签名是 `string`），靠 `new Date(date)` 的隐式转换侥幸能跑 |
+| `TS2739` 缺 `createdAt`/`updatedAt` | `data/measure_templates.ts` ×5 | 本地兜底量体模板与契约 DTO 不符 |
+
+修复：拆出内部实现 `formatDatePart(date: Date)`，`formatDate(iso)` 只保留对外的一份；
+`validUntilText` 直接用 `formatDatePart`；兜底模板补齐时间字段。
+并把 `pnpm typecheck:miniprogram` 接入 `build.sh` 与根 `typecheck` 脚本。
+
+#### 缺陷二：量体模板的形状不一致（snake_case vs camelCase）
+
+原型数据 `prototype/data/measurement_templates.json` 用 snake_case
+（`section_id` / `measurement_fields` / `field_code`），
+而契约 `MeasurementSection` / `MeasurementField` 要求 camelCase。
+早期种子把原型 JSON **原样**写进 `measurement_sections` 列，于是接口返回：
+
+```json
+{"title": "身体测量", "section_id": "body",
+ "measurement_fields": [{"field_code": "chest_bust", "required": true, "min": 60, "max": 140}]}
+```
+
+连锁后果：
+
+- 顾客端表单渲染出 **0 个字段**（客户端读 `measurementFields`，拿到 undefined）；
+- 顾客提交时 `measurements` 为空数组；
+- 服务端校验器同样读 `measurementFields`，模板字段表是**空的** ——
+  于是「必填项校验」「越界校验」「模板外字段拒绝」全部形同虚设。
+
+为什么之前没被发现：三端各用不同的事实来源 ——
+集成测试自己造 camelCase 模板，验收脚本从接口取模板（取到空的），
+小程序从未执行。**谁都没在真实数据上跑通过量体环节。**
+
+修复：新增 `apps/api/src/modules/templates/measurement-shape.ts` 统一归一化；
+种子写入前转换并用 `assertSectionsUsable` 拦截空模板；
+服务读路径归一化，历史行照样可用。
+
+#### 缺陷三：解析与校验不同源
+
+`GET /measurement-templates/resolve?productId=` 按**分类**解析模板，
+而提交校验按商品**显式绑定**的模板（`product.measurementTemplateId`）。
+两个来源不一致时，顾客按 A 模板填表，服务端按 B 模板判定，
+返回 `MEASUREMENT_INVALID：量体字段 chest_bust 不属于该商品的量体模板` —— 顾客永远提交不成功。
+
+修复：新增唯一入口 `TemplatesService.resolveForProduct(product)`
+（优先商品绑定模板，再按分类回退），**解析接口与提交校验共用它**。
+
+#### 缺陷四：客户端丢掉了服务端给出的真实原因
+
+服务端异常响应把业务错误码放在 `code`（字符串，如 `MEASUREMENT_INVALID`）、
+把可直接展示的原因放在 `message`。而小程序 `request.ts` 只接受数字 `code`，
+于是所有业务错误都被归类为「服务器返回数据异常（HTTP 400）」——
+顾客看到的是一句无用的技术提示，而不是「胸围 不能小于 60cm」。
+
+修复：`ApiEnvelope.code` 与 `ApiError.code` 放宽为 `number | string`，
+按后台 `http.ts` 的同一套语义处理：字符串业务码 + 服务端 message 直接透出。
+
+#### 防回归
+
+| 层次 | 用例 | 数量 |
+| --- | --- | --- |
+| 单元 | `measurement-shape.spec.ts` 形状归一化 | 8 |
+| 集成 | `measurement-resolution.spec.ts` 解析同源 / 历史行归一化 / 必填缺失拒绝 | 6 |
+| 端到端 | `verify_miniprogram_flow.mjs` 客户端与服务端校验一致性 | 20 项断言 |
+| 真实环境 | `acceptance.mjs` 模板字段非空 + 快照带真实数值 | 新增 2 项 |
 
 ---
 
@@ -283,10 +410,10 @@
 
 琴扬精纺羊绒 QINYANG 微信商城 V1 已从 HTML 原型落地为**可运行、可管理、可交付商家体验**的全栈系统：
 
-- **顾客端**：17 个原生小程序页面，零运行时依赖，对齐原型视觉与交互，驱动真实 API。
+- **顾客端**：17 个原生小程序页面，零运行时依赖，对齐原型视觉与交互，驱动真实 API；**其自身代码已被在 Node 中对真实 API 执行验证**。
 - **管理后台**：9 个页面 + 框架布局，店主/店员分权，价格与量体展示到位，无任何收款状态按钮。
 - **API**：13 张表 + 2 个迁移，状态机、报价版本、快照冻结、归属校验、审计脱敏全部落地并有测试覆盖。
-- **验证**：62 个自动化用例 + 28 项真实环境验收（两种部署形态各一轮）+ 备份恢复演练 + 资源预算核验，全部通过。
+- **验证**：76 个自动化用例 + 30 项真实环境验收（两种部署形态各一轮）+ 20 项小程序真实流程验证 + 备份恢复演练 + 资源预算核验，全部通过。
 
 **唯一未闭环的是微信平台侧验收**（开发者工具预览、真机、AppID、真实支付、正式发布），
 原因均为「缺商家授权或缺本机工具链」，已在 §6.2 逐条记录阻塞原因与解除条件，

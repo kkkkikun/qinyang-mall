@@ -167,29 +167,39 @@ const run = async () => {
     `template=${tpl.body?.data?.templateCode ?? '-'}`,
   );
 
+  // 10.1 模板必须真的带得出量体字段。
+  //     这条断言来自一次真实缺陷：模板以原型 snake_case 入库时，
+  //     接口返回 measurementFields=undefined，顾客端表单渲染为空、
+  //     提交的量体资料也是空的，而当时的验收因同样拿到空字段而"通过"。
+  const tplSections = tpl.body?.data?.measurementSections ?? [];
+  const tplFields = tplSections.flatMap((s) => s.measurementFields ?? []);
+  const requiredFields = tplFields.filter((f) => f.required);
+  record(
+    '量体模板带得出可填字段与必填项',
+    tplFields.length > 0 && requiredFields.length > 0,
+    `字段 ${tplFields.length} 个（必填 ${requiredFields.length} 个）`,
+  );
+
   // 11. 提交定制申请
-  const sections = tpl.body?.data?.measurementSections ?? [];
-  const fields = sections.flatMap((s) => s.measurementFields ?? []);
-  const measurements = fields.map((f) => ({
-    fieldCode: f.fieldCode,
-    fieldName: f.fieldName,
-    measurementType: f.measurementType,
-    unit: f.unit,
-    value:
-      f.unit === 'kg'
-        ? 55
-        : f.fieldCode.includes('height')
-          ? 165
-          : f.fieldCode.includes('weight')
-            ? 55
-            : f.fieldCode.includes('waist')
-              ? 70
-              : f.fieldCode.includes('hip')
-                ? 92
-                : f.fieldCode.includes('neck')
-                  ? 36
-                  : 92,
-  }));
+  //     量体值按每个字段自己的 min/max 取中点并夹紧，
+  //     不再靠硬编码猜测 —— 否则模板一改就可能越界被拒。
+  const measurements = tplFields.map((f) => {
+    const min = typeof f.min === 'number' ? f.min : null;
+    const max = typeof f.max === 'number' ? f.max : null;
+    let value = min !== null && max !== null ? (min + max) / 2 : 90;
+    if (typeof f.step === 'number' && f.step > 0) {
+      value = Math.round(value / f.step) * f.step;
+    }
+    if (min !== null && value < min) value = min;
+    if (max !== null && value > max) value = max;
+    return {
+      fieldCode: f.fieldCode,
+      fieldName: f.fieldName,
+      measurementType: f.measurementType,
+      unit: f.unit,
+      value
+    };
+  });
 
   const submitId = `acceptance-${Date.now()}`;
   const created = await call('/customization-requests', {
@@ -209,6 +219,12 @@ const run = async () => {
     customerToken,
   });
   record('顾客提交定制申请', created.status === 201, `状态=${created.body?.data?.status}`);
+  const snapshotFields = created.body?.data?.measurements?.fields ?? [];
+  record(
+    '申请快照带回真实量体数值',
+    snapshotFields.length > 0 && snapshotFields.every((f) => f.value !== null && f.value !== undefined),
+    `快照字段 ${snapshotFields.length} 个`,
+  );
   const requestId = created.body?.data?.id;
 
   // 12. 幂等

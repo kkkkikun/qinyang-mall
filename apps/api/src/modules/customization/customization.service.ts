@@ -64,9 +64,9 @@ export class CustomizationService {
       throw BusinessException.conflict('商品已下架，无法提交定制申请', ERROR_CODES.PRODUCT_NOT_PUBLISHED);
     }
 
-    const template = product.measurementTemplateId
-      ? await this.templates.get(product.measurementTemplateId)
-      : await this.templates.resolveForCategory(product.categoryId);
+    // 与顾客端表单同源：都走 resolveForProduct（优先商品绑定模板，再按分类回退）。
+    // 两处若不一致，顾客会按 A 模板填表却被按 B 模板校验，直接被拒收。
+    const template = await this.templates.resolveForProduct(product);
     if (!template) {
       throw BusinessException.conflict(
         '该商品尚未配置量体模板，请联系客服',

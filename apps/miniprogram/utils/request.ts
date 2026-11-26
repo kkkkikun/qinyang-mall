@@ -11,7 +11,12 @@ import { getBaseUrl } from './config';
 import { getToken, clearToken } from './token';
 
 export interface ApiEnvelope<T> {
-  code: number;
+  /**
+   * 0 表示成功；非 0 为业务错误码 ——
+   * 服务端在异常响应里放的是**字符串**业务码（如 MEASUREMENT_INVALID），
+   * 所以这里不能只声明 number。
+   */
+  code: number | string;
   message: string;
   data: T;
   requestId?: string;
@@ -19,10 +24,10 @@ export interface ApiEnvelope<T> {
 
 /** 业务错误（code != 0 或 HTTP 状态异常） */
 export class ApiError extends Error {
-  code: number;
+  code: number | string;
   requestId?: string;
 
-  constructor(message: string, code: number, requestId?: string) {
+  constructor(message: string, code: number | string, requestId?: string) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
@@ -83,7 +88,7 @@ export function request<T>(options: RequestOptions): Promise<T> {
           return;
         }
 
-        if (!body || typeof body !== 'object' || typeof body.code !== 'number') {
+        if (!body || typeof body !== 'object') {
           const err = new ApiError('服务器返回数据异常（HTTP ' + status + '）', status);
           if (options.toast !== false) {
             toastError(err.message);
@@ -92,16 +97,24 @@ export function request<T>(options: RequestOptions): Promise<T> {
           return;
         }
 
-        if (body.code !== 0) {
-          const err = new ApiError(body.message || '请求失败', body.code, body.requestId);
-          if (options.toast !== false) {
-            toastError(err.message);
-          }
-          reject(err);
+        if (body.code === 0) {
+          resolve(body.data);
           return;
         }
 
-        resolve(body.data);
+        // 业务错误：服务端把业务错误码放在 code（字符串），message 是可以直接
+        // 展示给顾客的原因（如「胸围 不能小于 60cm」）。
+        // 早期实现只认数字 code，导致这类错误一律被当成
+        // 「服务器返回数据异常」，顾客看不到真正的原因。
+        const err = new ApiError(
+          typeof body.message === 'string' && body.message ? body.message : '请求失败',
+          body.code === undefined || body.code === null ? status : body.code,
+          body.requestId
+        );
+        if (options.toast !== false) {
+          toastError(err.message);
+        }
+        reject(err);
       },
       fail() {
         const err = new ApiError('网络连接失败，请检查网络或服务器地址', 0);

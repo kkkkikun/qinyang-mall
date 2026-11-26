@@ -33,7 +33,7 @@ export function formatDateTime(iso?: string | null): string {
   if (isNaN(date.getTime())) {
     return String(iso);
   }
-  return formatDate(date) + ' ' + formatTime(date);
+  return formatDatePart(date) + ' ' + formatTime(date);
 }
 
 /** ISO 时间 → "2026-11-26" */
@@ -45,14 +45,15 @@ export function formatDate(iso?: string | null): string {
   if (isNaN(date.getTime())) {
     return String(iso);
   }
-  return formatDate(date);
+  return formatDatePart(date);
 }
 
 function pad(value: number): string {
   return value < 10 ? '0' + value : String(value);
 }
 
-function formatDate(date: Date): string {
+/** Date → "2026-11-26"（内部实现，不与对外的 formatDate 同名） */
+function formatDatePart(date: Date): string {
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
 }
 
@@ -75,11 +76,11 @@ export function validUntilText(iso?: string | null): string {
   }
   const days = Math.floor(diff / 86400000);
   if (days >= 1) {
-    return formatDate(date) + '（剩余 ' + days + ' 天）';
+    return formatDatePart(date) + '（剩余 ' + days + ' 天）';
   }
   const hours = Math.floor(diff / 3600000);
   if (hours >= 1) {
-    return formatDate(date) + '（剩余 ' + hours + ' 小时）';
+    return formatDatePart(date) + '（剩余 ' + hours + ' 小时）';
   }
-  return formatDateTime(date);
+  return formatDatePart(date) + ' ' + formatTime(date);
 }

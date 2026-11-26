@@ -168,7 +168,9 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
           }
         ]
       }
-    ]
+    ],
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
   },
   {
     "id": "TPL-BOTTOM",
@@ -307,7 +309,9 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
           }
         ]
       }
-    ]
+    ],
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
   },
   {
     "id": "TPL-OUTER",
@@ -442,7 +446,9 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
           }
         ]
       }
-    ]
+    ],
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
   },
   {
     "id": "TPL-SCARF",
@@ -518,7 +524,9 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
           }
         ]
       }
-    ]
+    ],
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
   },
   {
     "id": "TPL-GENERIC",
@@ -568,6 +576,8 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
           }
         ]
       }
-    ]
+    ],
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
   }
 ];

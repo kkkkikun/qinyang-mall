@@ -25,6 +25,10 @@ import { MeasurementTemplate } from '../entities/measurement-template.entity';
 import { Product } from '../entities/product.entity';
 import { ProductMedia } from '../entities/product-media.entity';
 import { AdminAuthService } from '../../modules/auth/admin-auth.service';
+import {
+  assertSectionsUsable,
+  toMeasurementSections
+} from '../../modules/templates/measurement-shape';
 
 loadEnv();
 
@@ -361,11 +365,15 @@ async function seed(): Promise<void> {
     const existing = await templateRepo.findOne({
       where: { code: template.template_id, status: TemplateStatus.ACTIVE },
     });
+    // 原型 JSON 是 snake_case，契约要求 camelCase —— 写入前统一归一化，
+    // 否则顾客端量体表单会渲染出 0 个字段（真实缺陷，已在量体闭环中断）。
+    const sections = toMeasurementSections(template.measurement_sections);
+    assertSectionsUsable(sections, `量体模板 ${template.template_id}`);
     const payload = {
       name: template.template_name,
       applicableCategories: template.applicable_category ?? [],
       summary: template.summary ?? null,
-      measurementSections: template.measurement_sections as never,
+      measurementSections: sections as never,
       status: TemplateStatus.ACTIVE,
     };
     if (existing) {

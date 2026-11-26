@@ -351,7 +351,8 @@ export class ProductsService {
     };
   }
 
-  private async findOne(id: string): Promise<Product | null> {
+  /** 取商品实体（含 measurementTemplateId 等内部字段），供量体模板解析使用 */
+  async findOne(id: string): Promise<Product | null> {
     return this.products.findOne({ where: { id } });
   }
 

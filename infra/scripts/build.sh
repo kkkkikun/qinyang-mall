@@ -57,6 +57,11 @@ log "构建共享契约"
 log "类型检查"
 "${RUN_BUILD[@]}" pnpm -r typecheck
 
+# 小程序没有 package.json（原生小程序不引入 npm 依赖），
+# 因此不在 pnpm -r 的范围内，必须显式单独检查 —— 否则 17 个页面从未被类型检查过。
+log "类型检查（小程序原生 TS）"
+"${RUN_BUILD[@]}" pnpm typecheck:miniprogram
+
 log "单元测试"
 "${RUN_BUILD[@]}" pnpm --filter @qinyang/api test:unit
 

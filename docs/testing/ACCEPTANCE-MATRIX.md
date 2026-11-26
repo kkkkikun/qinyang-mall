@@ -23,7 +23,7 @@
 | C7 | 长裤量体指南 | 同上 | 验收项「图文说明页 measure-bottom」 | ✅ |
 | C8 | 羊绒洗护指南 | 同上 | 验收项「图文说明页 care」 | ✅ |
 | C9 | 材质定制说明 | 同上 | 验收项「图文说明页 material」 | ✅ |
-| C10 | 定制申请表 | 真实提交 + 幂等校验 | 验收项「顾客提交定制申请 — 状态=PENDING_REVIEW」「重复提交同一 submitId 幂等」 | ✅ |
+| C10 | 定制申请表 | **小程序自身代码**在 Node 中对真实 API 执行 + 幂等校验 | 执行桩 20/20：表单按模板渲染 7 字段（必填 5）、客户端校验拦截空必填、提交 payload 5 项量体、幂等重提交不产生第二条 | ✅ |
 | C11 | 我的定制申请 | 真实 API | `pages/requests`、`GET /customization-requests` | ✅ |
 | C12 | 报价查看与确认 | 真实确认（含版本校验） | 验收项「顾客确认报价 — 状态=ACTIVE」；集成测试「用旧版本号确认 → 409 QUOTE_VERSION_CONFLICT」 | ✅ |
 | C13 | 制作、发货状态查看 | 真实发货后查询 | 验收项「顾客查看订单进度 — 3 条进度」 | ✅ |
@@ -74,6 +74,8 @@ Template / Request / Order / AuditLog / Login + AppLayout），
 | T1 | 不套用普通电商购物车逻辑 | 数据模型无购物车实体 | 无 `cart` 实体/接口；业务入口为「定制申请」 | ✅ |
 | T2 | 状态机合法转换 | 单元 + 集成 | `REQUEST_STATUS_TRANSITIONS` / `ORDER_STATUS_TRANSITIONS`（`packages/contracts`）；集成断言 9/24「非法跳转 → 409 INVALID_STATUS_TRANSITION」 | ✅ |
 | T3 | 报价保存商品快照 / 量体快照 / 金额 / 运费 / 周期 / 说明 / 版本 / 有效期 / 创建人 | 实体字段 + 集成 | `quote` 实体；`quote` 快照冻结断言 17/23 | ✅ |
+| T14 | **量体资料必须真的被采集与校验** | 集成 + 端到端 | 集成 6 例（解析同源 / 历史行归一化 / 必填缺失 400）；执行桩「payload 的量体字段数与必填项一致 — 5 vs 必填 5」「申请快照带回真实量体数值 — 快照字段 7 个」 | ✅ |
+| T15 | **表单与校验必须同源** | 集成 | `measurement-resolution.spec.ts`：解析接口返回商品绑定模板；按另一模板字段提交 → 400 `MEASUREMENT_INVALID` | ✅ |
 | T4 | 报价变更生成新版本 | 真实 v1→v2 | 集成断言 18 | ✅ |
 | T5 | 顾客确认须为当前有效版本 | 真实确认 + 冲突用例 | 集成断言 20「旧版本号确认 → 409 QUOTE_VERSION_CONFLICT」 | ✅ |
 | T6 | 订单生成后不随后台改商品而变 | 快照冻结 | 集成断言 23「后台改商品不影响历史订单快照」 | ✅ |
@@ -98,6 +100,7 @@ Template / Request / Order / AuditLog / Login + AppLayout），
 | X5 | MySQL 8.4 LTS + TypeORM Migration，禁 synchronize | MySQL 8.4 容器；2 个迁移；`synchronize: false` 硬编码 | ✅ |
 | X6 | pnpm Workspace，四个 app + 共享契约 | `pnpm-workspace.yaml`：`apps/miniprogram` `apps/admin-web` `apps/api` `packages/contracts` `infra` `docs` | ✅ |
 | X7 | 小程序尽量无运行时 npm 依赖；共享类型可被开发者工具编译 | 自检项 5；契约副本 `apps/miniprogram/types/contracts.ts` 由脚本同步并校验 | ✅ |
+| X10 | **小程序 TypeScript 纳入类型检查** | `pnpm typecheck:miniprogram`（`build.sh` 前置步骤） | ✅ 0 错误。首轮即报出 12 个此前从未被发现的错误，含 `formatDate` 重复实现（后者覆盖前者，外部调用会崩） |
 | X8 | 首期基础设施仅 MySQL / API / 静态后台 / Nginx / 受控文件存储 | `infra/docker/docker-compose.test.yml` 仅 3 个服务；未引入 Redis/Kafka/MQ/ES/MinIO | ✅ |
 | X9 | 图片存储抽象接口，测试用受控文件存储 | `StorageService` 抽象 + `LocalFileStorageService`；`STORAGE_DRIVER=oss` 未实现时启动即报错 | ✅ |
 
@@ -127,7 +130,8 @@ Template / Request / Order / AuditLog / Login + AppLayout），
 | U6 | 搜索无结果 | ✅ | 搜索页空态分支 |
 | U7 | 商品下架 | ✅ | 详情接口对未发布商品返回 404；集成断言 31「下架后顾客立即不可见，详情 404」 |
 | U8 | 网络断开 | ✅ | `request.ts` 统一失败分支 + toast，不静默失败 |
-| U9 | 提交重复点击 | ✅ | `submitId` 幂等（验收项「重复提交同一 submitId 幂等」） |
+| U9 | 提交重复点击 | ✅ | `submitId` 幂等（验收项「重复提交同一 submitId 幂等」）；执行桩另测「校验不通过时不发起提交」 |
+| U10 | 越界量体值的提示 | ✅ | 客户端与服务端**同时**拦截同一越界值（执行桩「越界值：客户端拦截 / 服务端同样拒绝 — MEASUREMENT_INVALID」）；服务端真实原因透传给顾客（不再显示「服务器返回数据异常」） |
 
 ---
 
@@ -144,7 +148,7 @@ Template / Request / Order / AuditLog / Login + AppLayout），
 | R7 | Docker 资源限制 / 日志轮转 / 独立命名空间 | 全部服务设限额与 `10m × 3` 轮转；`qinyang` 命名空间 | ✅ |
 | R8 | 不全局清理 Docker、不动其他项目 | 从未执行 prune；仅删除本项目自有重复镜像 | ✅ |
 | R9 | 磁盘余量 < 20% 暂停重型任务 | 当前 58%，阈值监控已内置 | ✅ |
-| R10 | 每次任务记录 CPU/内存/磁盘/耗时 | `docs/agent/RESOURCE-LEDGER.md` T1–T15 | ✅ |
+| R10 | 每次任务记录 CPU/内存/磁盘/耗时 | `docs/agent/RESOURCE-LEDGER.md` T1–T19 | ✅ |
 | R11 | 密钥用环境变量、不入 Git | `infra/docker/.env` 权限 600 且被同步脚本排除；仓库仅存 `.env.example` | ✅ |
 | R12 | 不得擅自执行的操作 | 未执行 `git reset --hard` / `git clean -fdx` / 强制推送 / 全局清理 / 删未知目录 / 生产库迁移 | ✅ |
 | R13 | 真实支付 / 正式部署 / 上传发布 / 改 AppID / 真实顾客数据 / 付费服务 / 外部上传素材 / 删数据 / 大规模压测 | **一律未执行**，需明确批准 | ⛔ 按红线暂不执行 |

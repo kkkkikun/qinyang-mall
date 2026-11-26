@@ -222,6 +222,12 @@ python3 tools/check_miniprogram.py
 python3 tools/check_api_contract.py      # 前后端调用 ↔ API 路由表交叉核对
 python3 tools/sync_contracts_to_miniprogram.py --check
 
+# 小程序类型检查（服务器，需已安装依赖）
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && pnpm typecheck:miniprogram'
+
+# 小程序真实流程验证：在 Node 中执行小程序自身代码，打真实 API
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_miniprogram_flow.mjs'
+
 # 单元 + 集成测试（服务器）
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && set -a && . infra/docker/.env && set +a \
   && export DB_HOST=127.0.0.1 DB_PORT=13316 && pnpm --filter @qinyang/api test'
