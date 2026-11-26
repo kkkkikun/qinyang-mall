@@ -1,0 +1,124 @@
+{
+  "category": "clothing",
+  "label": "其他服装",
+  "productCount": 13,
+  "products": [
+    {
+      "product_id": "ED-0020",
+      "product_name": "黑色半拉链翻领上衣(摇粒绒质感)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0020/processed/IMG-0112.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg",
+      "image_count": 12,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0021",
+      "product_name": "浅蓝阔腿长裤(条纹罗纹腰头)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0021/processed/IMG-0124.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02701.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0022",
+      "product_name": "米白针织阔腿裤(抽绳腰)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0022/processed/IMG-0135.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02689.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0056",
+      "product_name": "黑色单排扣翻领西装外套(毛呢)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0056/processed/IMG-0448.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 16/DSC04264.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0060",
+      "product_name": "卡其色咖色半拉链连帽卫衣(羊羔绒感)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0060/processed/IMG-0488.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 20/DSC03629.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0062",
+      "product_name": "棕色深棕罗纹针织长裙（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0062/processed/IMG-0505.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04379-4.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0063",
+      "product_name": "灰色浅灰针织阔腿裤（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0063/processed/IMG-0512.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 23/DSC04393.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0064",
+      "product_name": "深灰杂色针织包臀短裙（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0064/processed/IMG-0522.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04425.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0065",
+      "product_name": "黑色黑白千鸟格针织包臀短裙(侧开扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0065/processed/IMG-0528.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 25/DSC04434.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0066",
+      "product_name": "黑色黑白扎染花卉印花针织中长裙（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0066/processed/IMG-0539.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04449.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0074",
+      "product_name": "卡其色连帽拉链卫衣(绒感面料)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0074/processed/IMG-0610.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 34/DSC04565.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0075",
+      "product_name": "黑色连帽拉链卫衣(绒感面料)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0075/processed/IMG-0618.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 35/DSC04573.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0076",
+      "product_name": "藏青连帽拉链卫衣(绒感面料)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0076/processed/IMG-0626.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 36/DSC04583.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    }
+  ]
+}

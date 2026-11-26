@@ -1,0 +1,419 @@
+{
+  "schemaVersion": "1.0",
+  "note": "量体模板配置。页面代码只读取本文件的字段结构，新增测量字段不需要修改任何页面布局代码。",
+  "measurement_types": [
+    { "id": "body", "label": "身体测量", "desc": "用软尺直接量取身体尺寸" },
+    { "id": "garment_flat", "label": "合身衣物平铺测量", "desc": "量取一件合身衣物的实际尺寸" }
+  ],
+  "templates": [
+    {
+      "template_id": "TPL-KNIT-TOPS",
+      "template_name": "针织上装 / 衬衫量体模板",
+      "applicable_category": ["knitwear", "shirts"],
+      "summary": "先量身体三围（胸围 / 身高 / 体重），再量一件合身上衣的肩宽、胸宽与衣长，取两组数据的参考组合下单制作。",
+      "measurement_sections": [
+        {
+          "section_id": "body",
+          "title": "身体测量",
+          "measurement_type": "body",
+          "description": "穿贴身衣物、赤脚或着薄鞋测量，数据最接近真实身体状态。",
+          "measurement_fields": [
+            {
+              "field_code": "chest_bust",
+              "field_name": "胸围",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "围量胸部最丰满处一周。软尺保持水平，贴合身体但不要勒紧；自然站立、双手自然下垂，平静呼吸后读数。",
+              "tips": ["软尺不要扭转", "建议测量两次取平均", "穿过外套测量会偏大"],
+              "illustration": "prototype/assets/img/measure/chest.svg",
+              "min": 60, "max": 140, "step": 0.5
+            },
+            {
+              "field_code": "height",
+              "field_name": "身高",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "脱鞋背靠墙壁站直，双脚并拢自然站立，眼睛平视前方。软尺垂直测量从地面到头顶的距离。",
+              "tips": ["不要踮脚", "墙面要平整", "头发蓬松时按压头顶测量"],
+              "illustration": "prototype/assets/img/measure/height.svg",
+              "min": 140, "max": 200, "step": 0.5
+            },
+            {
+              "field_code": "weight",
+              "field_name": "体重",
+              "measurement_type": "body",
+              "unit": "kg",
+              "required": true,
+              "instruction": "穿日常穿着的衣物称重，空腹或餐后同一时间测量更稳定。体重用于核对尺码与版型。",
+              "tips": ["同一台体重秤测量", "保留一位小数"],
+              "illustration": "prototype/assets/img/measure/weight.svg",
+              "min": 30, "max": 150, "step": 0.1
+            },
+            {
+              "field_code": "shoulder_body",
+              "field_name": "肩宽（身体）",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": false,
+              "instruction": "自然垂手，测量两侧肩峰最外点之间的水平距离。肩型较特殊时建议同时提供合身衣物的肩宽。",
+              "tips": ["不要耸肩", "与颈部测量保持同一水平线"],
+              "illustration": "prototype/assets/img/measure/shoulder_body.svg",
+              "min": 30, "max": 60, "step": 0.5
+            }
+          ]
+        },
+        {
+          "section_id": "garment_flat",
+          "title": "合身衣物平铺测量",
+          "measurement_type": "garment_flat",
+          "description": "准备一件穿着合身、款式相近的上衣，平铺后量取实际尺寸，比单量身体更贴近想要的合身度。",
+          "measurement_fields": [
+            {
+              "field_code": "shoulder_flat",
+              "field_name": "肩宽",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "选择一件合身的上衣，自然平铺，不要拉伸衣身。肩宽从两侧肩缝端点平直量取。",
+              "tips": ["不要抻拉衣服", "肩缝端点到肩缝端点", "使用软尺沿肩线走直"],
+              "illustration": "prototype/assets/img/measure/shoulder_flat.svg",
+              "min": 30, "max": 60, "step": 0.5
+            },
+            {
+              "field_code": "chest_flat",
+              "field_name": "胸宽（平铺）",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "衣服平铺，测量两侧腋下点之间的水平直线距离（即胸围的一半），再乘以 2 得到胸围。",
+              "tips": ["平铺后不要用手拉平", "腋下点取缝线交点", "结果 ×2 即为胸围"],
+              "illustration": "prototype/assets/img/measure/chest_flat.svg",
+              "min": 40, "max": 80, "step": 0.5
+            },
+            {
+              "field_code": "length_flat",
+              "field_name": "衣长",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "衣服自然平铺，从肩缝端点垂直量到下摆边缘的长度。",
+              "tips": ["从肩缝端点起量", "下摆自然铺平", "开衫量单片长度并注明"],
+              "illustration": "prototype/assets/img/measure/length.svg",
+              "min": 40, "max": 110, "step": 0.5
+            },
+            {
+              "field_code": "sleeve_flat",
+              "field_name": "袖长",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": false,
+              "instruction": "衣服平铺，从肩缝端点沿袖子外侧量至袖口边缘。",
+              "tips": ["沿袖外侧走线", "无袖款式可跳过"],
+              "illustration": "prototype/assets/img/measure/sleeve.svg",
+              "min": 20, "max": 75, "step": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "template_id": "TPL-BOTTOM",
+      "template_name": "裤装 / 裙装量体模板",
+      "applicable_category": ["clothing"],
+      "summary": "下装以腰臀数据为关键，建议同时提供一条合身裤装或裙装做平铺对照。",
+      "measurement_sections": [
+        {
+          "section_id": "body",
+          "title": "身体测量",
+          "measurement_type": "body",
+          "description": "测量腰部与臀部最丰满处，穿着贴身衣物测量。",
+          "measurement_fields": [
+            {
+              "field_code": "waist",
+              "field_name": "腰围",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "软尺水平环绕身体最细处（腰部）一周，保持贴合不勒紧，平静呼吸后读数。",
+              "tips": ["不要把软尺勒紧", "保持水平", "在肚脐上方最细处测量"],
+              "illustration": "prototype/assets/img/measure/waist.svg",
+              "min": 50, "max": 130, "step": 0.5
+            },
+            {
+              "field_code": "hip",
+              "field_name": "臀围",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "软尺水平环绕臀部最丰满处一周，贴合但不要勒紧。",
+              "tips": ["双腿并拢站立", "不要勒紧软尺", "经臀最丰满处测量"],
+              "illustration": "prototype/assets/img/measure/hip.svg",
+              "min": 60, "max": 140, "step": 0.5
+            },
+            {
+              "field_code": "height",
+              "field_name": "身高",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "脱鞋靠墙站直，软尺垂直测量从地面到头顶的距离。",
+              "tips": ["不要踮脚"],
+              "illustration": "prototype/assets/img/measure/height.svg",
+              "min": 140, "max": 200, "step": 0.5
+            },
+            {
+              "field_code": "weight",
+              "field_name": "体重",
+              "measurement_type": "body",
+              "unit": "kg",
+              "required": true,
+              "instruction": "穿日常衣物称重，用于核对版型松量。",
+              "tips": ["同一台秤测量"],
+              "illustration": "prototype/assets/img/measure/weight.svg",
+              "min": 30, "max": 150, "step": 0.1
+            }
+          ]
+        },
+        {
+          "section_id": "garment_flat",
+          "title": "合身衣物平铺测量",
+          "measurement_type": "garment_flat",
+          "description": "平铺一条穿着合身的裤装或裙装，量取腰围、臀围与长度。",
+          "measurement_fields": [
+            {
+              "field_code": "waist_flat",
+              "field_name": "腰围（平铺）",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": false,
+              "instruction": "衣物平铺后沿腰部边缘水平绕量一周，或量腰头平直宽度后 ×2。",
+              "tips": ["不要拉伸腰头", "松紧腰标注弹性腰"],
+              "illustration": "prototype/assets/img/measure/waist_flat.svg",
+              "min": 50, "max": 130, "step": 0.5
+            },
+            {
+              "field_code": "hip_flat",
+              "field_name": "臀围（平铺）",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": false,
+              "instruction": "衣物平铺，量臀部最宽处横向水平距离 ×2。",
+              "tips": ["平铺后不要抻拉"],
+              "illustration": "prototype/assets/img/measure/hip_flat.svg",
+              "min": 60, "max": 140, "step": 0.5
+            },
+            {
+              "field_code": "length_flat",
+              "field_name": "裤长 / 裙长",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "衣物自然平铺，从腰头上沿垂直量至下摆边缘。",
+              "tips": ["腰头含不含按客户要求注明"],
+              "illustration": "prototype/assets/img/measure/length.svg",
+              "min": 40, "max": 120, "step": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "template_id": "TPL-OUTER",
+      "template_name": "外套 / 卫衣量体模板",
+      "applicable_category": ["clothing"],
+      "summary": "外套类以胸围、肩宽与衣长为主，建议提供一件合身外套做平铺对照。",
+      "measurement_sections": [
+        {
+          "section_id": "body",
+          "title": "身体测量",
+          "measurement_type": "body",
+          "description": "测量胸围与身高体重，用于确定基础版型。",
+          "measurement_fields": [
+            {
+              "field_code": "chest_bust",
+              "field_name": "胸围",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "围量胸部最丰满处一周，软尺保持水平，贴合但不要勒紧。",
+              "tips": ["不要勒紧"],
+              "illustration": "prototype/assets/img/measure/chest.svg",
+              "min": 60, "max": 140, "step": 0.5
+            },
+            {
+              "field_code": "height",
+              "field_name": "身高",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "脱鞋靠墙站直，垂直测量头顶到地面的距离。",
+              "tips": ["不要踮脚"],
+              "illustration": "prototype/assets/img/measure/height.svg",
+              "min": 140, "max": 200, "step": 0.5
+            },
+            {
+              "field_code": "weight",
+              "field_name": "体重",
+              "measurement_type": "body",
+              "unit": "kg",
+              "required": true,
+              "instruction": "称量日常体重，用于版型松量核对。",
+              "tips": ["同一台秤"],
+              "illustration": "prototype/assets/img/measure/weight.svg",
+              "min": 30, "max": 150, "step": 0.1
+            }
+          ]
+        },
+        {
+          "section_id": "garment_flat",
+          "title": "合身衣物平铺测量",
+          "measurement_type": "garment_flat",
+          "description": "平铺一件合身外套或卫衣，量取肩宽、胸宽与衣长。",
+          "measurement_fields": [
+            {
+              "field_code": "shoulder_flat",
+              "field_name": "肩宽",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "选择一件合身的上衣，自然平铺，不要拉伸衣身。肩宽从两侧肩缝端点平直量取。",
+              "tips": ["不要抻拉衣服", "肩缝端点到肩缝端点"],
+              "illustration": "prototype/assets/img/measure/shoulder_flat.svg",
+              "min": 30, "max": 60, "step": 0.5
+            },
+            {
+              "field_code": "chest_flat",
+              "field_name": "胸宽（平铺）",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "衣服平铺，量两侧腋下点之间的水平距离 ×2 得到胸围。",
+              "tips": ["平铺后不要用手拉平"],
+              "illustration": "prototype/assets/img/measure/chest_flat.svg",
+              "min": 40, "max": 90, "step": 0.5
+            },
+            {
+              "field_code": "length_flat",
+              "field_name": "衣长",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": true,
+              "instruction": "自然平铺，从肩缝端点垂直量到下摆边缘。",
+              "tips": ["肩缝端点起量"],
+              "illustration": "prototype/assets/img/measure/length.svg",
+              "min": 50, "max": 120, "step": 0.5
+            },
+            {
+              "field_code": "sleeve_flat",
+              "field_name": "袖长",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": false,
+              "instruction": "平铺后从肩缝端点沿袖外侧量至袖口。",
+              "tips": ["无袖款式可跳过"],
+              "illustration": "prototype/assets/img/measure/sleeve.svg",
+              "min": 20, "max": 80, "step": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "template_id": "TPL-SCARF",
+      "template_name": "围巾 / 披肩量体模板",
+      "applicable_category": ["scarves"],
+      "summary": "围巾以颈围和成品尺寸为主，量体需求相对简单。",
+      "measurement_sections": [
+        {
+          "section_id": "body",
+          "title": "身体测量",
+          "measurement_type": "body",
+          "description": "测量颈部尺寸。",
+          "measurement_fields": [
+            {
+              "field_code": "neck",
+              "field_name": "颈围",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": true,
+              "instruction": "软尺水平环绕颈部最细处一周，保持贴合，能插入一指为宜，不要勒紧。",
+              "tips": ["保持水平", "留一指间隙"],
+              "illustration": "prototype/assets/img/measure/neck.svg",
+              "min": 28, "max": 60, "step": 0.5
+            }
+          ]
+        },
+        {
+          "section_id": "garment_flat",
+          "title": "合身衣物平铺测量",
+          "measurement_type": "garment_flat",
+          "description": "如需与既有围巾等长，请平铺后量取实际尺寸。",
+          "measurement_fields": [
+            {
+              "field_code": "length_flat",
+              "field_name": "长度",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": false,
+              "instruction": "围巾自然平铺，量取长边两端之间的距离。",
+              "tips": ["不要抻拉", "含流苏请注明"],
+              "illustration": "prototype/assets/img/measure/scarf_length.svg",
+              "min": 100, "max": 250, "step": 0.5
+            },
+            {
+              "field_code": "width_flat",
+              "field_name": "宽度",
+              "measurement_type": "garment_flat",
+              "unit": "cm",
+              "required": false,
+              "instruction": "平铺后量取宽度方向的距离。",
+              "tips": ["平铺后测量"],
+              "illustration": "prototype/assets/img/measure/scarf_width.svg",
+              "min": 20, "max": 90, "step": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "template_id": "TPL-GENERIC",
+      "template_name": "通用量体模板",
+      "applicable_category": ["accessories", "unknown"],
+      "summary": "配饰类通常无需量体，可直接下单；以下字段全部选填。",
+      "measurement_sections": [
+        {
+          "section_id": "body",
+          "title": "身体测量（选填）",
+          "measurement_type": "body",
+          "description": "如需更贴合的尺寸，可补充以下数据。",
+          "measurement_fields": [
+            {
+              "field_code": "height",
+              "field_name": "身高",
+              "measurement_type": "body",
+              "unit": "cm",
+              "required": false,
+              "instruction": "脱鞋靠墙站直，垂直测量头顶到地面的距离。",
+              "tips": ["不要踮脚"],
+              "illustration": "prototype/assets/img/measure/height.svg",
+              "min": 140, "max": 200, "step": 0.5
+            },
+            {
+              "field_code": "weight",
+              "field_name": "体重",
+              "measurement_type": "body",
+              "unit": "kg",
+              "required": false,
+              "instruction": "称量日常体重。",
+              "tips": [],
+              "illustration": "prototype/assets/img/measure/weight.svg",
+              "min": 30, "max": 150, "step": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+# ── 依赖与构建产物 ────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+output/
+*.tsbuildinfo
+.pnpm-store/
+apps/miniprogram/miniprogram_npm/
+
+# ── 运行时与本地密钥 ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!.github/**/*.yml
+secrets/
+
+# ── 原始素材（11GB，只读，禁止进 Git 仓库）─────────────────────────
+images/
+# 商品图片衍生副本 8.3GB：来源可由 catalog/reports 的 manifest 追溯，
+# 服务器按需重新生成，不进版本库
+catalog/products/
+catalog/.cache/
+media/
+
+# ── 测试与临时产物 ────────────────────────────────────────────────
+coverage/
+*.log
+tmp/
+.cache/
+.DS_Store
+Thumbs.db

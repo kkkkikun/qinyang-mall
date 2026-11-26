@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="长裤量体示意">
+  <title>长裤量体示意</title>
+  <path d="M56,30 C72,26 104,26 120,30 L124,56 L132,160 C132,166 128,168 122,168 L100,168 L92,106 L84,106 L76,168 L54,168 C48,168 44,166 44,160 L52,56 Z" fill="#FFFFFF" stroke="#9A948C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M53,45 C70,41 106,41 123,45" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M60.0,29.5 L60.0,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M65.8,29.5 L65.8,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M71.6,29.5 L71.6,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M77.4,29.5 L77.4,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M83.2,29.5 L83.2,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M89.0,29.5 L89.0,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M94.8,29.5 L94.8,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M100.6,29.5 L100.6,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M106.4,29.5 L106.4,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M112.2,29.5 L112.2,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M118.0,29.5 L118.0,42" fill="none" stroke="#8E877F" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M62,45 C60,58 56,66 50,72" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M114,45 C116,58 120,66 126,72" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M88,45 L88,92" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M88,92 C88,98 91,102 95,104" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M66,76 L61,150" fill="none" stroke="#B8B2AA" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M110,76 L115,150" fill="none" stroke="#B8B2AA" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M45,157 Q60,160 76,158" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M100,158 Q116,160 131,157" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M168,26 L168,168" fill="none" stroke="#A9A29A" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="3.2 3.4"/>
+  <path d="M162,168 L174,168" fill="none" stroke="#8E877F" stroke-width="0.9" stroke-linecap="round"/>
+
+</svg>

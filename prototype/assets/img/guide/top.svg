@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="上装量体示意">
+  <title>上装量体示意</title>
+  <path d="M72,26 L59,33 L45,98 L58,108 L64,70 L60,152 C60,157 64,159 70,159 L106,159 C112,159 116,157 116,152 L112,70 L118,108 L131,98 L117,33 L104,26 C101,36 95,43 88,43 C81,43 75,36 72,26 Z" fill="#FFFFFF" stroke="#9A948C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M72,26 L88,43 L76,50 L65,33 Z" fill="#FFFFFF" stroke="#9A948C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104,26 L88,43 L100,50 L111,33 Z" fill="#FFFFFF" stroke="#9A948C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M88,46 L88,157" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <circle cx="82" cy="60" r="1.9" fill="none" stroke="#9A948C" stroke-width="0.9"/>
+  <circle cx="82" cy="80" r="1.9" fill="none" stroke="#9A948C" stroke-width="0.9"/>
+  <circle cx="82" cy="100" r="1.9" fill="none" stroke="#9A948C" stroke-width="0.9"/>
+  <circle cx="82" cy="120" r="1.9" fill="none" stroke="#9A948C" stroke-width="0.9"/>
+  <circle cx="82" cy="140" r="1.9" fill="none" stroke="#9A948C" stroke-width="0.9"/>
+  <path d="M48,94 L61,104" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M115,104 L128,94" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M60,146 C76,150 100,150 116,146" fill="none" stroke="#9A948C" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M62,80 L114,80" fill="none" stroke="#A9A29A" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="3.2 3.4"/>
+  <path d="M62,74 L62,86" fill="none" stroke="#8E877F" stroke-width="0.9" stroke-linecap="round"/>
+  <path d="M114,74 L114,86" fill="none" stroke="#8E877F" stroke-width="0.9" stroke-linecap="round"/>
+  <path d="M150,26 L150,159" fill="none" stroke="#A9A29A" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="3.2 3.4"/>
+  <path d="M144,159 L156,159" fill="none" stroke="#8E877F" stroke-width="0.9" stroke-linecap="round"/>
+
+</svg>

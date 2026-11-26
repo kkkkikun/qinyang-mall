@@ -1,0 +1,34 @@
+{
+  "category": "shirts",
+  "label": "衬衫",
+  "productCount": 3,
+  "products": [
+    {
+      "product_id": "ED-0009",
+      "product_name": "米白府绸尖领衬衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0009/processed/IMG-0384.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 9/DSC02856.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0041",
+      "product_name": "墨绿白扎染印花长袖衬衫(抽绳下摆)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0041/processed/IMG-0683.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹/DSC03982.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0042",
+      "product_name": "黑色黑白扎染印花长袖衬衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0042/processed/IMG-0480.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 2/DSC04004.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    }
+  ]
+}

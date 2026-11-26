@@ -1,0 +1,52 @@
+{
+  "category": "scarves",
+  "label": "围巾",
+  "productCount": 5,
+  "products": [
+    {
+      "product_id": "ED-0001",
+      "product_name": "浅蓝印花雪纺长巾（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0001/processed/IMG-0397.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹/DSC02936.jpg",
+      "image_count": 4,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0002",
+      "product_name": "藏青印花丝巾（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0002/processed/IMG-0110.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 2/DSC02932.jpg",
+      "image_count": 4,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0003",
+      "product_name": "粉色粉米渐变羊绒围巾（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0003/processed/IMG-0218.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 3/DSC02925.jpg",
+      "image_count": 4,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0004",
+      "product_name": "米白底彩色印花围巾（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0004/processed/IMG-0333.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 4/DSC02920.jpg",
+      "image_count": 4,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0005",
+      "product_name": "蓝色蓝底花园印花披肩（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0005/processed/IMG-0349.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 5/DSC02913.jpg",
+      "image_count": 4,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    }
+  ]
+}

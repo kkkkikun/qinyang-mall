@@ -1,0 +1,25 @@
+﻿type,product_a,product_b,image_a,image_b,phash_distance,colour_similarity,confidence
+cross_library_near_duplicate,ED-0020,ED-0072,images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg,images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04547.jpg,5,,0.922
+cross_library_near_duplicate,ED-0020,ED-0072,images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg,images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04538.jpg,6,,0.906
+cross_library_near_duplicate,ED-0020,ED-0071,images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg,images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04534.jpg,8,,0.875
+cross_library_colour_match,ED-0037,ED-0069,,,,0.864,0.864
+cross_library_colour_match,ED-0007,ED-0059,,,,0.869,0.869
+cross_library_colour_match,ED-0007,ED-0058,,,,0.82,0.82
+cross_library_colour_match,ED-0007,ED-0046,,,,0.86,0.86
+cross_library_colour_match,ED-0007,ED-0054,,,,0.867,0.867
+cross_library_colour_match,ED-0007,ED-0069,,,,0.925,0.925
+cross_library_colour_match,ED-0007,ED-0047,,,,0.845,0.845
+cross_library_colour_match,ED-0007,ED-0044,,,,0.832,0.832
+cross_library_colour_match,ED-0024,ED-0069,,,,0.905,0.905
+cross_library_colour_match,ED-0033,ED-0074,,,,0.836,0.836
+cross_library_colour_match,ED-0033,ED-0050,,,,0.854,0.854
+cross_library_colour_match,ED-0025,ED-0074,,,,0.824,0.824
+cross_library_colour_match,ED-0006,ED-0067,,,,0.825,0.825
+cross_library_colour_match,ED-0006,ED-0069,,,,0.876,0.876
+cross_library_colour_match,ED-0038,ED-0067,,,,0.858,0.858
+cross_library_colour_match,ED-0038,ED-0059,,,,0.833,0.833
+cross_library_colour_match,ED-0038,ED-0046,,,,0.835,0.835
+cross_library_colour_match,ED-0038,ED-0054,,,,0.829,0.829
+cross_library_colour_match,ED-0038,ED-0069,,,,0.922,0.922
+cross_library_colour_match,ED-0015,ED-0069,,,,0.866,0.866
+cross_library_colour_match,ED-0009,ED-0069,,,,0.897,0.897

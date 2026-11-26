@@ -1,0 +1,502 @@
+{
+  "category": "knitwear",
+  "label": "针织服饰",
+  "productCount": 55,
+  "products": [
+    {
+      "product_id": "ED-0006",
+      "product_name": "米白针织开衫(珍珠纽扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0006/processed/IMG-0352.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 6/DSC02892.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0007",
+      "product_name": "米白针织翻领polo(藏青包边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0007/processed/IMG-0363.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 7/DSC02880.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0008",
+      "product_name": "燕麦色针织圆领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0008/processed/IMG-0374.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 8/DSC02868.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0010",
+      "product_name": "深绿色墨绿针织圆领短袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0010/processed/IMG-0006.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02849.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0011",
+      "product_name": "深灰针织圆领短袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0011/processed/IMG-0016.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02836.jpg",
+      "image_count": 12,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0012",
+      "product_name": "浅蓝针织圆领短袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0012/processed/IMG-0023.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02819.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0013",
+      "product_name": "卡其针织翻领polo(麻花饰)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0013/processed/IMG-0033.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 13/DSC02808.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0014",
+      "product_name": "卡其针织翻领polo(竖条针织)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0014/processed/IMG-0044.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 14/DSC02796.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0015",
+      "product_name": "米白针织翻领polo（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0015/processed/IMG-0055.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 15/DSC02781.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0016",
+      "product_name": "米白+深棕条纹针织polo（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0016/processed/IMG-0065.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 16/DSC02769.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0017",
+      "product_name": "粉色藕粉针织半拉链翻领衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0017/processed/IMG-0076.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 17/DSC02757.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0018",
+      "product_name": "燕麦针织亨利领短袖（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0018/processed/IMG-0087.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 18/DSC02745.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0019",
+      "product_name": "卡其针织翻领polo（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0019/processed/IMG-0098.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 19/DSC02730.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0023",
+      "product_name": "浅蓝针织圆领长袖(撞色罗纹领)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0023/processed/IMG-0150.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02683.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0024",
+      "product_name": "米白针织无袖背心(珍珠纽扣亨利领)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0024/processed/IMG-0160.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02671.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0025",
+      "product_name": "粉色粉印花针织无袖中式立领盘扣背心（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0025/processed/IMG-0165.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 25/DSC02652.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0026",
+      "product_name": "淡紫针织V领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0026/processed/IMG-0176.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02641.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0027",
+      "product_name": "浅蓝灰针织圆领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0027/processed/IMG-0186.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02629.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0028",
+      "product_name": "粉色麻花针织翻领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0028/processed/IMG-0196.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 28/DSC02617.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0029",
+      "product_name": "浅蓝麻花针织翻领polo短袖（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0029/processed/IMG-0211.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02611.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0030",
+      "product_name": "米白+黑横条纹针织亨利领长袖（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0030/processed/IMG-0220.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 30/DSC02591.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0031",
+      "product_name": "深绿色墨绿针织荷叶边领短袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0031/processed/IMG-0236.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02586.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0032",
+      "product_name": "藏青针织水手领开衫(白条饰)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0032/processed/IMG-0241.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 32/DSC02565.jpg",
+      "image_count": 12,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0033",
+      "product_name": "粉色藕粉针织珍珠扣开衫(米白包边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0033/processed/IMG-0253.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 33/DSC02553.jpg",
+      "image_count": 13,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0034",
+      "product_name": "燕麦针织连帽拉链开衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0034/processed/IMG-0266.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 34/DSC02537.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0035",
+      "product_name": "卡其色浅棕针织无袖开衫(贝壳扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0035/processed/IMG-0276.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 35/DSC02524.jpg",
+      "image_count": 12,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0036",
+      "product_name": "蓝色蓝灰杂花针织无袖开衫(珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0036/processed/IMG-0288.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 36/DSC02511.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0037",
+      "product_name": "米黄色浅黄针织开衫(镶钻纽扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0037/processed/IMG-0299.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 37/DSC02498.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0038",
+      "product_name": "米白麻花针织开衫(珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0038/processed/IMG-0310.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 38/DSC02482.jpg",
+      "image_count": 11,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0039",
+      "product_name": "卡其色浅棕针织半拉链连帽衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0039/processed/IMG-0321.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 39/DSC02469.jpg",
+      "image_count": 10,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0040",
+      "product_name": "米白针织翻领衬衫(钻石扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0040/processed/IMG-0335.jpg",
+      "cover_source": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 40/DSC02293.jpg",
+      "image_count": 13,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0043",
+      "product_name": "黑色千鸟格针织开衫(黑罗纹领口袖口)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0043/processed/IMG-0569.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 3/DSC04032.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0044",
+      "product_name": "卡其色米棕格纹针织翻领衬衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0044/processed/IMG-0641.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 4/DSC04078.jpg",
+      "image_count": 9,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0045",
+      "product_name": "棕色千鸟格针织翻领衬衫(深棕领)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0045/processed/IMG-0643.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 5/DSC04081.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0046",
+      "product_name": "淡紫提花针织开衫(珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0046/processed/IMG-0651.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 6/DSC04098.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0047",
+      "product_name": "米白花卉印花针织开衫(珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0047/processed/IMG-0659.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 7/DSC04124.jpg",
+      "image_count": 7,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0048",
+      "product_name": "灰色灰黑杂花针织开衫(黑包边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0048/processed/IMG-0666.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 8/DSC04138.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0049",
+      "product_name": "黑色黑白几何提花针织开衫(系带)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0049/processed/IMG-0674.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 9/DSC04157.jpg",
+      "image_count": 9,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0050",
+      "product_name": "蓝色蓝金杂花针织开衫(钻石扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0050/processed/IMG-0399.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 10/DSC04171.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0051",
+      "product_name": "米白针织翻领polo(黑细边珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0051/processed/IMG-0407.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 11/DSC04188.jpg",
+      "image_count": 9,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0052",
+      "product_name": "黑色黑白横条纹针织长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0052/processed/IMG-0416.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 12/DSC04203.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0053",
+      "product_name": "米白针织V领短袖(黑V领蕾丝边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0053/processed/IMG-0424.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 13/DSC04217.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0054",
+      "product_name": "卡其色米棕格纹针织翻领衬衫(拼布口袋)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0054/processed/IMG-0432.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 14/DSC04235.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0055",
+      "product_name": "米白花卉提花针织开衫(珍珠扣花边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0055/processed/IMG-0440.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 15/DSC04249.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0057",
+      "product_name": "黑色针织开衫(白边珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0057/processed/IMG-0456.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 17/DSC04279.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0058",
+      "product_name": "米白花卉提花针织开衫(包布扣花边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0058/processed/IMG-0464.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 18/DSC04291.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0059",
+      "product_name": "米白花卉提花针织开衫(圆领拼布口袋)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0059/processed/IMG-0473.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 19/DSC04342.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0061",
+      "product_name": "黑色黑白横条纹针织无袖背心(罗纹包边)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0061/processed/IMG-0496.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 21/DSC04357.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0067",
+      "product_name": "灰色灰粉花卉印花针织无袖立领背心(珍珠扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0067/processed/IMG-0544.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 27/DSC04461.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0068",
+      "product_name": "米白针织无袖中式立领盘扣背心（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0068/processed/IMG-0552.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 28/DSC04474.jpg",
+      "image_count": 9,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0069",
+      "product_name": "卡其针织半拉链立领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0069/processed/IMG-0561.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 29/DSC04491.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0070",
+      "product_name": "深绿色墨绿针织翻领长袖衬衫(白扣)（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0070/processed/IMG-0577.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 30/DSC04509.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0071",
+      "product_name": "藏青针织半拉链立领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0071/processed/IMG-0585.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04522.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0072",
+      "product_name": "藏青针织翻领半拉链长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0072/processed/IMG-0593.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04538.jpg",
+      "image_count": 8,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    },
+    {
+      "product_id": "ED-0073",
+      "product_name": "深灰针织半拉链立领长袖衫（临时命名·待确认）",
+      "cover_image": "catalog/products/ED-0073/processed/IMG-0601.jpg",
+      "cover_source": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 33/DSC04551.jpg",
+      "image_count": 9,
+      "confidence": 0.925,
+      "review_status": "auto_recognized"
+    }
+  ]
+}

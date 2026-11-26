@@ -1,0 +1,25 @@
+﻿product_id,source_group,image_count,categories,avg_confidence,group_confidence,review_status,reasons,members
+ED-0020 <-> ED-0072,cross_library_near_duplicate,2,,0.922,0.922,needs_manual_review,跨图库相似候选（cross_library_near_duplicate），外观相近但可能是不同商品，需人工确认,images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg ; images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04547.jpg
+ED-0020 <-> ED-0072,cross_library_near_duplicate,2,,0.906,0.906,needs_manual_review,跨图库相似候选（cross_library_near_duplicate），外观相近但可能是不同商品，需人工确认,images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg ; images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04538.jpg
+ED-0020 <-> ED-0071,cross_library_near_duplicate,2,,0.875,0.875,needs_manual_review,跨图库相似候选（cross_library_near_duplicate），外观相近但可能是不同商品，需人工确认,images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg ; images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04534.jpg
+ED-0037 <-> ED-0069,cross_library_colour_match,2,,0.864,0.864,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0059,cross_library_colour_match,2,,0.869,0.869,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0058,cross_library_colour_match,2,,0.82,0.82,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0046,cross_library_colour_match,2,,0.86,0.86,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0054,cross_library_colour_match,2,,0.867,0.867,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0069,cross_library_colour_match,2,,0.925,0.925,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0047,cross_library_colour_match,2,,0.845,0.845,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0007 <-> ED-0044,cross_library_colour_match,2,,0.832,0.832,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0024 <-> ED-0069,cross_library_colour_match,2,,0.905,0.905,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0033 <-> ED-0074,cross_library_colour_match,2,,0.836,0.836,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0033 <-> ED-0050,cross_library_colour_match,2,,0.854,0.854,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0025 <-> ED-0074,cross_library_colour_match,2,,0.824,0.824,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0006 <-> ED-0067,cross_library_colour_match,2,,0.825,0.825,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0006 <-> ED-0069,cross_library_colour_match,2,,0.876,0.876,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0038 <-> ED-0067,cross_library_colour_match,2,,0.858,0.858,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0038 <-> ED-0059,cross_library_colour_match,2,,0.833,0.833,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0038 <-> ED-0046,cross_library_colour_match,2,,0.835,0.835,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0038 <-> ED-0054,cross_library_colour_match,2,,0.829,0.829,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0038 <-> ED-0069,cross_library_colour_match,2,,0.922,0.922,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0015 <-> ED-0069,cross_library_colour_match,2,,0.866,0.866,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 
+ED-0009 <-> ED-0069,cross_library_colour_match,2,,0.897,0.897,needs_manual_review,跨图库相似候选（cross_library_colour_match），外观相近但可能是不同商品，需人工确认, ; 

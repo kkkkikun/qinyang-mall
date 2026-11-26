@@ -1,0 +1,33 @@
+{
+  "exportFiles": [
+    "ed_catalog_review.json",
+    "ed_catalog_review.csv"
+  ],
+  "productFields": [
+    "product_id",
+    "category_auto",
+    "category_final",
+    "review_status",
+    "notes",
+    "image_count"
+  ],
+  "imageFields": [
+    "product_id",
+    "image_id",
+    "source_path",
+    "category_auto",
+    "category_final",
+    "role",
+    "role_label",
+    "confidence_auto",
+    "review_status",
+    "image_usable",
+    "flags",
+    "notes"
+  ],
+  "reviewStatusValues": [
+    "auto_recognized",
+    "needs_manual_review",
+    "human_confirmed"
+  ]
+}

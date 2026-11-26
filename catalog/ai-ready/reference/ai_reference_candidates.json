@@ -1,0 +1,3174 @@
+{
+  "generatedAt": "2026-11-16T00:04:38",
+  "candidates": [
+    {
+      "product_id": "ED-0001",
+      "image_id": "IMG-0397",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹/DSC02936.jpg",
+      "candidate_role": "front",
+      "score": 101.4,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0001",
+      "image_id": "IMG-0395",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹/DSC02934.jpg",
+      "candidate_role": "front",
+      "score": 99.11,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0001",
+      "image_id": "IMG-0398",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹/DSC02937.jpg",
+      "candidate_role": "fabric",
+      "score": 19.34,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0002",
+      "image_id": "IMG-0110",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 2/DSC02932.jpg",
+      "candidate_role": "front",
+      "score": 106.91,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0002",
+      "image_id": "IMG-0108",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 2/DSC02927.jpg",
+      "candidate_role": "front",
+      "score": 104.3,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0002",
+      "image_id": "IMG-0111",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 2/DSC02933.jpg",
+      "candidate_role": "fabric",
+      "score": 45.82,
+      "blockers": [
+        "曝光异常"
+      ]
+    },
+    {
+      "product_id": "ED-0003",
+      "image_id": "IMG-0218",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 3/DSC02925.jpg",
+      "candidate_role": "front",
+      "score": 95.78,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0003",
+      "image_id": "IMG-0216",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 3/DSC02922.jpg",
+      "candidate_role": "front",
+      "score": 94.45,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0003",
+      "image_id": "IMG-0219",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 3/DSC02926.jpg",
+      "candidate_role": "fabric",
+      "score": 24.87,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0004",
+      "image_id": "IMG-0333",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 4/DSC02920.jpg",
+      "candidate_role": "front",
+      "score": 107.48,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0004",
+      "image_id": "IMG-0331",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 4/DSC02917.jpg",
+      "candidate_role": "front",
+      "score": 107.25,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0004",
+      "image_id": "IMG-0334",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 4/DSC02921.jpg",
+      "candidate_role": "fabric",
+      "score": 21.07,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0005",
+      "image_id": "IMG-0349",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 5/DSC02913.jpg",
+      "candidate_role": "front",
+      "score": 105.22,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0005",
+      "image_id": "IMG-0348",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 5/DSC02911.jpg",
+      "candidate_role": "front",
+      "score": 101.45,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0005",
+      "image_id": "IMG-0351",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 5/DSC02915.jpg",
+      "candidate_role": "fabric",
+      "score": 39.19,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0006",
+      "image_id": "IMG-0352",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 6/DSC02892.jpg",
+      "candidate_role": "front",
+      "score": 93.6,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0006",
+      "image_id": "IMG-0358",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 6/DSC02900.jpg",
+      "candidate_role": "detail",
+      "score": 69.07,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0006",
+      "image_id": "IMG-0354",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 6/DSC02894.jpg",
+      "candidate_role": "detail",
+      "score": 42.07,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0006",
+      "image_id": "IMG-0361",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 6/DSC02904.jpg",
+      "candidate_role": "fabric",
+      "score": 38.34,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0006",
+      "image_id": "IMG-0356",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 6/DSC02898.jpg",
+      "candidate_role": "fabric",
+      "score": 21.99,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0007",
+      "image_id": "IMG-0363",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 7/DSC02880.jpg",
+      "candidate_role": "front",
+      "score": 93.64,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0007",
+      "image_id": "IMG-0367",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 7/DSC02884.jpg",
+      "candidate_role": "detail",
+      "score": 60.43,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0007",
+      "image_id": "IMG-0368",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 7/DSC02885.jpg",
+      "candidate_role": "detail",
+      "score": 41.13,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0007",
+      "image_id": "IMG-0373",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 7/DSC02890.jpg",
+      "candidate_role": "fabric",
+      "score": 27.25,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0007",
+      "image_id": "IMG-0372",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 7/DSC02889.jpg",
+      "candidate_role": "fabric",
+      "score": 7.67,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0008",
+      "image_id": "IMG-0374",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 8/DSC02868.jpg",
+      "candidate_role": "front",
+      "score": 96.07,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0008",
+      "image_id": "IMG-0378",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 8/DSC02872.jpg",
+      "candidate_role": "detail",
+      "score": 47.69,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0008",
+      "image_id": "IMG-0377",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 8/DSC02871.jpg",
+      "candidate_role": "detail",
+      "score": 45.45,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0008",
+      "image_id": "IMG-0382",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 8/DSC02877.jpg",
+      "candidate_role": "fabric",
+      "score": 79.3,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0008",
+      "image_id": "IMG-0383",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 8/DSC02878.jpg",
+      "candidate_role": "fabric",
+      "score": 25.16,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0009",
+      "image_id": "IMG-0384",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 9/DSC02856.jpg",
+      "candidate_role": "front",
+      "score": 93.05,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0009",
+      "image_id": "IMG-0387",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 9/DSC02859.jpg",
+      "candidate_role": "detail",
+      "score": 60.9,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0009",
+      "image_id": "IMG-0386",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 9/DSC02858.jpg",
+      "candidate_role": "detail",
+      "score": 39.75,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0009",
+      "image_id": "IMG-0393",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 9/DSC02866.jpg",
+      "candidate_role": "fabric",
+      "score": 27.19,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0009",
+      "image_id": "IMG-0389",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 9/DSC02861.jpg",
+      "candidate_role": "fabric",
+      "score": 23.57,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0010",
+      "image_id": "IMG-0006",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02849.jpg",
+      "candidate_role": "front",
+      "score": 94.01,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0010",
+      "image_id": "IMG-0001",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02844.jpg",
+      "candidate_role": "front",
+      "score": 93.82,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0010",
+      "image_id": "IMG-0008",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02853.jpg",
+      "candidate_role": "detail",
+      "score": 35.66,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0010",
+      "image_id": "IMG-0003",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02846.jpg",
+      "candidate_role": "detail",
+      "score": 31.55,
+      "blockers": [
+        "曝光异常",
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0010",
+      "image_id": "IMG-0009",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02854.jpg",
+      "candidate_role": "fabric",
+      "score": 54.11,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0010",
+      "image_id": "IMG-0010",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 10/DSC02855.jpg",
+      "candidate_role": "fabric",
+      "score": 34.98,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0011",
+      "image_id": "IMG-0016",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02836.jpg",
+      "candidate_role": "front",
+      "score": 99.37,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0011",
+      "image_id": "IMG-0011",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02830.jpg",
+      "candidate_role": "front",
+      "score": 98.48,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0011",
+      "image_id": "IMG-0018",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02839.jpg",
+      "candidate_role": "detail",
+      "score": 44.53,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0011",
+      "image_id": "IMG-0014",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02834.jpg",
+      "candidate_role": "detail",
+      "score": 41.42,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0011",
+      "image_id": "IMG-0019",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02840.jpg",
+      "candidate_role": "fabric",
+      "score": 57.78,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0011",
+      "image_id": "IMG-0022",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 11/DSC02841.jpg",
+      "candidate_role": "fabric",
+      "score": 12.86,
+      "blockers": [
+        "曝光异常",
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0012",
+      "image_id": "IMG-0023",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02819.jpg",
+      "candidate_role": "front",
+      "score": 95.26,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0012",
+      "image_id": "IMG-0028",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02824.jpg",
+      "candidate_role": "front",
+      "score": 93.93,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0012",
+      "image_id": "IMG-0025",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02821.jpg",
+      "candidate_role": "detail",
+      "score": 54.16,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0012",
+      "image_id": "IMG-0027",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02823.jpg",
+      "candidate_role": "detail",
+      "score": 45.85,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0012",
+      "image_id": "IMG-0032",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02829.jpg",
+      "candidate_role": "fabric",
+      "score": 27.19,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0012",
+      "image_id": "IMG-0031",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 12/DSC02828.jpg",
+      "candidate_role": "fabric",
+      "score": 22.15,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0013",
+      "image_id": "IMG-0033",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 13/DSC02808.jpg",
+      "candidate_role": "front",
+      "score": 100.91,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0013",
+      "image_id": "IMG-0037",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 13/DSC02812.jpg",
+      "candidate_role": "detail",
+      "score": 61.44,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0013",
+      "image_id": "IMG-0040",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 13/DSC02815.jpg",
+      "candidate_role": "detail",
+      "score": 60.04,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0013",
+      "image_id": "IMG-0042",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 13/DSC02817.jpg",
+      "candidate_role": "fabric",
+      "score": 26.16,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0013",
+      "image_id": "IMG-0043",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 13/DSC02818.jpg",
+      "candidate_role": "fabric",
+      "score": 25.39,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0014",
+      "image_id": "IMG-0044",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 14/DSC02796.jpg",
+      "candidate_role": "front",
+      "score": 97.48,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0014",
+      "image_id": "IMG-0051",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 14/DSC02803.jpg",
+      "candidate_role": "detail",
+      "score": 55.57,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0014",
+      "image_id": "IMG-0048",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 14/DSC02800.jpg",
+      "candidate_role": "detail",
+      "score": 47.65,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0014",
+      "image_id": "IMG-0053",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 14/DSC02805.jpg",
+      "candidate_role": "fabric",
+      "score": 26.13,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0014",
+      "image_id": "IMG-0054",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 14/DSC02807.jpg",
+      "candidate_role": "fabric",
+      "score": 25.71,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0015",
+      "image_id": "IMG-0055",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 15/DSC02781.jpg",
+      "candidate_role": "front",
+      "score": 93.17,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0015",
+      "image_id": "IMG-0058",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 15/DSC02784.jpg",
+      "candidate_role": "detail",
+      "score": 30.68,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0015",
+      "image_id": "IMG-0057",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 15/DSC02783.jpg",
+      "candidate_role": "detail",
+      "score": 28.33,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0015",
+      "image_id": "IMG-0063",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 15/DSC02791.jpg",
+      "candidate_role": "fabric",
+      "score": 28.63,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0015",
+      "image_id": "IMG-0059",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 15/DSC02786.jpg",
+      "candidate_role": "fabric",
+      "score": 24.63,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0016",
+      "image_id": "IMG-0065",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 16/DSC02769.jpg",
+      "candidate_role": "front",
+      "score": 97.37,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0016",
+      "image_id": "IMG-0066",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 16/DSC02770.jpg",
+      "candidate_role": "detail",
+      "score": 73.06,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0016",
+      "image_id": "IMG-0072",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 16/DSC02776.jpg",
+      "candidate_role": "detail",
+      "score": 56.93,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0016",
+      "image_id": "IMG-0074",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 16/DSC02779.jpg",
+      "candidate_role": "fabric",
+      "score": 27.72,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0016",
+      "image_id": "IMG-0075",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 16/DSC02780.jpg",
+      "candidate_role": "fabric",
+      "score": 25.5,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0017",
+      "image_id": "IMG-0076",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 17/DSC02757.jpg",
+      "candidate_role": "front",
+      "score": 98.61,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0017",
+      "image_id": "IMG-0083",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 17/DSC02765.jpg",
+      "candidate_role": "detail",
+      "score": 58.66,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0017",
+      "image_id": "IMG-0078",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 17/DSC02759.jpg",
+      "candidate_role": "detail",
+      "score": 38.65,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0017",
+      "image_id": "IMG-0080",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 17/DSC02762.jpg",
+      "candidate_role": "fabric",
+      "score": 40.9,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0017",
+      "image_id": "IMG-0086",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 17/DSC02768.jpg",
+      "candidate_role": "fabric",
+      "score": 25.4,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0018",
+      "image_id": "IMG-0087",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 18/DSC02745.jpg",
+      "candidate_role": "front",
+      "score": 96.9,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0018",
+      "image_id": "IMG-0090",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 18/DSC02748.jpg",
+      "candidate_role": "detail",
+      "score": 65.52,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0018",
+      "image_id": "IMG-0094",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 18/DSC02752.jpg",
+      "candidate_role": "detail",
+      "score": 60.45,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0018",
+      "image_id": "IMG-0092",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 18/DSC02750.jpg",
+      "candidate_role": "fabric",
+      "score": 29.12,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0018",
+      "image_id": "IMG-0096",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 18/DSC02755.jpg",
+      "candidate_role": "fabric",
+      "score": 27.05,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0019",
+      "image_id": "IMG-0098",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 19/DSC02730.jpg",
+      "candidate_role": "front",
+      "score": 95.36,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0019",
+      "image_id": "IMG-0099",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 19/DSC02731.jpg",
+      "candidate_role": "detail",
+      "score": 75.46,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0019",
+      "image_id": "IMG-0100",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 19/DSC02732.jpg",
+      "candidate_role": "detail",
+      "score": 53.6,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0019",
+      "image_id": "IMG-0102",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 19/DSC02734.jpg",
+      "candidate_role": "fabric",
+      "score": 45.65,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0019",
+      "image_id": "IMG-0106",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 19/DSC02741.jpg",
+      "candidate_role": "fabric",
+      "score": 27.1,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0020",
+      "image_id": "IMG-0112",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02715.jpg",
+      "candidate_role": "front",
+      "score": 95.29,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0020",
+      "image_id": "IMG-0115",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02718.jpg",
+      "candidate_role": "detail",
+      "score": 70.73,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0020",
+      "image_id": "IMG-0118",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02721.jpg",
+      "candidate_role": "detail",
+      "score": 62.22,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0020",
+      "image_id": "IMG-0123",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02728.jpg",
+      "candidate_role": "fabric",
+      "score": 76.85,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0020",
+      "image_id": "IMG-0122",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 20/DSC02725.jpg",
+      "candidate_role": "fabric",
+      "score": 63.64,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0021",
+      "image_id": "IMG-0124",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02701.jpg",
+      "candidate_role": "front",
+      "score": 98.95,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0021",
+      "image_id": "IMG-0129",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02707.jpg",
+      "candidate_role": "front",
+      "score": 97.04,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0021",
+      "image_id": "IMG-0125",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02702.jpg",
+      "candidate_role": "detail",
+      "score": 80.06,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0021",
+      "image_id": "IMG-0130",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02709.jpg",
+      "candidate_role": "detail",
+      "score": 75.95,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0021",
+      "image_id": "IMG-0133",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02712.jpg",
+      "candidate_role": "fabric",
+      "score": 27.05,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0021",
+      "image_id": "IMG-0134",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 21/DSC02713.jpg",
+      "candidate_role": "fabric",
+      "score": 25.62,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0022",
+      "image_id": "IMG-0135",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02689.jpg",
+      "candidate_role": "front",
+      "score": 96.33,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0022",
+      "image_id": "IMG-0140",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02694.jpg",
+      "candidate_role": "front",
+      "score": 95.13,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0022",
+      "image_id": "IMG-0136",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02690.jpg",
+      "candidate_role": "detail",
+      "score": 73.81,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0022",
+      "image_id": "IMG-0141",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02695.jpg",
+      "candidate_role": "detail",
+      "score": 73.06,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0022",
+      "image_id": "IMG-0143",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02697.jpg",
+      "candidate_role": "fabric",
+      "score": 56.23,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0022",
+      "image_id": "IMG-0144",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 22/DSC02698.jpg",
+      "candidate_role": "fabric",
+      "score": 24.12,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0023",
+      "image_id": "IMG-0150",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02683.jpg",
+      "candidate_role": "front",
+      "score": 100.14,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0023",
+      "image_id": "IMG-0145",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02678.jpg",
+      "candidate_role": "front",
+      "score": 99.38,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0023",
+      "image_id": "IMG-0148",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02681.jpg",
+      "candidate_role": "detail",
+      "score": 45.91,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0023",
+      "image_id": "IMG-0151",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02684.jpg",
+      "candidate_role": "detail",
+      "score": 45.24,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0023",
+      "image_id": "IMG-0153",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02686.jpg",
+      "candidate_role": "fabric",
+      "score": 26.71,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0023",
+      "image_id": "IMG-0154",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 23/DSC02687.jpg",
+      "candidate_role": "fabric",
+      "score": 25.4,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0024",
+      "image_id": "IMG-0160",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02671.jpg",
+      "candidate_role": "front",
+      "score": 97.34,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0024",
+      "image_id": "IMG-0155",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02665.jpg",
+      "candidate_role": "front",
+      "score": 96.99,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0024",
+      "image_id": "IMG-0157",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02667.jpg",
+      "candidate_role": "detail",
+      "score": 70.03,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0024",
+      "image_id": "IMG-0158",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02668.jpg",
+      "candidate_role": "detail",
+      "score": 34.89,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0024",
+      "image_id": "IMG-0163",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02675.jpg",
+      "candidate_role": "fabric",
+      "score": 26.85,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0024",
+      "image_id": "IMG-0164",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 24/DSC02676.jpg",
+      "candidate_role": "fabric",
+      "score": 17.13,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0025",
+      "image_id": "IMG-0165",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 25/DSC02652.jpg",
+      "candidate_role": "front",
+      "score": 96.16,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0025",
+      "image_id": "IMG-0166",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 25/DSC02653.jpg",
+      "candidate_role": "detail",
+      "score": 51.64,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0025",
+      "image_id": "IMG-0172",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 25/DSC02659.jpg",
+      "candidate_role": "detail",
+      "score": 38.62,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0025",
+      "image_id": "IMG-0175",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 25/DSC02664.jpg",
+      "candidate_role": "fabric",
+      "score": 39.29,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0025",
+      "image_id": "IMG-0174",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 25/DSC02663.jpg",
+      "candidate_role": "fabric",
+      "score": 33.96,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0026",
+      "image_id": "IMG-0176",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02641.jpg",
+      "candidate_role": "front",
+      "score": 101.35,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0026",
+      "image_id": "IMG-0181",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02647.jpg",
+      "candidate_role": "front",
+      "score": 98.35,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0026",
+      "image_id": "IMG-0180",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02646.jpg",
+      "candidate_role": "detail",
+      "score": 42.4,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0026",
+      "image_id": "IMG-0183",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02649.jpg",
+      "candidate_role": "detail",
+      "score": 42.39,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0026",
+      "image_id": "IMG-0185",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02651.jpg",
+      "candidate_role": "fabric",
+      "score": 24.14,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0026",
+      "image_id": "IMG-0184",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 26/DSC02650.jpg",
+      "candidate_role": "fabric",
+      "score": 21.99,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0027",
+      "image_id": "IMG-0186",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02629.jpg",
+      "candidate_role": "front",
+      "score": 97.17,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0027",
+      "image_id": "IMG-0191",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02634.jpg",
+      "candidate_role": "front",
+      "score": 96.82,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0027",
+      "image_id": "IMG-0188",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02631.jpg",
+      "candidate_role": "detail",
+      "score": 59.58,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0027",
+      "image_id": "IMG-0192",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02635.jpg",
+      "candidate_role": "detail",
+      "score": 32.38,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0027",
+      "image_id": "IMG-0195",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02639.jpg",
+      "candidate_role": "fabric",
+      "score": 24.59,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0027",
+      "image_id": "IMG-0194",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 27/DSC02638.jpg",
+      "candidate_role": "fabric",
+      "score": 21.22,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0028",
+      "image_id": "IMG-0196",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 28/DSC02617.jpg",
+      "candidate_role": "front",
+      "score": 105.59,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0028",
+      "image_id": "IMG-0198",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 28/DSC02619.jpg",
+      "candidate_role": "detail",
+      "score": 60.53,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0028",
+      "image_id": "IMG-0202",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 28/DSC02623.jpg",
+      "candidate_role": "detail",
+      "score": 58.47,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0028",
+      "image_id": "IMG-0205",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 28/DSC02627.jpg",
+      "candidate_role": "fabric",
+      "score": 20.59,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0028",
+      "image_id": "IMG-0204",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 28/DSC02625.jpg",
+      "candidate_role": "fabric",
+      "score": 18.34,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0029",
+      "image_id": "IMG-0211",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02611.jpg",
+      "candidate_role": "front",
+      "score": 106.29,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0029",
+      "image_id": "IMG-0206",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02606.jpg",
+      "candidate_role": "front",
+      "score": 105.7,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0029",
+      "image_id": "IMG-0213",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02613.jpg",
+      "candidate_role": "detail",
+      "score": 38.78,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0029",
+      "image_id": "IMG-0208",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02608.jpg",
+      "candidate_role": "detail",
+      "score": 38.23,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0029",
+      "image_id": "IMG-0215",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02615.jpg",
+      "candidate_role": "fabric",
+      "score": 20.33,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0029",
+      "image_id": "IMG-0214",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 29/DSC02614.jpg",
+      "candidate_role": "fabric",
+      "score": 18.49,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0030",
+      "image_id": "IMG-0220",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 30/DSC02591.jpg",
+      "candidate_role": "front",
+      "score": 105.63,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0030",
+      "image_id": "IMG-0224",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 30/DSC02595.jpg",
+      "candidate_role": "detail",
+      "score": 74.13,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0030",
+      "image_id": "IMG-0221",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 30/DSC02592.jpg",
+      "candidate_role": "detail",
+      "score": 40.44,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0030",
+      "image_id": "IMG-0229",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 30/DSC02603.jpg",
+      "candidate_role": "fabric",
+      "score": 20.15,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0030",
+      "image_id": "IMG-0230",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 30/DSC02604.jpg",
+      "candidate_role": "fabric",
+      "score": 4.76,
+      "blockers": [
+        "曝光异常",
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0031",
+      "image_id": "IMG-0236",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02586.jpg",
+      "candidate_role": "front",
+      "score": 96.54,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0031",
+      "image_id": "IMG-0231",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02581.jpg",
+      "candidate_role": "front",
+      "score": 95.98,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0031",
+      "image_id": "IMG-0238",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02588.jpg",
+      "candidate_role": "detail",
+      "score": 42.12,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0031",
+      "image_id": "IMG-0233",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02583.jpg",
+      "candidate_role": "detail",
+      "score": 37.65,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0031",
+      "image_id": "IMG-0239",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02589.jpg",
+      "candidate_role": "fabric",
+      "score": 59.57,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0031",
+      "image_id": "IMG-0235",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 31/DSC02585.jpg",
+      "candidate_role": "fabric",
+      "score": 34.5,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0032",
+      "image_id": "IMG-0241",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 32/DSC02565.jpg",
+      "candidate_role": "front",
+      "score": 98.87,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0032",
+      "image_id": "IMG-0246",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 32/DSC02570.jpg",
+      "candidate_role": "detail",
+      "score": 60.42,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0032",
+      "image_id": "IMG-0244",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 32/DSC02568.jpg",
+      "candidate_role": "detail",
+      "score": 59.45,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0032",
+      "image_id": "IMG-0251",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 32/DSC02576.jpg",
+      "candidate_role": "fabric",
+      "score": 75.08,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0032",
+      "image_id": "IMG-0252",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 32/DSC02579.jpg",
+      "candidate_role": "fabric",
+      "score": 71.61,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0033",
+      "image_id": "IMG-0253",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 33/DSC02553.jpg",
+      "candidate_role": "front",
+      "score": 95.03,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0033",
+      "image_id": "IMG-0255",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 33/DSC02555.jpg",
+      "candidate_role": "detail",
+      "score": 75.74,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0033",
+      "image_id": "IMG-0254",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 33/DSC02554.jpg",
+      "candidate_role": "detail",
+      "score": 74.48,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0033",
+      "image_id": "IMG-0262",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 33/DSC02563.jpg",
+      "candidate_role": "fabric",
+      "score": 26.23,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0033",
+      "image_id": "IMG-0265",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 33/DSC02564.jpg",
+      "candidate_role": "fabric",
+      "score": 25.9,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0034",
+      "image_id": "IMG-0266",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 34/DSC02537.jpg",
+      "candidate_role": "front",
+      "score": 96.05,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0034",
+      "image_id": "IMG-0267",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 34/DSC02538.jpg",
+      "candidate_role": "detail",
+      "score": 73.88,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0034",
+      "image_id": "IMG-0269",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 34/DSC02540.jpg",
+      "candidate_role": "detail",
+      "score": 72.77,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0034",
+      "image_id": "IMG-0274",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 34/DSC02550.jpg",
+      "candidate_role": "fabric",
+      "score": 37.84,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0034",
+      "image_id": "IMG-0275",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 34/DSC02551.jpg",
+      "candidate_role": "fabric",
+      "score": 24.29,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0035",
+      "image_id": "IMG-0276",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 35/DSC02524.jpg",
+      "candidate_role": "front",
+      "score": 97.4,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0035",
+      "image_id": "IMG-0284",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 35/DSC02532.jpg",
+      "candidate_role": "detail",
+      "score": 60.98,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0035",
+      "image_id": "IMG-0279",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 35/DSC02527.jpg",
+      "candidate_role": "detail",
+      "score": 58.91,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0035",
+      "image_id": "IMG-0286",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 35/DSC02535.jpg",
+      "candidate_role": "fabric",
+      "score": 38.47,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0035",
+      "image_id": "IMG-0287",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 35/DSC02536.jpg",
+      "candidate_role": "fabric",
+      "score": 28.98,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0036",
+      "image_id": "IMG-0288",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 36/DSC02511.jpg",
+      "candidate_role": "front",
+      "score": 104.99,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0036",
+      "image_id": "IMG-0296",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 36/DSC02519.jpg",
+      "candidate_role": "detail",
+      "score": 47.69,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0036",
+      "image_id": "IMG-0290",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 36/DSC02513.jpg",
+      "candidate_role": "detail",
+      "score": 39.34,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0036",
+      "image_id": "IMG-0298",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 36/DSC02521.jpg",
+      "candidate_role": "fabric",
+      "score": 32.24,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0036",
+      "image_id": "IMG-0297",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 36/DSC02520.jpg",
+      "candidate_role": "fabric",
+      "score": 21.7,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0037",
+      "image_id": "IMG-0299",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 37/DSC02498.jpg",
+      "candidate_role": "front",
+      "score": 94.32,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0037",
+      "image_id": "IMG-0301",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 37/DSC02500.jpg",
+      "candidate_role": "detail",
+      "score": 40.95,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0037",
+      "image_id": "IMG-0304",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 37/DSC02503.jpg",
+      "candidate_role": "detail",
+      "score": 38.29,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0037",
+      "image_id": "IMG-0308",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 37/DSC02507.jpg",
+      "candidate_role": "fabric",
+      "score": 30.07,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0037",
+      "image_id": "IMG-0309",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 37/DSC02508.jpg",
+      "candidate_role": "fabric",
+      "score": 23.61,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0038",
+      "image_id": "IMG-0310",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 38/DSC02482.jpg",
+      "candidate_role": "front",
+      "score": 99.2,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0038",
+      "image_id": "IMG-0314",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 38/DSC02488.jpg",
+      "candidate_role": "detail",
+      "score": 54.72,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0038",
+      "image_id": "IMG-0318",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 38/DSC02493.jpg",
+      "candidate_role": "detail",
+      "score": 33.5,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0038",
+      "image_id": "IMG-0320",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 38/DSC02496.jpg",
+      "candidate_role": "fabric",
+      "score": 35.4,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0038",
+      "image_id": "IMG-0319",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 38/DSC02495.jpg",
+      "candidate_role": "fabric",
+      "score": 5.34,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0039",
+      "image_id": "IMG-0321",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 39/DSC02469.jpg",
+      "candidate_role": "front",
+      "score": 97.02,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0039",
+      "image_id": "IMG-0324",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 39/DSC02472.jpg",
+      "candidate_role": "detail",
+      "score": 58.67,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0039",
+      "image_id": "IMG-0323",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 39/DSC02471.jpg",
+      "candidate_role": "detail",
+      "score": 55.9,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0039",
+      "image_id": "IMG-0330",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 39/DSC02481.jpg",
+      "candidate_role": "fabric",
+      "score": 26.71,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0039",
+      "image_id": "IMG-0329",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 39/DSC02480.jpg",
+      "candidate_role": "fabric",
+      "score": 25.43,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0040",
+      "image_id": "IMG-0335",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 40/DSC02293.jpg",
+      "candidate_role": "front",
+      "score": 95.41,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0040",
+      "image_id": "IMG-0337",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 40/DSC02296.jpg",
+      "candidate_role": "detail",
+      "score": 72.65,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0040",
+      "image_id": "IMG-0336",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 40/DSC02295.jpg",
+      "candidate_role": "detail",
+      "score": 71.72,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0040",
+      "image_id": "IMG-0346",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 40/DSC02323.jpg",
+      "candidate_role": "fabric",
+      "score": 33.75,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0040",
+      "image_id": "IMG-0347",
+      "source_path": "images/yiwu/04.21。 鄂多蘭   40件/未命名文件夹 40/DSC02327.jpg",
+      "candidate_role": "fabric",
+      "score": 22.54,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0041",
+      "image_id": "IMG-0683",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹/DSC03982.jpg",
+      "candidate_role": "front",
+      "score": 106.36,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0041",
+      "image_id": "IMG-0685",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹/DSC03984.jpg",
+      "candidate_role": "front",
+      "score": 106.17,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0041",
+      "image_id": "IMG-0686",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹/DSC03989.jpg",
+      "candidate_role": "detail",
+      "score": 38.64,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0041",
+      "image_id": "IMG-0684",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹/DSC03984-2.jpg",
+      "candidate_role": "detail",
+      "score": 22.86,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0042",
+      "image_id": "IMG-0480",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 2/DSC04004.jpg",
+      "candidate_role": "front",
+      "score": 106.23,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0042",
+      "image_id": "IMG-0485",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 2/DSC04020.jpg",
+      "candidate_role": "detail",
+      "score": 60.81,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0042",
+      "image_id": "IMG-0482",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 2/DSC04016.jpg",
+      "candidate_role": "detail",
+      "score": 22.87,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0043",
+      "image_id": "IMG-0569",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 3/DSC04032.jpg",
+      "candidate_role": "front",
+      "score": 105.94,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0043",
+      "image_id": "IMG-0573",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 3/DSC04043.jpg",
+      "candidate_role": "detail",
+      "score": 60.82,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0043",
+      "image_id": "IMG-0572",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 3/DSC04040.jpg",
+      "candidate_role": "detail",
+      "score": 22.97,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0044",
+      "image_id": "IMG-0641",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 4/DSC04078.jpg",
+      "candidate_role": "front",
+      "score": 98.66,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0044",
+      "image_id": "IMG-0634",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 4/DSC04055.jpg",
+      "candidate_role": "front",
+      "score": 30.96,
+      "blockers": [
+        "曝光异常",
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0044",
+      "image_id": "IMG-0637",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 4/DSC04060.jpg",
+      "candidate_role": "detail",
+      "score": 59.12,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0044",
+      "image_id": "IMG-0638",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 4/DSC04063-2.jpg",
+      "candidate_role": "detail",
+      "score": 34.59,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0044",
+      "image_id": "IMG-0639",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 4/DSC04063.jpg",
+      "candidate_role": "fabric",
+      "score": 19.97,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0045",
+      "image_id": "IMG-0643",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 5/DSC04081.jpg",
+      "candidate_role": "front",
+      "score": 106.12,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0045",
+      "image_id": "IMG-0645",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 5/DSC04085.jpg",
+      "candidate_role": "detail",
+      "score": 24.86,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0045",
+      "image_id": "IMG-0647",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 5/DSC04089.jpg",
+      "candidate_role": "detail",
+      "score": 20.66,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0045",
+      "image_id": "IMG-0648",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 5/DSC04092.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0046",
+      "image_id": "IMG-0651",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 6/DSC04098.jpg",
+      "candidate_role": "front",
+      "score": 91.85,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0046",
+      "image_id": "IMG-0655",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 6/DSC04116.jpg",
+      "candidate_role": "detail",
+      "score": 50.02,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0046",
+      "image_id": "IMG-0654",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 6/DSC04108.jpg",
+      "candidate_role": "detail",
+      "score": 37.13,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0046",
+      "image_id": "IMG-0656",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 6/DSC04118.jpg",
+      "candidate_role": "fabric",
+      "score": 26.06,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0047",
+      "image_id": "IMG-0659",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 7/DSC04124.jpg",
+      "candidate_role": "front",
+      "score": 97.04,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0047",
+      "image_id": "IMG-0662",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 7/DSC04132.jpg",
+      "candidate_role": "detail",
+      "score": 23.23,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0047",
+      "image_id": "IMG-0661",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 7/DSC04128.jpg",
+      "candidate_role": "detail",
+      "score": 21.25,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0047",
+      "image_id": "IMG-0663",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 7/DSC04133.jpg",
+      "candidate_role": "fabric",
+      "score": 19.64,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0048",
+      "image_id": "IMG-0666",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 8/DSC04138.jpg",
+      "candidate_role": "front",
+      "score": 106.47,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0048",
+      "image_id": "IMG-0672",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 8/DSC04152.jpg",
+      "candidate_role": "detail",
+      "score": 62.13,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0048",
+      "image_id": "IMG-0669",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 8/DSC04146.jpg",
+      "candidate_role": "detail",
+      "score": 21.82,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0048",
+      "image_id": "IMG-0671",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 8/DSC04150.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0049",
+      "image_id": "IMG-0674",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 9/DSC04157.jpg",
+      "candidate_role": "front",
+      "score": 106.09,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0049",
+      "image_id": "IMG-0678",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 9/DSC04164.jpg",
+      "candidate_role": "detail",
+      "score": 60.67,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0049",
+      "image_id": "IMG-0677",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 9/DSC04162.jpg",
+      "candidate_role": "detail",
+      "score": 25.78,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0049",
+      "image_id": "IMG-0680",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 9/DSC04167.jpg",
+      "candidate_role": "fabric",
+      "score": 21.57,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0049",
+      "image_id": "IMG-0679",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 9/DSC04165.jpg",
+      "candidate_role": "fabric",
+      "score": 20.81,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0050",
+      "image_id": "IMG-0399",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 10/DSC04171.jpg",
+      "candidate_role": "front",
+      "score": 107.07,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0050",
+      "image_id": "IMG-0403",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 10/DSC04180.jpg",
+      "candidate_role": "detail",
+      "score": 61.53,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0050",
+      "image_id": "IMG-0402",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 10/DSC04178.jpg",
+      "candidate_role": "detail",
+      "score": 23.03,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0050",
+      "image_id": "IMG-0405",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 10/DSC04184.jpg",
+      "candidate_role": "fabric",
+      "score": 19.77,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0051",
+      "image_id": "IMG-0407",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 11/DSC04188.jpg",
+      "candidate_role": "front",
+      "score": 95.72,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0051",
+      "image_id": "IMG-0411",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 11/DSC04194.jpg",
+      "candidate_role": "detail",
+      "score": 67.81,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0051",
+      "image_id": "IMG-0409",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 11/DSC04191.jpg",
+      "candidate_role": "detail",
+      "score": 66.4,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0051",
+      "image_id": "IMG-0412",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 11/DSC04195.jpg",
+      "candidate_role": "fabric",
+      "score": 29.0,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0052",
+      "image_id": "IMG-0416",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 12/DSC04203.jpg",
+      "candidate_role": "front",
+      "score": 105.82,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0052",
+      "image_id": "IMG-0417",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 12/DSC04204.jpg",
+      "candidate_role": "front",
+      "score": 34.22,
+      "blockers": [
+        "曝光异常",
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0052",
+      "image_id": "IMG-0419",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 12/DSC04208.jpg",
+      "candidate_role": "detail",
+      "score": 71.51,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0052",
+      "image_id": "IMG-0418",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 12/DSC04205.jpg",
+      "candidate_role": "detail",
+      "score": 47.18,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0052",
+      "image_id": "IMG-0421",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 12/DSC04211.jpg",
+      "candidate_role": "fabric",
+      "score": 31.66,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0053",
+      "image_id": "IMG-0424",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 13/DSC04217.jpg",
+      "candidate_role": "front",
+      "score": 73.84,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0053",
+      "image_id": "IMG-0426",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 13/DSC04221.jpg",
+      "candidate_role": "detail",
+      "score": 75.24,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0053",
+      "image_id": "IMG-0427",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 13/DSC04222.jpg",
+      "candidate_role": "detail",
+      "score": 68.89,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0053",
+      "image_id": "IMG-0430",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 13/DSC04231.jpg",
+      "candidate_role": "fabric",
+      "score": 64.94,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0054",
+      "image_id": "IMG-0432",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 14/DSC04235.jpg",
+      "candidate_role": "front",
+      "score": 106.47,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0054",
+      "image_id": "IMG-0436",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 14/DSC04241.jpg",
+      "candidate_role": "detail",
+      "score": 61.44,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0054",
+      "image_id": "IMG-0435",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 14/DSC04240.jpg",
+      "candidate_role": "detail",
+      "score": 35.93,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0054",
+      "image_id": "IMG-0437",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 14/DSC04242.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0055",
+      "image_id": "IMG-0440",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 15/DSC04249.jpg",
+      "candidate_role": "front",
+      "score": 98.01,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0055",
+      "image_id": "IMG-0444",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 15/DSC04256.jpg",
+      "candidate_role": "detail",
+      "score": 55.06,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0055",
+      "image_id": "IMG-0443",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 15/DSC04255.jpg",
+      "candidate_role": "detail",
+      "score": 35.69,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0055",
+      "image_id": "IMG-0446",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 15/DSC04260.jpg",
+      "candidate_role": "fabric",
+      "score": 20.48,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0056",
+      "image_id": "IMG-0448",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 16/DSC04264.jpg",
+      "candidate_role": "front",
+      "score": 94.41,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0056",
+      "image_id": "IMG-0451",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 16/DSC04272.jpg",
+      "candidate_role": "detail",
+      "score": 68.35,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0056",
+      "image_id": "IMG-0452",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 16/DSC04274.jpg",
+      "candidate_role": "detail",
+      "score": 60.67,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0056",
+      "image_id": "IMG-0454",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 16/DSC04278.jpg",
+      "candidate_role": "fabric",
+      "score": 54.21,
+      "blockers": [
+        "曝光异常"
+      ]
+    },
+    {
+      "product_id": "ED-0057",
+      "image_id": "IMG-0456",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 17/DSC04279.jpg",
+      "candidate_role": "front",
+      "score": 104.62,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0057",
+      "image_id": "IMG-0458",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 17/DSC04282.jpg",
+      "candidate_role": "detail",
+      "score": 76.89,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0057",
+      "image_id": "IMG-0460",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 17/DSC04285.jpg",
+      "candidate_role": "detail",
+      "score": 70.83,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0057",
+      "image_id": "IMG-0462",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 17/DSC04288.jpg",
+      "candidate_role": "fabric",
+      "score": 55.45,
+      "blockers": [
+        "曝光异常"
+      ]
+    },
+    {
+      "product_id": "ED-0058",
+      "image_id": "IMG-0464",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 18/DSC04291.jpg",
+      "candidate_role": "front",
+      "score": 100.41,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0058",
+      "image_id": "IMG-0468",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 18/DSC04296.jpg",
+      "candidate_role": "detail",
+      "score": 59.71,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0058",
+      "image_id": "IMG-0467",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 18/DSC04295.jpg",
+      "candidate_role": "detail",
+      "score": 36.24,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0058",
+      "image_id": "IMG-0470",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 18/DSC04299.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0059",
+      "image_id": "IMG-0473",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 19/DSC04342.jpg",
+      "candidate_role": "front",
+      "score": 101.02,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0059",
+      "image_id": "IMG-0477",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 19/DSC04346.jpg",
+      "candidate_role": "detail",
+      "score": 60.53,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0059",
+      "image_id": "IMG-0476",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 19/DSC04345.jpg",
+      "candidate_role": "detail",
+      "score": 22.97,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0059",
+      "image_id": "IMG-0479",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 19/DSC04352.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0060",
+      "image_id": "IMG-0488",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 20/DSC03629.jpg",
+      "candidate_role": "front",
+      "score": 97.98,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0060",
+      "image_id": "IMG-0489",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 20/DSC03630.jpg",
+      "candidate_role": "detail",
+      "score": 45.24,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0060",
+      "image_id": "IMG-0490",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 20/DSC03631.jpg",
+      "candidate_role": "detail",
+      "score": 44.95,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0060",
+      "image_id": "IMG-0493",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 20/DSC03637.jpg",
+      "candidate_role": "fabric",
+      "score": 25.62,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0061",
+      "image_id": "IMG-0496",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 21/DSC04357.jpg",
+      "candidate_role": "front",
+      "score": 83.43,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0061",
+      "image_id": "IMG-0498",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 21/DSC04361.jpg",
+      "candidate_role": "detail",
+      "score": 76.28,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0061",
+      "image_id": "IMG-0501",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 21/DSC04366.jpg",
+      "candidate_role": "detail",
+      "score": 69.8,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0061",
+      "image_id": "IMG-0502",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 21/DSC04367.jpg",
+      "candidate_role": "fabric",
+      "score": 36.34,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0062",
+      "image_id": "IMG-0505",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04379-4.jpg",
+      "candidate_role": "front",
+      "score": 93.97,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0062",
+      "image_id": "IMG-0504",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04379-3.jpg",
+      "candidate_role": "front",
+      "score": 93.58,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0062",
+      "image_id": "IMG-0507",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04381.jpg",
+      "candidate_role": "detail",
+      "score": 39.86,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0062",
+      "image_id": "IMG-0508",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04383.jpg",
+      "candidate_role": "detail",
+      "score": 30.17,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0062",
+      "image_id": "IMG-0510",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04388.jpg",
+      "candidate_role": "fabric",
+      "score": 70.88,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0062",
+      "image_id": "IMG-0506",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 22/DSC04379.jpg",
+      "candidate_role": "fabric",
+      "score": 69.35,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0063",
+      "image_id": "IMG-0512",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 23/DSC04393.jpg",
+      "candidate_role": "front",
+      "score": 93.94,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0063",
+      "image_id": "IMG-0516",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 23/DSC04406.jpg",
+      "candidate_role": "front",
+      "score": 93.24,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0063",
+      "image_id": "IMG-0515",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 23/DSC04398.jpg",
+      "candidate_role": "detail",
+      "score": 72.36,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0063",
+      "image_id": "IMG-0513",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 23/DSC04394.jpg",
+      "candidate_role": "detail",
+      "score": 57.25,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0063",
+      "image_id": "IMG-0517",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 23/DSC04412.jpg",
+      "candidate_role": "fabric",
+      "score": 21.62,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0064",
+      "image_id": "IMG-0522",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04425.jpg",
+      "candidate_role": "front",
+      "score": 90.84,
+      "blockers": [
+        "曝光异常"
+      ]
+    },
+    {
+      "product_id": "ED-0064",
+      "image_id": "IMG-0520",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04421.jpg",
+      "candidate_role": "front",
+      "score": 90.5,
+      "blockers": [
+        "曝光异常"
+      ]
+    },
+    {
+      "product_id": "ED-0064",
+      "image_id": "IMG-0524",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04429.jpg",
+      "candidate_role": "detail",
+      "score": 38.2,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0064",
+      "image_id": "IMG-0523",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04427.jpg",
+      "candidate_role": "detail",
+      "score": 36.59,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0064",
+      "image_id": "IMG-0526",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04433.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0064",
+      "image_id": "IMG-0525",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 24/DSC04430.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0065",
+      "image_id": "IMG-0528",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 25/DSC04434.jpg",
+      "candidate_role": "front",
+      "score": 106.13,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0065",
+      "image_id": "IMG-0534",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 25/DSC04443.jpg",
+      "candidate_role": "front",
+      "score": 105.65,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0065",
+      "image_id": "IMG-0531",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 25/DSC04437.jpg",
+      "candidate_role": "detail",
+      "score": 38.44,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0065",
+      "image_id": "IMG-0529",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 25/DSC04435.jpg",
+      "candidate_role": "detail",
+      "score": 35.66,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0065",
+      "image_id": "IMG-0533",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 25/DSC04441.jpg",
+      "candidate_role": "fabric",
+      "score": 12.0,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0066",
+      "image_id": "IMG-0539",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04449.jpg",
+      "candidate_role": "front",
+      "score": 105.86,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0066",
+      "image_id": "IMG-0536",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04444.jpg",
+      "candidate_role": "front",
+      "score": 105.65,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0066",
+      "image_id": "IMG-0537",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04445.jpg",
+      "candidate_role": "detail",
+      "score": 81.44,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0066",
+      "image_id": "IMG-0540",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04451.jpg",
+      "candidate_role": "detail",
+      "score": 59.25,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0066",
+      "image_id": "IMG-0542",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04459.jpg",
+      "candidate_role": "fabric",
+      "score": 62.56,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0066",
+      "image_id": "IMG-0538",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 26/DSC04447.jpg",
+      "candidate_role": "fabric",
+      "score": 28.12,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0067",
+      "image_id": "IMG-0544",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 27/DSC04461.jpg",
+      "candidate_role": "front",
+      "score": 100.17,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0067",
+      "image_id": "IMG-0550",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 27/DSC04471.jpg",
+      "candidate_role": "front",
+      "score": 97.89,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0067",
+      "image_id": "IMG-0547",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 27/DSC04464.jpg",
+      "candidate_role": "detail",
+      "score": 58.31,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0067",
+      "image_id": "IMG-0549",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 27/DSC04468.jpg",
+      "candidate_role": "detail",
+      "score": 24.52,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0067",
+      "image_id": "IMG-0548",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 27/DSC04466.jpg",
+      "candidate_role": "fabric",
+      "score": 19.71,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0068",
+      "image_id": "IMG-0552",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 28/DSC04474.jpg",
+      "candidate_role": "front",
+      "score": 75.96,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0068",
+      "image_id": "IMG-0554",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 28/DSC04478.jpg",
+      "candidate_role": "detail",
+      "score": 65.01,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0068",
+      "image_id": "IMG-0558",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 28/DSC04486.jpg",
+      "candidate_role": "detail",
+      "score": 57.05,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0068",
+      "image_id": "IMG-0557",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 28/DSC04484.jpg",
+      "candidate_role": "fabric",
+      "score": 43.95,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0069",
+      "image_id": "IMG-0561",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 29/DSC04491.jpg",
+      "candidate_role": "front",
+      "score": 92.22,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0069",
+      "image_id": "IMG-0565",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 29/DSC04497.jpg",
+      "candidate_role": "detail",
+      "score": 32.36,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0069",
+      "image_id": "IMG-0563",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 29/DSC04493.jpg",
+      "candidate_role": "detail",
+      "score": 29.09,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0069",
+      "image_id": "IMG-0567",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 29/DSC04506.jpg",
+      "candidate_role": "fabric",
+      "score": 28.75,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0070",
+      "image_id": "IMG-0577",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 30/DSC04509.jpg",
+      "candidate_role": "front",
+      "score": 96.1,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0070",
+      "image_id": "IMG-0579",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 30/DSC04512.jpg",
+      "candidate_role": "detail",
+      "score": 72.17,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0070",
+      "image_id": "IMG-0581",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 30/DSC04519.jpg",
+      "candidate_role": "detail",
+      "score": 61.92,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0070",
+      "image_id": "IMG-0582",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 30/DSC04520.jpg",
+      "candidate_role": "fabric",
+      "score": 72.67,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0071",
+      "image_id": "IMG-0585",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04522.jpg",
+      "candidate_role": "front",
+      "score": 94.56,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0071",
+      "image_id": "IMG-0587",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04525.jpg",
+      "candidate_role": "detail",
+      "score": 68.51,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0071",
+      "image_id": "IMG-0588",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04526.jpg",
+      "candidate_role": "detail",
+      "score": 40.59,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0071",
+      "image_id": "IMG-0590",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 31/DSC04532.jpg",
+      "candidate_role": "fabric",
+      "score": 48.56,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0072",
+      "image_id": "IMG-0593",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04538.jpg",
+      "candidate_role": "front",
+      "score": 93.86,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0072",
+      "image_id": "IMG-0595",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04540.jpg",
+      "candidate_role": "detail",
+      "score": 73.64,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0072",
+      "image_id": "IMG-0596",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04543.jpg",
+      "candidate_role": "detail",
+      "score": 62.06,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0072",
+      "image_id": "IMG-0599",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 32/DSC04549.jpg",
+      "candidate_role": "fabric",
+      "score": 70.04,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0073",
+      "image_id": "IMG-0601",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 33/DSC04551.jpg",
+      "candidate_role": "front",
+      "score": 98.99,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0073",
+      "image_id": "IMG-0605",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 33/DSC04558.jpg",
+      "candidate_role": "detail",
+      "score": 78.82,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0073",
+      "image_id": "IMG-0603",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 33/DSC04554.jpg",
+      "candidate_role": "detail",
+      "score": 54.86,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0073",
+      "image_id": "IMG-0606",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 33/DSC04559.jpg",
+      "candidate_role": "fabric",
+      "score": 62.69,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0074",
+      "image_id": "IMG-0610",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 34/DSC04565.jpg",
+      "candidate_role": "front",
+      "score": 95.9,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0074",
+      "image_id": "IMG-0614",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 34/DSC04569.jpg",
+      "candidate_role": "detail",
+      "score": 75.49,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0074",
+      "image_id": "IMG-0613",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 34/DSC04568.jpg",
+      "candidate_role": "detail",
+      "score": 43.34,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0074",
+      "image_id": "IMG-0615",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 34/DSC04570.jpg",
+      "candidate_role": "fabric",
+      "score": 38.53,
+      "blockers": [
+        "主体贴边/可能被裁切"
+      ]
+    },
+    {
+      "product_id": "ED-0075",
+      "image_id": "IMG-0618",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 35/DSC04573.jpg",
+      "candidate_role": "front",
+      "score": 94.23,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0075",
+      "image_id": "IMG-0620",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 35/DSC04575.jpg",
+      "candidate_role": "detail",
+      "score": 72.3,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0075",
+      "image_id": "IMG-0619",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 35/DSC04574.jpg",
+      "candidate_role": "detail",
+      "score": 52.88,
+      "blockers": [
+        "曝光异常"
+      ]
+    },
+    {
+      "product_id": "ED-0075",
+      "image_id": "IMG-0624",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 35/DSC04582.jpg",
+      "candidate_role": "fabric",
+      "score": 69.22,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0076",
+      "image_id": "IMG-0626",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 36/DSC04583.jpg",
+      "candidate_role": "front",
+      "score": 94.21,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0076",
+      "image_id": "IMG-0628",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 36/DSC04585.jpg",
+      "candidate_role": "detail",
+      "score": 77.67,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0076",
+      "image_id": "IMG-0630",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 36/DSC04590.jpg",
+      "candidate_role": "detail",
+      "score": 63.09,
+      "blockers": []
+    },
+    {
+      "product_id": "ED-0076",
+      "image_id": "IMG-0632",
+      "source_path": "images/yiwu/09.21。 鄂多蘭   36件/未命名文件夹 36/DSC04593.jpg",
+      "candidate_role": "fabric",
+      "score": 55.79,
+      "blockers": [
+        "曝光异常"
+      ]
+    }
+  ]
+}
