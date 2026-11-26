@@ -208,7 +208,9 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && ~/tools/media-venv/bin/pyt
 ```
 
 产物：`media/products/<PID>/<IMGID>-{4x5,1x1,thumb}.jpg` + `media/manifest.json`。
-API 的 `STORAGE_LOCAL_ROOT` 指向 `media/`，`STORAGE_PUBLIC_BASE_URL` 指向 `/static` 前缀。
+API 的**只读媒体根** `STORAGE_MEDIA_ROOT` 指向 `media/`（商品目录图），
+**可写存储根** `STORAGE_LOCAL_ROOT` 指向 `storage/`（后台新上传），
+两者共用 `/static` 对外前缀，`STORAGE_PUBLIC_BASE_URL` 指向该前缀。
 
 ---
 
@@ -217,6 +219,8 @@ API 的 `STORAGE_LOCAL_ROOT` 指向 `media/`，`STORAGE_PUBLIC_BASE_URL` 指向 
 ```bash
 # 静态自检（本地，无需依赖）
 python3 tools/check_miniprogram.py
+python3 tools/check_api_contract.py      # 前后端调用 ↔ API 路由表交叉核对
+python3 tools/sync_contracts_to_miniprogram.py --check
 
 # 单元 + 集成测试（服务器）
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && set -a && . infra/docker/.env && set +a \

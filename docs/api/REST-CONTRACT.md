@@ -64,12 +64,14 @@
 | PUT | `/admin/banners/:id` | STAFF | 修改轮播 |
 | DELETE | `/admin/banners/:id` | OWNER | 删除轮播 |
 | GET | `/admin/measurement-templates` | 登录 | 量体模板（含历史版本） |
+| GET | `/admin/measurement-templates/:id` | 登录 | 模板详情 |
 | POST | `/admin/measurement-templates` | OWNER | 新建模板（可 `publish` 直接发布 v1） |
 | PUT | `/admin/measurement-templates/:id` | OWNER | 修改草稿；已发布模板需新建版本 |
 | POST | `/admin/measurement-templates/:id/publish` | OWNER | 发布（草稿→ACTIVE，已 ACTIVE 则生成新版本） |
 | GET | `/admin/customization-requests` | 登录 | 申请列表 `status` `keyword` `productId` |
 | GET | `/admin/customization-requests/:id` | 登录 | 申请详情（含量体资料、报价历史） |
 | POST | `/admin/customization-requests/:id/review` | STAFF | `{ action: 'APPROVE' \| 'REJECT', note }` 审核申请 |
+| PUT | `/admin/customization-requests/:id/status` | 登录 | `{ status, note }` 直接变更申请状态（受状态机约束） |
 | POST | `/admin/customization-requests/:id/quotes` | OWNER | 创建报价（生成新版本，旧版本转 SUPERSEDED） |
 | GET | `/admin/customization-requests/:id/quotes` | 登录 | 报价历史版本 |
 | POST | `/admin/quotes/:id/withdraw` | OWNER | 撤回报价 |
@@ -79,6 +81,8 @@
 | POST | `/admin/orders/:id/status` | STAFF | `{ status, note }` 更新制作状态 |
 | POST | `/admin/orders/:id/ship` | STAFF | `{ carrier, trackingNo, note }` 填写物流 |
 | POST | `/admin/orders/:id/cancel` | OWNER | 取消订单并记录原因 |
+| GET | `/admin/orders/:id/payment` | 登录 | 订单支付记录（V1 恒为 `provider: DISABLED` / `status: DISABLED`） |
+| POST | `/admin/orders/:id/pay` | OWNER | 发起支付 —— **V1 恒返回 `PAYMENT_DISABLED`，不产生任何支付/退款记录** |
 | GET | `/admin/audit-logs` | OWNER | 审计日志 `action` `targetType` `targetId` `actorId` |
 | POST | `/admin/media/upload` | STAFF | multipart 图片上传 → `MediaDto` |
 

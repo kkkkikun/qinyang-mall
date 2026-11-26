@@ -41,6 +41,12 @@ df -h . | tail -1
 log "校验小程序契约副本是否同步"
 python3 tools/sync_contracts_to_miniprogram.py --check
 
+log "校验小程序静态结构"
+python3 tools/check_miniprogram.py
+
+log "校验前后端接口契约（前端调用 ↔ API 路由表）"
+python3 tools/check_api_contract.py
+
 log "安装依赖（lockfile 严格模式）"
 "${RUN_BUILD[@]}" pnpm install --frozen-lockfile --registry="$PNPM_REGISTRY" || \
   "${RUN_BUILD[@]}" pnpm install --registry="$PNPM_REGISTRY"

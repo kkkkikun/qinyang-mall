@@ -75,7 +75,7 @@
   - `MockIdentityProvider`：`WECHAT_MOCK_AUTH=true` 时启用，`code` 形如 `dev:openid-001`。
   由 `WECHAT_MOCK_AUTH` 环境变量切换，业务层零改动。
 - **影响**：开发与测试可完整跑通顾客闭环；拿到 AppID 后改一个环境变量即可切换。
-- **复审**：拿到合法 AppID 时切换为正式 Provider，并在 `docs/DECISIONS.md` 追加一条变更记录。
+- **复审**：拿到合法 AppID 时切换为正式 Provider，并在 `docs/agent/DECISIONS.md` 追加一条变更记录。
 
 ## D-008 支付：接口 + 明确禁用的适配器
 

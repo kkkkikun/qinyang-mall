@@ -149,6 +149,7 @@
 | 后台镜像构建 | `docker build -f infra/docker/Dockerfile.admin-web -t qinyang/admin-web:local .` | ✅ 74.6 MB |
 | Compose 隔离栈 | `docker compose -f infra/docker/docker-compose.test.yml up -d` | ✅ 三容器均 healthy / Up |
 | 小程序静态自检 | `python3 tools/check_miniprogram.py` | ✅ 0 阻塞问题 |
+| **前后端接口契约核对** | `python3 tools/check_api_contract.py` | ✅ **0 阻塞**：55 条 API 路由 ↔ 小程序 15 处 + 后台 35 处调用全部匹配 |
 | 小程序契约副本一致性 | `python3 tools/sync_contracts_to_miniprogram.py --check` | ✅ 与源文件一致 |
 | 后台源码 lint | `node apps/admin-web/scripts/lint.mjs` | ✅ 25 个源文件无问题 |
 | 数据库迁移 | `pnpm --filter @qinyang/api db:migrate` | ✅ 2 个迁移已应用 |
@@ -263,7 +264,7 @@
 
 ## 7. 尚未由商家确认的业务问题（已采用安全临时方案）
 
-见 `docs/DECISIONS.md` 与 `docs/PROJECT-BASELINE.md` §6。要点：
+见 `docs/agent/DECISIONS.md` 与 `docs/PROJECT-BASELINE.md` §6。要点：
 
 | # | 问题 | 当前安全做法 |
 | --- | --- | --- |
