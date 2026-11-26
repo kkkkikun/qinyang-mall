@@ -182,7 +182,8 @@
 ## D-020 服务器端口与资源隔离
 
 - **决策**：本项目使用 Compose project `qinyang`，端口 MySQL `13316`、API `18110`、后台 `18111`，
-  全部绑定 `127.0.0.1`；容器资源上限 MySQL 2C/2G、API 2C/2G、后台 1C/512M；日志 10MB×3 轮转。
+  全部绑定 `127.0.0.1`；容器资源上限 MySQL 1C/2G、API 1C/1.5G、后台 0.5C/256M（合计 **2.5 核 / 3.75 GB**，
+  满足「日常测试服务 ≤ 2.5 核 / 4 GB」）；日志 10MB×3 轮转。
 - **理由**：目标文档要求「用独立 Compose project、端口、卷和专属测试库，不动其他项目」。
   服务器上已有 `nmg-pku-alumni`、`schoolwall` 等项目占用 18080/18081/18082、13306/13307、16379/16380。
 - **影响**：管理后台与 API 通过 SSH 隧道访问，不直接暴露校园网。
@@ -208,3 +209,48 @@
     由 `tools/sync_contracts_to_miniprogram.py` 同步；构建前用 `--check` 校验是否过期。
 - **理由**：契约是三端的唯一事实来源，宁可返回值冗余，也不要让某一端读不到字段。
 - **影响**：契约副本过期会导致构建失败（已加入 `build.sh` 的前置检查），不会静默失配。
+
+## D-023 容器化部署的三处修正：网络端点、健康检查、媒体只读挂载
+
+- **背景**：收尾阶段把 API 与管理后台也跑进 Compose 隔离栈时，暴露三个真实缺陷：
+  1. `qinyang-api` 容器显示 Up，但运行时 `NetworkSettings.Networks = {}`、`Ports = {}`，
+     容器内解析服务名 `mysql` 报 `getaddrinfo EAI_AGAIN`，18110 不可达；
+  2. `qinyang-admin-web` 陷入 `Restarting (1)`，nginx 报 `host not found in upstream "api"`；
+  3. 容器化验收 27/28，唯一失败项是商品主图 404。
+- **决策**：
+  1. **网络端点**：Compose 的 `depends_on` + `service_healthy` 只保证启动顺序，
+     不保证端点 attach 成功。重建网络后旧容器会持有失效的 network id，
+     因此**网络重建必须连容器一起完整销毁**（`docker compose down --remove-orphans`，含网络删除），
+     再一次性 `up -d`，不允许在网络重建后复用旧容器。
+  2. **健康检查**：API 增加容器级健康检查（镜像内无 curl/wget，用 node 内置 `fetch` 探测
+     `/api/v1/health`）；管理后台的 `depends_on` 改为 `api: {condition: service_healthy}`。
+     nginx 在**启动时**解析上游域名，上游不可用时是致命错误而非降级，
+     因此「已启动」必须升级为「已健康」才能拉起依赖方。
+  3. **媒体挂载**：新增 `STORAGE_MEDIA_ROOT` 配置项，把**可写存储根**（后台新上传）
+     与**只读媒体根**（`tools/build_media.py` 产出的商品目录图）拆开，
+     两者共用 `/static` 前缀 —— express 静态中间件默认 fallthrough，
+     可写根在前（上传覆盖目录旧图），只读根在后兜底。
+     容器内媒体目录以 `:ro` 绑定挂载，**不复制、不重建衍生副本**。
+- **理由**：
+  - 前两个缺陷都不是「配置写错」，而是「容器编排的隐含时序假设」，
+    靠 `docker compose config` 展开结果无法看出，必须靠运行时 `docker inspect` 对照排查；
+  - 第三个缺陷暴露出「开发模式把存储根与素材目录混用」的坏味道，
+    容器化一旦把两者分离就会立刻暴露。显式建模两个根，比靠目录复用掩盖更安全。
+- **影响**：
+  - 抽取 `apps/api/src/common/static-assets.ts` 承载前缀推导与双根挂载，
+    并新增 7 例单元测试锁定行为（含「无路径基地址必须回退 `/static`」这一真实踩坑）；
+  - 容器化栈与独立进程模式各跑一轮 `acceptance.mjs`，**均为 28/28**；
+  - 独立进程模式同步改为「可写 `storage/` + 只读 `media/`」双根布局，与容器一致。
+- **复审**：正式部署接入对象存储后（`STORAGE_DRIVER=oss`），`STORAGE_MEDIA_ROOT` 语义需重新评估，
+  届时商品图不再经本地静态目录对外提供。
+
+## D-024 镜像构建阶段也遵守并发上限
+
+- **背景**：目标文档对「图片批处理并发 ≤ 2」「测试并发 ≤ 2 Worker」有明确约束，
+  但镜像构建阶段的 `pnpm install` 不受工作区的 `taskset` 保护 —— 它跑在 Docker 构建容器内。
+- **决策**：两个 Dockerfile 统一设置 `npm_config_child_concurrency=2`、
+  `npm_config_network_concurrency=2`，把镜像构建的子进程与网络并发也压到 2。
+- **理由**：限核不能只覆盖命令行进程；`taskset` 对 docker build 内的构建步骤无效，
+  必须在工具自身的并发参数上收紧，才能真正控制 CPU 峰值。
+- **影响**：`qinyang/api:local` 构建约 4 分钟、`qinyang/admin-web:local` 约 2 分钟，
+  两者串行执行，未与其他重型任务并发。

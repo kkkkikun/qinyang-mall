@@ -16,20 +16,22 @@
 | P3 | 报价版本、顾客确认、订单快照、制作/发货状态机、审计 | ✅ 完成 |
 | P4 | 服务器构建全绿、备份恢复演练、运行手册、交付文档 | ✅ 完成（微信侧验收待 Windows 环境） |
 
-**自动化验证总计：55 个自动化用例（22 单元 + 33 集成）全部通过，
-28 项真实环境垂直切片验收全部通过，小程序静态自检通过。**
+**自动化验证总计：62 个自动化用例（29 单元 + 33 集成）全部通过，
+28 项真实环境垂直切片验收在「独立进程」与「Docker Compose 隔离栈」两种部署形态下各通过一次，
+小程序静态自检通过。**
 
 ---
 
 ## 2. 自动化测试证据
 
-### 2.1 单元测试（22 例，纯业务规则）
+### 2.1 单元测试（29 例，纯业务规则）
 
 | 文件 | 覆盖内容 |
 | --- | --- |
 | `test/unit/status-machine.spec.ts` | 定制申请与订单状态机：终态无后继、覆盖全部状态、主链路逐步可达、不允许跳过报价、报价后可重新报价、已完成不可回退 |
 | `test/unit/measurement-validator.spec.ts` | 量体校验：必填缺失提示具体字段、数值越界、单位不一致拒绝、模板外字段拒绝、错误码、快照结构完整可回溯 |
 | `test/unit/pricing.spec.ts` | 价格规则：`QUOTE_ONLY` 恒为 null（绝不落 0）、固定价必须正整数分、拒绝浮点分、合计为整数分求和 |
+| `test/unit/static-assets.spec.ts` | 静态资源挂载：前缀推导（带端口 / https / 多级路径 / 空值回退）、可写存储根与只读媒体根共用同一前缀且媒体根兜底排在后面、空白媒体根视为未配置 |
 
 ### 2.2 集成测试（33 例，真实 MySQL 测试库）
 
@@ -109,6 +111,26 @@
 === 结果：28/28 项通过 ===
 ```
 
+### 3.1 两种部署形态各验收一次
+
+同一套 `acceptance.mjs` 分别指向两种运行形态，均为 28/28：
+
+| 部署形态 | API 入口 | 后台入口 | 结果 |
+| --- | --- | --- | --- |
+| 独立进程（`infra/scripts/run-api.sh`） | `127.0.0.1:18120/api/v1` | 静态包由 Vite/nginx 托管 | ✅ 28/28，主图 200 / 69KB |
+| Docker Compose 隔离栈（`infra/docker/docker-compose.test.yml`） | `127.0.0.1:18110/api/v1`（容器 `qinyang-api`） | `127.0.0.1:18111`（容器 `qinyang-admin-web`） | ✅ 28/28，主图 200 / 69KB |
+
+容器化栈的额外核验：
+
+```
+✅ 网络成员：qinyang-mysql 172.19.0.2 / qinyang-api 172.19.0.3 / qinyang-admin-web 172.19.0.4
+✅ api 容器运行时网络端点与端口发布：NetworkSettings.Networks 非空、3000/tcp → 127.0.0.1:18110
+✅ api 容器健康检查通过（compose: service_healthy）
+✅ admin-web nginx 反代 /api → api:3000 → 200
+✅ admin-web 直接托管 /static 主图 → 200 / 70769 B
+✅ 容器内直连服务名：http://api:3000/api/v1/health → 200
+```
+
 ---
 
 ## 4. 构建与工程验证
@@ -120,8 +142,15 @@
 | 后台类型检查 | `pnpm --filter @qinyang/admin-web typecheck`（vue-tsc） | ✅ 0 错误 |
 | API 构建 | `pnpm --filter @qinyang/api build`（nest build） | ✅ |
 | 后台构建 | `pnpm --filter @qinyang/admin-web build`（vite） | ✅ 3941 模块 |
-| 全量流水线 | `bash infra/scripts/build.sh` | ✅ 73 s |
+| 全量流水线 | `bash infra/scripts/build.sh`（限核 0-3） | ✅ **72.30 s**，峰值内存 **1.54 GB** |
+| 单元测试 | `pnpm --filter @qinyang/api test:unit` | ✅ 29 例 |
+| 集成测试 | `pnpm --filter @qinyang/api test`（含集成） | ✅ **62 例**（29 单元 + 33 集成） |
+| API 镜像构建 | `docker build -f infra/docker/Dockerfile.api -t qinyang/api:local .` | ✅ 1.08 GB |
+| 后台镜像构建 | `docker build -f infra/docker/Dockerfile.admin-web -t qinyang/admin-web:local .` | ✅ 74.6 MB |
+| Compose 隔离栈 | `docker compose -f infra/docker/docker-compose.test.yml up -d` | ✅ 三容器均 healthy / Up |
 | 小程序静态自检 | `python3 tools/check_miniprogram.py` | ✅ 0 阻塞问题 |
+| 小程序契约副本一致性 | `python3 tools/sync_contracts_to_miniprogram.py --check` | ✅ 与源文件一致 |
+| 后台源码 lint | `node apps/admin-web/scripts/lint.mjs` | ✅ 25 个源文件无问题 |
 | 数据库迁移 | `pnpm --filter @qinyang/api db:migrate` | ✅ 2 个迁移已应用 |
 | 种子数据 | `pnpm --filter @qinyang/api db:seed` | ✅ 幂等 |
 
@@ -130,13 +159,59 @@
 `infra/scripts/backup-restore-drill.sh`（导出 → 恢复到独立演练库 → 结构与行数比对 → 清理）：
 
 ```
-✅ 备份大小: 129 KB
+✅ 备份大小: 266 KB
 ✅ 源库表数=15  演练库表数=15
 ✅ products 13 行 / product_media 119 行 / categories 19 行
-✅ measurement_templates 5 行 / customization_requests 1 行 / quotes 1 行 / orders 1 行
-✅ audit_logs 32 行 / admin_users 2 行
+✅ measurement_templates 5 行 / customization_requests 6 行 / quotes 6 行 / orders 6 行
+✅ audit_logs 88 行 / admin_users 2 行
 ✅ 备份恢复演练通过：结构一致、关键表行数一致
 ```
+
+> 行数随验收轮次增长（每次验收会真实写入申请、报价、订单与审计记录），
+> 演练比对的是「源库 vs 恢复库」的一致性，两侧始终相等。
+
+### 4.1 Docker Compose 隔离栈：故障与修复记录
+
+本次收尾阶段定位并修复了两个真实故障，均已复验通过，过程留档如下。
+
+**故障一：api 容器不入网、18110 不发布**
+
+| 观测 | 数据 |
+| --- | --- |
+| 容器状态 | `qinyang-api` 显示 Up，但 `NetworkSettings.Networks = {}`、`NetworkSettings.Ports = {}` |
+| 容器日志 | `Error: getaddrinfo EAI_AGAIN mysql`（TypeORM 重试 9 次后放弃） |
+| 网络成员 | `docker network inspect qinyang_default` 只列出 mysql 与 admin-web，**没有 api** |
+| compose 展开 | `docker compose config` 中 api 的 `ports`（18110）与 `networks.default` 均**正确存在** |
+
+- 判定：**不是配置写错**。`HostConfig.NetworkMode` 已是 `qinyang_default`、
+  `HostConfig.PortBindings` 也已是 `127.0.0.1:18110`，但运行时端点丢失 ——
+  典型成因是网络被重建（down 删网）后，容器仍持有旧 network id 的端点引用。
+- 修复：完整 `docker compose down --remove-orphans`（连同网络一起删除）后重新 `up -d`，
+  三个容器一次性重建，端点与端口发布恢复正常。
+
+**故障二：后台 nginx 反复重启**
+
+| 观测 | 数据 |
+| --- | --- |
+| nginx 日志 | `[emerg] host not found in upstream "api" in /etc/nginx/conf.d/default.conf:30` |
+| 容器状态 | `qinyang-admin-web` 处于 `Restarting (1)` 循环 |
+
+- 判定：nginx 在**启动时**解析上游域名，api 容器未就绪时直接致命退出；
+  原来的 `depends_on: [api]` 只保证「已启动」，不保证「可用」。
+- 修复：为 api 增加健康检查（镜像内无 curl/wget，用 node 内置 `fetch` 探测 `/api/v1/health`），
+  admin-web 改为 `depends_on: api: {condition: service_healthy}`。
+
+**故障三（顺带发现）：容器内商品主图 404**
+
+| 观测 | 数据 |
+| --- | --- |
+| 验收项 | 「主图文件可访问且非空」→ `http://127.0.0.1:18110/static/products/ED-0062/IMG-0505-4x5.jpg` → **404, 0KB** |
+| 原因 | 容器内商品目录图片位于只读挂载 `/app/media`，而 API 静态目录指向可写存储 `/app/storage`，两者未打通 |
+
+- 修复：新增 `STORAGE_MEDIA_ROOT` 配置项（可写存储根 + 只读媒体根共用 `/static` 前缀，
+  express 静态中间件 fallthrough，媒体根兜底在后），后台容器同步挂载媒体目录到 `/var/www/media`。
+- 回归保护：抽取 `apps/api/src/common/static-assets.ts` 并新增 7 例单元测试
+  （前缀推导、双根顺序、空白媒体根），避免同类问题复发。
 
 ---
 
@@ -148,14 +223,15 @@
 | --- | --- | --- |
 | 本地新增磁盘 ≤ 8 GB | **约 66 MB**（源码 + `.git` 64 MB） | ✅ 0.8% |
 | 本地不装依赖树 / 不装 Docker / 不装 MySQL | 本地 `node_modules` = 0，Docker 不可用 | ✅ |
-| 服务器项目新增 ≤ 8 GB | **1.37 GB** | ✅ 17% |
+| 服务器项目新增 ≤ 8 GB | 工程目录 **1.3 GB** + 本项目镜像 **1.15 GB** ≈ **2.45 GB** | ✅ 31% |
 | 构建 ≤ 4 CPU 核 | 首次实测 9.25 核（超限）→ 加 `taskset -c 0-3` 后 **3.11 核** | ✅ 已修正 |
-| 构建内存 ≤ 8 GB | **1.72 GB** | ✅ |
+| 构建内存 ≤ 8 GB | 流水线实测峰值 **1.54 GB** | ✅ |
+| 镜像构建并发 | 两个 Dockerfile 均设 `npm_config_child_concurrency=2` / `network_concurrency=2` | ✅ |
 | 同时重型任务 ≤ 1 | 构建与图片流水线全程串行 | ✅ |
 | 测试并发 ≤ 2 Worker | `jest.config.js` `maxWorkers: 2` | ✅ |
-| 日常测试服务 ≤ 2.5 核 / 4 GB | compose 限额调整为 MySQL 1C/2G + API 1.5C/1.5G | ✅ |
+| 日常测试服务 ≤ 2.5 核 / 4 GB | compose 限额合计 **2.5 核 / 3.75 GB**（MySQL 1C/2G + API 1C/1.5G + admin-web 0.5C/256M）；空闲实测 CPU ≈ 1%、内存合计 **641 MB** | ✅ |
 | Docker 日志轮转 | 全部服务 10MB × 3 | ✅ |
-| 不全局清理 Docker / 不动其他项目 | 从未执行 prune；端口与卷全部使用 `qinyang` 命名空间 | ✅ |
+| 不全局清理 Docker / 不动其他项目 | 从未执行 prune；仅删除本项目自有的 `qinyang/*:build-test` 重复镜像（释放约 1.1 GB）；端口与卷全部使用 `qinyang` 命名空间 | ✅ |
 
 ---
 
@@ -209,7 +285,7 @@
 - **顾客端**：17 个原生小程序页面，零运行时依赖，对齐原型视觉与交互，驱动真实 API。
 - **管理后台**：9 个页面 + 框架布局，店主/店员分权，价格与量体展示到位，无任何收款状态按钮。
 - **API**：13 张表 + 2 个迁移，状态机、报价版本、快照冻结、归属校验、审计脱敏全部落地并有测试覆盖。
-- **验证**：55 个自动化用例 + 28 项真实环境验收 + 备份恢复演练 + 资源预算核验，全部通过。
+- **验证**：62 个自动化用例 + 28 项真实环境验收（两种部署形态各一轮）+ 备份恢复演练 + 资源预算核验，全部通过。
 
 **唯一未闭环的是微信平台侧验收**（开发者工具预览、真机、AppID、真实支付、正式发布），
 原因均为「缺商家授权或缺本机工具链」，已在 §6.2 逐条记录阻塞原因与解除条件，

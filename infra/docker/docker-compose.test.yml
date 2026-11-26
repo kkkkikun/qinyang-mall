@@ -85,7 +85,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.5"
+          # 三个服务合计 2.5 核 / 3.75GB，满足「日常测试服务 ≤ 2.5 核 / 4GB」约束
+          cpus: "1.0"
           memory: 1500M
     logging:
       driver: json-file

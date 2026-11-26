@@ -55,6 +55,7 @@ mkdir -p infra/docker
 | `JWT_ADMIN_SECRET` / `JWT_CUSTOMER_SECRET` | 两类令牌密钥，**必须不同** |
 | `STORAGE_DRIVER` | `local`（受控文件存储）或 `oss`（对象存储，未实现） |
 | `STORAGE_PUBLIC_BASE_URL` | 图片对外可访问前缀 |
+| `STORAGE_MEDIA_ROOT` | 只读媒体根（商品目录生成图）。容器内为 `/app/media`，独立进程模式为 `$ROOT/media`；留空则不额外挂载 |
 | `WECHAT_MOCK_AUTH` | `true` 时启用开发期 mock 顾客登录；正式环境必须 `false` |
 | `PAYMENT_ENABLED` | V1 固定 `false` |
 | `CORS_ORIGINS` | 允许的后台来源，逗号分隔 |
@@ -131,7 +132,11 @@ docker exec -i qinyang-mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" qinyang_mall_
 ```bash
 bash infra/scripts/run-api.sh          # API → http://127.0.0.1:18110/api/v1
 tail -f infra/logs/api.log             # 日志，超过 20MB 自动轮转，保留 5 份
+bash infra/scripts/stop-api.sh         # 停止（只停本进程，不动 MySQL 容器）
 ```
+
+存储布局与容器模式一致：可写上传落在 `storage/`，商品目录图只读挂在 `media/`，
+两者共用 `/static` 前缀。
 
 管理后台静态包（构建产物在 `apps/admin-web/dist`）：
 
@@ -144,7 +149,7 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp/apps/admin-web/dist && python
 ```bash
 cd infra/docker
 docker compose -f docker-compose.test.yml up -d mysql
-# 构建并启动全部服务
+# 构建并启动全部服务（镜像构建会占用几分钟，容器内并发已限为 2）
 docker compose -f docker-compose.test.yml up -d --build
 
 # 查看状态与日志
@@ -156,6 +161,25 @@ docker compose -f docker-compose.test.yml down
 ```
 
 所有端口只绑定 `127.0.0.1`：MySQL `13316`、API `18110`、后台 `18111`。
+容器资源限额合计 **2.5 核 / 3.75 GB**（MySQL 1C/2G + API 1C/1.5G + 后台 0.5C/256M）。
+
+> **网络重建务必连容器一起销毁**：`down` 会删除 `qinyang_default` 网络，
+> 旧容器若被复用会持有失效的 network id，出现「容器 Up 但解析不到服务名
+> `getaddrinfo EAI_AGAIN`、端口不发布」的故障。重建时用
+> `docker compose -f docker-compose.test.yml down --remove-orphans` 后再 `up -d`。
+
+启动顺序由健康检查保证：API 通过容器级健康检查（`/api/v1/health`）后，
+后台 nginx 才会启动 —— nginx 在启动时解析上游域名，上游不可用会直接退出。
+
+商品图片走**只读绑定挂载**：`media/` → API 的 `/app/media`、后台的 `/var/www/media`，
+不复制、不重建衍生副本。API 的可写存储在 `qinyang_storage` 卷，媒体根由
+`STORAGE_MEDIA_ROOT=/app/media` 指定，两者共用 `/static` 前缀。
+
+```bash
+# 确认三个容器都在同一网络、端口已发布
+docker network inspect qinyang_default --format '{{range .Containers}}{{.Name}} {{.IPv4Address}}{{println}}{{end}}'
+docker inspect qinyang-api --format '{{json .NetworkSettings.Ports}}'
+```
 
 ### 4.3 本地访问（SSH 隧道）
 
