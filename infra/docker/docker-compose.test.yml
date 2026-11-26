@@ -18,6 +18,12 @@ services:
     ports:
       # 仅绑定 127.0.0.1，不暴露校园网
       - "127.0.0.1:13316:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-qinyang-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
     volumes:
       - qinyang_mysql_data:/var/lib/mysql
     deploy:
@@ -54,14 +60,27 @@ services:
       JWT_CUSTOMER_SECRET: ${JWT_CUSTOMER_SECRET:-dev-only-customer-secret-change-me}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       STORAGE_LOCAL_ROOT: /app/storage
+      # 只读媒体根：catalog 已生成的商品图片，容器内只读挂载，不复制
+      STORAGE_MEDIA_ROOT: ${STORAGE_MEDIA_ROOT:-/app/media}
       STORAGE_PUBLIC_BASE_URL: ${STORAGE_PUBLIC_BASE_URL:-http://127.0.0.1:18110/static}
       WECHAT_MOCK_AUTH: ${WECHAT_MOCK_AUTH:-true}
       PAYMENT_ENABLED: "false"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://127.0.0.1:18111}
     ports:
       - "127.0.0.1:18110:3000"
+    healthcheck:
+      # 镜像内无 curl/wget，用 node 内置 fetch 做存活探测
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
     volumes:
-      - qinyang_media:/app/media
+      - ${MEDIA_ROOT:-../../media}:/app/media:ro
       - qinyang_storage:/app/storage
     deploy:
       resources:
@@ -82,9 +101,16 @@ services:
     container_name: qinyang-admin-web
     restart: unless-stopped
     depends_on:
-      - api
+      # nginx 在启动时解析上游域名，必须等 API 真正可用（健康）后再拉起，
+      # 否则会因 "host not found in upstream api" 直接退出并进入重启循环。
+      api:
+        condition: service_healthy
+        required: true
     ports:
       - "127.0.0.1:18111:80"
+    volumes:
+      # 后台 nginx 的 /static 直接托管媒体目录（只读）
+      - ${MEDIA_ROOT:-../../media}:/var/www/media:ro
     deploy:
       resources:
         limits:
@@ -98,5 +124,4 @@ services:
 
 volumes:
   qinyang_mysql_data:
-  qinyang_media:
   qinyang_storage:

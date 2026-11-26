@@ -21,7 +21,15 @@ export interface AppConfig {
   storage: {
     /** local = 受控文件存储（开发/测试）；oss = 对象存储（正式，需商家授权后接入） */
     driver: 'local' | 'oss';
+    /** 可写存储根：后台新上传的素材落在这里 */
     localRoot: string;
+    /**
+     * 只读媒体根：商品目录已生成的图片（build_media.py 产物）。
+     * 与 localRoot 分开，便于容器内把素材以只读方式挂载（ro），
+     * 同时保留一个可写卷给新上传的文件。
+     * 留空表示不额外挂载媒体目录（此时 localRoot 同时承担素材目录）。
+     */
+    mediaRoot: string;
     publicBaseUrl: string;
   };
   wechat: {
@@ -67,6 +75,7 @@ export const configuration = (): AppConfig => ({
   storage: {
     driver: (process.env.STORAGE_DRIVER as 'local' | 'oss') ?? 'local',
     localRoot: process.env.STORAGE_LOCAL_ROOT ?? './storage',
+    mediaRoot: process.env.STORAGE_MEDIA_ROOT ?? '',
     publicBaseUrl: process.env.STORAGE_PUBLIC_BASE_URL ?? 'http://127.0.0.1:3000/static',
   },
   wechat: {

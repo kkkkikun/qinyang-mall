@@ -8,6 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { mountStaticAssets } from './common/static-assets';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -43,10 +44,12 @@ async function bootstrap(): Promise<void> {
   });
 
   // 本地受控文件存储：静态目录
-  const storageRoot = config.get<string>('storage.localRoot') ?? './storage';
-  const publicBaseUrl = config.get<string>('storage.publicBaseUrl') ?? '';
-  const staticPrefix = publicBaseUrl.replace(/^https?:\/\/[^/]+/, '') || '/static';
-  app.useStaticAssets(storageRoot, { prefix: staticPrefix });
+  // 可写存储根 + 只读媒体根共用同一前缀（后者兜底目录生成图）
+  mountStaticAssets(app, {
+    storageRoot: config.get<string>('storage.localRoot') ?? './storage',
+    mediaRoot: config.get<string>('storage.mediaRoot') ?? '',
+    publicBaseUrl: config.get<string>('storage.publicBaseUrl') ?? '',
+  });
 
   const swaggerDoc = SwaggerModule.createDocument(
     app,

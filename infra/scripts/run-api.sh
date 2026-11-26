@@ -22,7 +22,9 @@ set +a
 export DB_HOST=127.0.0.1
 export DB_PORT="${DB_PORT:-13316}"
 export PORT="${PORT:-18110}"
-export STORAGE_LOCAL_ROOT="${STORAGE_LOCAL_ROOT:-$ROOT/media}"
+# 可写存储根（后台新上传）与只读媒体根（目录生成图）分离，与容器部署保持一致
+export STORAGE_LOCAL_ROOT="${STORAGE_LOCAL_ROOT:-$ROOT/storage}"
+export STORAGE_MEDIA_ROOT="${STORAGE_MEDIA_ROOT:-$ROOT/media}"
 export STORAGE_PUBLIC_BASE_URL="${STORAGE_PUBLIC_BASE_URL:-http://127.0.0.1:$PORT/static}"
 export NODE_ENV="${NODE_ENV:-development}"
 

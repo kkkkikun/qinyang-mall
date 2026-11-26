@@ -19,5 +19,7 @@ process.env.WECHAT_MOCK_AUTH = 'true';
 process.env.PAYMENT_ENABLED = 'false';
 process.env.STORAGE_DRIVER = 'local';
 process.env.STORAGE_LOCAL_ROOT = './.test-storage';
+// 测试不挂载只读媒体目录，避免受宿主环境影响
+process.env.STORAGE_MEDIA_ROOT = '';
 process.env.STORAGE_PUBLIC_BASE_URL = 'http://127.0.0.1:3000/static';
 process.env.CORS_ORIGINS = 'http://127.0.0.1:5173';

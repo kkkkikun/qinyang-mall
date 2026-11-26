@@ -1,6 +1,11 @@
 # 琴扬商城管理后台镜像（构建后由 Nginx 托管静态包）
 FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/node:24-alpine AS builder
 
+# corepack 需要显式指定镜像源（容器内直连 registry.npmjs.org 受限）
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+# 镜像构建阶段同样遵守并发上限（与测试/图片并发 ≤ 2 一致），压住 CPU 峰值
+ENV npm_config_child_concurrency=2
+ENV npm_config_network_concurrency=2
 RUN corepack enable && corepack prepare pnpm@11.7.0 --activate
 WORKDIR /app
 
