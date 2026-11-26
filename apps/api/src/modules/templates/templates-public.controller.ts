@@ -26,6 +26,13 @@ export class TemplatesPublicController {
       templateCode: template?.code ?? null,
       templateName: template?.name ?? null,
       templateVersion: template?.version ?? null,
+      // 与 MeasurementTemplateDto 同名的字段，便于前端直接当模板对象使用
+      code: template?.code ?? null,
+      name: template?.name ?? null,
+      version: template?.version ?? null,
+      status: template?.status ?? null,
+      applicableCategories: template?.applicableCategories ?? [],
+      summary: template?.summary ?? null,
       measurementSections: template?.measurementSections ?? [],
     };
   }

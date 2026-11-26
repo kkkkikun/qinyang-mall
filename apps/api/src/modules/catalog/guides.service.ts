@@ -7,8 +7,14 @@ import { BusinessException } from '../../common/errors/business.exception';
 export interface GuideSection {
   id: string;
   title: string;
-  body: string;
-  mediaUrl?: string | null;
+  /** 段落说明 */
+  description?: string;
+  /** 要点条目，逐条渲染 */
+  items: string[];
+  /** 配图（量体示意图等） */
+  illustration?: string | null;
+  /** 关联的量体字段编码 */
+  fieldCodes: string[];
 }
 
 export interface GuidePageDto {

@@ -195,3 +195,16 @@
   与 `infra/docker/.env` 一并删除，导致媒体流水线中断且密钥丢失需重新生成。
   排除生成物与密钥是 rsync `--delete` 语义下的硬性要求。
 - **影响**：服务器上的 `media/` 与 `.env` 由脚本自身管理，不随同步覆盖。
+
+## D-022 顾客端与后台共用同一套响应结构
+
+- **背景**：小程序与管理后台分别独立开发，若各自约定返回结构，会出现「接口返回了但前端读不到」的静默缺陷。
+- **决策**：
+  - 图文说明页 `sections` 统一为 `{ id, title, description, items[], illustration, fieldCodes }`，
+    `items` 为逐条要点，`description` 为段落说明 —— 小程序按此渲染，后台按此编辑。
+  - `GET /measurement-templates/resolve` 同时返回 `templateId/templateCode/templateName/templateVersion`
+    与 `id/code/name/version`，两种取法都成立，前端不必知道内部命名。
+  - 小程序内保留一份 `types/contracts.ts` 契约副本（微信开发者工具无法编译工作区其他目录），
+    由 `tools/sync_contracts_to_miniprogram.py` 同步；构建前用 `--check` 校验是否过期。
+- **理由**：契约是三端的唯一事实来源，宁可返回值冗余，也不要让某一端读不到字段。
+- **影响**：契约副本过期会导致构建失败（已加入 `build.sh` 的前置检查），不会静默失配。
