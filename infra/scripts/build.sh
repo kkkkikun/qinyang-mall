@@ -42,11 +42,11 @@ log "校验小程序契约副本是否同步"
 python3 tools/sync_contracts_to_miniprogram.py --check
 
 log "安装依赖（lockfile 严格模式）"
-pnpm install --frozen-lockfile --registry="$PNPM_REGISTRY" || \
-  pnpm install --registry="$PNPM_REGISTRY"
+"${RUN_BUILD[@]}" pnpm install --frozen-lockfile --registry="$PNPM_REGISTRY" || \
+  "${RUN_BUILD[@]}" pnpm install --registry="$PNPM_REGISTRY"
 
 log "构建共享契约"
-pnpm --filter @qinyang/contracts build
+"${RUN_BUILD[@]}" pnpm --filter @qinyang/contracts build
 
 log "类型检查"
 "${RUN_BUILD[@]}" pnpm -r typecheck
