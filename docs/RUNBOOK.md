@@ -228,6 +228,9 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && pnpm typecheck:miniprogram
 # 小程序真实流程验证：在 Node 中执行小程序自身代码，打真实 API
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_miniprogram_flow.mjs'
 
+# 小程序页面级执行验证：17 个页面逐一加载 + 闭环走页面代码
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_miniprogram_pages.mjs'
+
 # 单元 + 集成测试（服务器）
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && set -a && . infra/docker/.env && set +a \
   && export DB_HOST=127.0.0.1 DB_PORT=13316 && pnpm --filter @qinyang/api test'

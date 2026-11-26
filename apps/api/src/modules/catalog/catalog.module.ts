@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Banner } from '../../database/entities/banner.entity';
 import { Category } from '../../database/entities/category.entity';
 import { GuidePage } from '../../database/entities/guide-page.entity';
+import { MeasurementTemplate } from '../../database/entities/measurement-template.entity';
 import { Product } from '../../database/entities/product.entity';
 import { ProductMedia } from '../../database/entities/product-media.entity';
 import { AuditModule } from '../audit/audit.module';
@@ -18,7 +19,14 @@ import { MediaAdminController } from './media-admin.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, ProductMedia, Category, Banner, GuidePage]),
+    TypeOrmModule.forFeature([
+      Product,
+      ProductMedia,
+      Category,
+      Banner,
+      GuidePage,
+      MeasurementTemplate,
+    ]),
     AuditModule,
   ],
   controllers: [

@@ -8,6 +8,7 @@ import {
   AdminRole,
   MeasurementType,
   ORDER_STATUS_LABELS,
+  PricingMode,
   ProductStatus,
   REQUEST_STATUS_LABELS,
   RequestStatus,
@@ -669,5 +670,184 @@ describe('定制闭环垂直切片', () => {
     const stored = await productRepo.findOne({ where: { code: 'IT-0001' } });
     expect(stored).toBeTruthy();
     expect(stored?.status).toBe(ProductStatus.OFFLINE);
+  });
+});
+
+/**
+ * 分类层级语义的回归测试（独立 describe，避免污染上面的垂直切片）。
+ *
+ * 守的是一个真实缺陷：商品挂在**二级分组**上，而顾客端的分类页默认按
+ * **一级分类 id** 查询。原先 `categoryId` 是精确匹配，一级分类下必然 0 件 ——
+ * 顾客打开分类页看到的是空列表。
+ */
+describe('分类层级语义', () => {
+  let app: INestApplication;
+  let adminRepo: Repository<AdminUser>;
+  let categoryRepo: Repository<Category>;
+  let templateRepo: Repository<MeasurementTemplate>;
+  let productRepo: Repository<Product>;
+
+  const http = () => request(app.getHttpServer());
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    app = moduleRef.createNestApplication();
+    app.setGlobalPrefix('api/v1');
+    app.useGlobalFilters(new HttpExceptionFilter());
+    app.useGlobalInterceptors(new ResponseInterceptor());
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true, validationError: { target: false } }),
+    );
+    await app.init();
+
+    const dataSource = moduleRef.get(DataSource);
+    await dataSource.query('SET FOREIGN_KEY_CHECKS = 0');
+    for (const table of [
+      'order_events',
+      'orders',
+      'quotes',
+      'customization_requests',
+      'payment_records',
+      'audit_logs',
+      'product_media',
+      'products',
+      'banners',
+      'measurement_templates',
+      'guide_pages',
+      'categories',
+      'customers',
+      'admin_users',
+    ]) {
+      await dataSource.query(`TRUNCATE TABLE \`${table}\``);
+    }
+    await dataSource.query('SET FOREIGN_KEY_CHECKS = 1');
+
+    adminRepo = moduleRef.get<Repository<AdminUser>>(getRepositoryToken(AdminUser));
+    categoryRepo = moduleRef.get<Repository<Category>>(getRepositoryToken(Category));
+    templateRepo = moduleRef.get<Repository<MeasurementTemplate>>(
+      getRepositoryToken(MeasurementTemplate),
+    );
+    productRepo = moduleRef.get<Repository<Product>>(getRepositoryToken(Product));
+
+    const hash = await bcrypt.hash('Test@12345', 4);
+    await adminRepo.save(
+      adminRepo.create({
+        username: 'it-cat-owner',
+        displayName: '店主',
+        passwordHash: hash,
+        role: AdminRole.OWNER,
+        status: 'ACTIVE' as never,
+      }),
+    );
+
+    const top = await categoryRepo.save(
+      categoryRepo.create({
+        code: 'it-outerwear',
+        name: '外穿服饰',
+        parentId: null,
+        level: 1,
+        sortOrder: 0,
+        status: 'ACTIVE' as never,
+      }),
+    );
+    const group = await categoryRepo.save(
+      categoryRepo.create({
+        code: 'it-outerwear-coat',
+        name: '大衣',
+        parentId: top.id,
+        level: 2,
+        sortOrder: 0,
+        status: 'ACTIVE' as never,
+      }),
+    );
+
+    const template = await templateRepo.save(
+      templateRepo.create({
+        code: 'IT-CAT-TPL',
+        name: '集成测试模板',
+        version: 1,
+        status: TemplateStatus.ACTIVE,
+        applicableCategories: ['it-outerwear'],
+        summary: '集成测试',
+        measurementSections: [
+          {
+            sectionId: 'body',
+            title: '身体测量',
+            measurementType: MeasurementType.BODY,
+            measurementFields: [
+              {
+                fieldCode: 'chest_bust',
+                fieldName: '胸围',
+                measurementType: MeasurementType.BODY,
+                unit: 'cm',
+                required: true,
+                min: 60,
+                max: 140,
+                step: 0.5,
+              },
+            ],
+          },
+        ] as never,
+      }),
+    );
+
+    // 商品挂在**二级分组**上
+    await productRepo.save(
+      productRepo.create({
+        code: 'IT-CAT-0001',
+        name: '集成测试大衣（临时命名·待确认）',
+        categoryId: group.id,
+        pricingMode: PricingMode.QUOTE_ONLY,
+        priceCents: null,
+        material: null,
+        description: null,
+        careGuide: null,
+        measurementTemplateId: template.id,
+        sortOrder: 0,
+        status: ProductStatus.PUBLISHED,
+      }),
+    );
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('按一级分类 id 查询，能取到其下二级分组的商品', async () => {
+    const tree = await http().get('/api/v1/categories').expect(200);
+    const top = tree.body.data.find((c: { code: string }) => c.code === 'it-outerwear');
+    expect(top).toBeTruthy();
+
+    const list = await http()
+      .get(`/api/v1/products?categoryId=${top.id}&pageSize=20`)
+      .expect(200);
+    expect(list.body.data.total).toBe(1);
+    expect(list.body.data.items[0].code).toBe('IT-CAT-0001');
+  });
+
+  it('按二级分组 id 查询，同样能取到该分组的商品', async () => {
+    const tree = await http().get('/api/v1/categories').expect(200);
+    const top = tree.body.data.find((c: { code: string }) => c.code === 'it-outerwear');
+    const group = top.children.find((c: { code: string }) => c.code === 'it-outerwear-coat');
+
+    const list = await http()
+      .get(`/api/v1/products?categoryId=${group.id}&pageSize=20`)
+      .expect(200);
+    expect(list.body.data.total).toBe(1);
+  });
+
+  it('分类树里一级分类的商品数已向下汇总（不再是 0）', async () => {
+    const tree = await http().get('/api/v1/categories').expect(200);
+    const top = tree.body.data.find((c: { code: string }) => c.code === 'it-outerwear');
+    expect(top.productCount).toBe(1);
+    expect(top.children[0].productCount).toBe(1);
+  });
+
+  it('商品详情带出量体模板名称（契约字段，此前恒为 null）', async () => {
+    const list = await http().get('/api/v1/products?pageSize=5').expect(200);
+    const detail = await http()
+      .get(`/api/v1/products/${list.body.data.items[0].id}`)
+      .expect(200);
+    expect(detail.body.data.measurementTemplateName).toBe('集成测试模板');
   });
 });

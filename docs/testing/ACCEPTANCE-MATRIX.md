@@ -17,16 +17,16 @@
 | C1 | 品牌首页 | 静态自检 + 真实 API 拉取首页聚合 | `apps/miniprogram/pages/index`；验收项「顾客端商品列表返回已发布商品」 | ✅ |
 | C2 | 羊绒衣橱自动轮播与手势滑动 | 原生 `<swiper>` 轮播 + `bindchange` 手势 | `apps/miniprogram/pages/index/index.wxml` | ✅ |
 | C3 | 商品搜索 | 真实 API `GET /products?keyword=` | 验收项「商品搜索命中 — keyword=ED-0062」 | ✅ |
-| C4 | 商品分类（两级分组） | 真实 API `GET /categories` + `group` 筛选 | 验收项「二级分组筛选生效 — knitwear-cardigan → 3 件」「分类树含二级分组 — 5 个一级分类」 | ✅ |
-| C5 | 商品详情与多图展示 | 真实 API `GET /products/:id` + 图集 | 验收项「商品均有真实主图 — 13/13」；`product-media` 实体 | ✅ |
+| C4 | 商品分类（两级分组） | 真实 API `GET /categories` + 一级/二级分组筛选 + **页面级执行** | 验收项「二级分组筛选生效 — knitwear-cardigan → 3 件」；页面级断言「分类页：一级分类 5 个 / 二级分组 5 个 / 商品列表 7 件」；集成「按一级分类 id 查询能取到其下分组商品」 | ✅ |
+| C5 | 商品详情与多图展示 | 真实 API `GET /products/:id` + 图集 + **页面级执行** | 验收项「商品均有真实主图 — 13/13」；页面级断言「图集 8 张」「未确认价格显示「待报价」而非数字」「带出量体模板名称」 | ✅ |
 | C6 | 上装量体指南 | 图文页接口 + 真实字段 | 验收项「图文说明页 measure-top」 | ✅ |
 | C7 | 长裤量体指南 | 同上 | 验收项「图文说明页 measure-bottom」 | ✅ |
 | C8 | 羊绒洗护指南 | 同上 | 验收项「图文说明页 care」 | ✅ |
 | C9 | 材质定制说明 | 同上 | 验收项「图文说明页 material」 | ✅ |
 | C10 | 定制申请表 | **小程序自身代码**在 Node 中对真实 API 执行 + 幂等校验 | 执行桩 20/20：表单按模板渲染 7 字段（必填 5）、客户端校验拦截空必填、提交 payload 5 项量体、幂等重提交不产生第二条 | ✅ |
 | C11 | 我的定制申请 | 真实 API | `pages/requests`、`GET /customization-requests` | ✅ |
-| C12 | 报价查看与确认 | 真实确认（含版本校验） | 验收项「顾客确认报价 — 状态=ACTIVE」；集成测试「用旧版本号确认 → 409 QUOTE_VERSION_CONFLICT」 | ✅ |
-| C13 | 制作、发货状态查看 | 真实发货后查询 | 验收项「顾客查看订单进度 — 3 条进度」 | ✅ |
+| C12 | 报价查看与确认 | **由报价页 confirm() 完成的真实确认**（含版本校验） | 验收项「顾客确认报价 — 状态=ACTIVE」；页面级「顾客在报价页确认报价 → 申请变为已确认 — CONFIRMED」；集成测试「用旧版本号确认 → 409 QUOTE_VERSION_CONFLICT」 | ✅ |
+| C13 | 制作、发货状态查看 | 真实发货后由**订单详情页自身**查询 | 验收项「顾客查看订单进度 — 3 条进度」；页面级断言「进度时间线 3 条」「带出量体快照 7 项」「金额已渲染」 | ✅ |
 | C14 | 个人中心与客服入口 | 页面存在 + 微信原生客服能力 | `pages/profile`、`pages/contact` | ✅ |
 | C15 | 首期一申请一款式，不做多商品结算/库存扣减/营销 | 数据模型与接口约束 | `customization-request` 单商品外键；无 SKU/库存/购物车实体 | ✅ |
 | C16 | 个人中心以定制记录为主 | 页面结构 | `pages/profile` 主体为定制记录 | ✅ |
@@ -148,7 +148,7 @@ Template / Request / Order / AuditLog / Login + AppLayout），
 | R7 | Docker 资源限制 / 日志轮转 / 独立命名空间 | 全部服务设限额与 `10m × 3` 轮转；`qinyang` 命名空间 | ✅ |
 | R8 | 不全局清理 Docker、不动其他项目 | 从未执行 prune；仅删除本项目自有重复镜像 | ✅ |
 | R9 | 磁盘余量 < 20% 暂停重型任务 | 当前 58%，阈值监控已内置 | ✅ |
-| R10 | 每次任务记录 CPU/内存/磁盘/耗时 | `docs/agent/RESOURCE-LEDGER.md` T1–T19 | ✅ |
+| R10 | 每次任务记录 CPU/内存/磁盘/耗时 | `docs/agent/RESOURCE-LEDGER.md` T1–T21 | ✅ |
 | R11 | 密钥用环境变量、不入 Git | `infra/docker/.env` 权限 600 且被同步脚本排除；仓库仅存 `.env.example` | ✅ |
 | R12 | 不得擅自执行的操作 | 未执行 `git reset --hard` / `git clean -fdx` / 强制推送 / 全局清理 / 删未知目录 / 生产库迁移 | ✅ |
 | R13 | 真实支付 / 正式部署 / 上传发布 / 改 AppID / 真实顾客数据 / 付费服务 / 外部上传素材 / 删数据 / 大规模压测 | **一律未执行**，需明确批准 | ⛔ 按红线暂不执行 |

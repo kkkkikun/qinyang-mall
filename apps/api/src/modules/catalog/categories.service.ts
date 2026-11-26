@@ -60,6 +60,21 @@ export class CategoriesService {
         roots.push(node);
       }
     }
+
+    // 商品数向下汇总：一级分类本身不挂商品，商品在二级分组上，
+    // 因此一级分类的商品数必须等于其自身 + 所有下级分组之和，
+    // 否则顾客在分类栏看到的一级分类恒为 0 件。
+    const rollup = (node: CategoryDto): number => {
+      let sum = counts.get(node.id) ?? 0;
+      for (const child of node.children ?? []) {
+        sum += rollup(child);
+      }
+      node.productCount = sum;
+      return sum;
+    };
+    for (const root of roots) {
+      rollup(root);
+    }
     return roots;
   }
 

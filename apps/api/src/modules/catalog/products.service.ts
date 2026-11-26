@@ -16,6 +16,7 @@ import { In, Repository } from 'typeorm';
 import { Category } from '../../database/entities/category.entity';
 import { Product } from '../../database/entities/product.entity';
 import { ProductMedia } from '../../database/entities/product-media.entity';
+import { MeasurementTemplate } from '../../database/entities/measurement-template.entity';
 import { BusinessException } from '../../common/errors/business.exception';
 import { AuditService } from '../audit/audit.service';
 import { normalizePrice } from './pricing';
@@ -30,6 +31,8 @@ export class ProductsService {
     private readonly media: Repository<ProductMedia>,
     @InjectRepository(Category)
     private readonly categories: Repository<Category>,
+    @InjectRepository(MeasurementTemplate)
+    private readonly templates: Repository<MeasurementTemplate>,
     private readonly audit: AuditService,
   ) {}
 
@@ -289,7 +292,20 @@ export class ProductsService {
       }
     }
     if (query.categoryId) {
-      qb.andWhere('p.categoryId = :categoryId', { categoryId: query.categoryId });
+      // 分类过滤必须**包含下级分组**：商品挂在二级分组上，
+      // 若按一级分类 id 精确匹配，顾客打开分类页看到的就是空列表
+      // （小程序分类页默认传一级分类 id）。传入分组 id 时按精确匹配处理，
+      // 因为分组没有子级。
+      const category = await this.categories.findOne({
+        where: { id: query.categoryId },
+      });
+      const children = category
+        ? await this.categories.find({ where: { parentId: category.id } })
+        : [];
+      const categoryIds = category
+        ? [category.id, ...children.map((child) => child.id)]
+        : [query.categoryId];
+      qb.andWhere('p.categoryId IN (:...categoryIds)', { categoryIds });
     }
     if (query.group) {
       // 二级分组过滤：命中该分组及其子分组
@@ -434,13 +450,18 @@ export class ProductsService {
       order: { sortOrder: 'ASC', createdAt: 'ASC' },
     });
     const base = this.toListItem(product, category?.name ?? '', this.pickCover(media));
+    // 顾客需要知道「按哪套量体模板测量」——契约与小程序商品详情页都依赖这个字段，
+    // 此前恒为 null，等于该信息从未送达顾客端。
+    const template = product.measurementTemplateId
+      ? await this.templates.findOne({ where: { id: product.measurementTemplateId } })
+      : null;
     return {
       ...base,
       material: product.material,
       description: product.description,
       careGuide: product.careGuide,
       measurementTemplateId: product.measurementTemplateId,
-      measurementTemplateName: null,
+      measurementTemplateName: template?.name ?? null,
       media: media.map((m) => ({
         id: m.id,
         storageKey: m.storageKey,
