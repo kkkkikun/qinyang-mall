@@ -17,19 +17,19 @@
 
   <block wx:elif="{{order}}">
     <!-- 状态 -->
-    <view class="sec sec-pad" style="margin-top:8px">
+    <view class="sec sec-pad mt-8">
       <view class="row row-b">
         <text class="serif od-status">{{statusLabel}}</text>
         <text class="fs12 muted">{{order.orderNo}}</text>
       </view>
-      <view class="fs12 muted-2" style="margin-top:6px">下单时间：{{createdAtText}}</view>
-      <view class="fs12 muted-2" style="margin-top:3px">申请单号：{{order.requestNo}} · 报价第 {{order.quoteVersion}} 版</view>
+      <view class="fs12 muted-2 mt-6">下单时间：{{createdAtText}}</view>
+      <view class="fs12 muted-2 mt-3">申请单号：{{order.requestNo}} · 报价第 {{order.quoteVersion}} 版</view>
     </view>
 
     <!-- 进度时间线 -->
     <view class="sec sec-pad">
-      <view class="row row-b" style="margin-bottom:12px">
-        <text style="font-size:15px;font-weight:600">订单进度</text>
+      <view class="row row-b mb-12">
+        <text class="sec-title">订单进度</text>
       </view>
       <view class="timeline" wx:if="{{events.length}}">
         <view class="timeline__item {{item.last ? 'timeline__item--last' : ''}}" wx:for="{{events}}" wx:key="key">
@@ -46,8 +46,8 @@
 
     <!-- 商品 -->
     <view class="sec sec-pad" wx:if="{{order.productSnapshot}}">
-      <view class="row row-b" style="margin-bottom:10px">
-        <text style="font-size:15px;font-weight:600">商品</text>
+      <view class="row row-b mb-10">
+        <text class="sec-title">商品</text>
         <text class="fs12 muted">{{order.productSnapshot.code}}</text>
       </view>
       <view class="row gap10">
@@ -57,7 +57,7 @@
         </view>
         <view class="grow">
           <view class="fs13">{{order.productSnapshot.name}}</view>
-          <view class="fs11 muted-2" style="margin-top:3px">{{order.productSnapshot.categoryName}}</view>
+          <view class="fs11 muted-2 mt-3">{{order.productSnapshot.categoryName}}</view>
         </view>
         <view class="rd-go" bindtap="goProduct">查看</view>
       </view>
@@ -85,15 +85,15 @@
       <view class="kv" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px">
         <text class="kv__k">合计</text><text class="kv__v" style="font-size:17px;font-weight:600">{{total}}</text>
       </view>
-      <view class="notice notice--gold" style="margin-top:12px">
+      <view class="notice notice--gold mt-12">
         V1 阶段不接入真实支付，线下结算方式以商家确认为准。
       </view>
     </view>
 
     <!-- 收货信息 -->
     <view class="sec sec-pad">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">收货信息</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">收货信息</text>
       </view>
       <view class="kv"><text class="kv__k">称呼</text><text class="kv__v">{{order.contact.name}}</text></view>
       <view class="kv"><text class="kv__k">电话</text><text class="kv__v">{{order.contact.phone}}</text></view>
@@ -103,8 +103,8 @@
 
     <!-- 物流 -->
     <view class="sec sec-pad" wx:if="{{order.carrier || order.trackingNo}}">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">物流信息</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">物流信息</text>
       </view>
       <view class="kv" wx:if="{{order.carrier}}"><text class="kv__k">承运</text><text class="kv__v">{{order.carrier}}</text></view>
       <view class="kv" wx:if="{{order.trackingNo}}"><text class="kv__k">单号</text><text class="kv__v">{{order.trackingNo}}</text></view>
@@ -112,16 +112,16 @@
     </view>
 
     <view class="sec sec-pad" wx:if="{{order.remark}}">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">留言</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">留言</text>
       </view>
       <view class="fs13">{{order.remark}}</view>
     </view>
 
     <view class="sec sec-pad">
       <view class="row gap10">
-        <button class="btn btn--ghost" style="flex:1" bindtap="goRequest">查看定制申请</button>
-        <button class="btn btn--ghost" style="flex:1" bindtap="goContact">联系客服</button>
+        <button class="btn btn--ghost flex-1" bindtap="goRequest">查看定制申请</button>
+        <button class="btn btn--ghost flex-1" bindtap="goContact">联系客服</button>
       </view>
     </view>
     <view class="pd-bar-holder-sm"></view>

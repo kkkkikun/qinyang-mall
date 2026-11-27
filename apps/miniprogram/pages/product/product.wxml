@@ -110,8 +110,8 @@
 
     <!-- 实拍图集 -->
     <view class="sec sec-pad">
-      <view class="row row-b" style="margin-bottom:12px">
-        <text style="font-size:15px;font-weight:600">商品实拍</text>
+      <view class="row row-b mb-12">
+        <text class="sec-title">商品实拍</text>
         <text class="fs12 muted">共 {{media.length}} 张</text>
       </view>
       <view class="gal4">
@@ -142,8 +142,8 @@
     <view class="sec sec-pad">
       <view class="row row-b">
         <view>
-          <view style="font-size:15px;font-weight:600">联系商家</view>
-          <view class="fs12 muted-2" style="margin-top:3px">沟通定制细节 / 咨询量体问题</view>
+          <view class="sec-title">联系商家</view>
+          <view class="fs12 muted-2 mt-3">沟通定制细节 / 咨询量体问题</view>
         </view>
         <button class="btn btn--ghost btn--sm" bindtap="goContact">联系</button>
       </view>

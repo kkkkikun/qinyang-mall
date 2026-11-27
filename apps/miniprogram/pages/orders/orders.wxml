@@ -14,7 +14,15 @@
       bindtap="switchTab" data-key="{{item.key}}">{{item.label}}</view>
   </scroll-view>
 
-  <view wx:if="{{loading}}" class="state">正在加载订单…</view>
+  <view wx:if="{{loading}}" class="sk-list">
+    <view class="sk-row" wx:for="{{[0,1,2]}}" wx:key="*this">
+      <view class="sk-row__thumb skeleton"></view>
+      <view class="sk-row__body">
+        <view class="sk-line skeleton"></view>
+        <view class="sk-line sk-line--short skeleton"></view>
+      </view>
+    </view>
+  </view>
   <view wx:elif="{{error}}" class="state">
     <view class="state__t">{{error}}</view>
     <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>

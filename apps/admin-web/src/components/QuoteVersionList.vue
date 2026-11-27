@@ -36,7 +36,7 @@
         <span v-if="quote.confirmedAt">顾客确认 {{ formatDateTime(quote.confirmedAt) }}</span>
       </div>
 
-      <div v-if="quote.note" class="muted" style="margin-top: 6px">报价说明：{{ quote.note }}</div>
+      <div v-if="quote.note" class="muted mt-6">报价说明：{{ quote.note }}</div>
     </div>
   </div>
 </template>

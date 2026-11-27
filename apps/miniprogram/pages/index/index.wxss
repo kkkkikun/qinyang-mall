@@ -28,7 +28,7 @@
 
 .hero__t {
   font-family: var(--serif);
-  font-size: 28px;
+  font-size: var(--fs-5xl);
   letter-spacing: 0.14em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -36,7 +36,7 @@
 }
 
 .hero__s {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   letter-spacing: 0.14em;
   opacity: 0.94;
   margin-top: 4px;
@@ -45,7 +45,7 @@
 .hero__go {
   display: inline-block;
   margin-top: 10px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   letter-spacing: 0.1em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.85);
   padding-bottom: 2px;
@@ -72,7 +72,7 @@
   left: 14px;
   bottom: 12px;
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: var(--fs-xl);
   letter-spacing: 0.1em;
   color: #fff;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
@@ -85,7 +85,7 @@
   justify-content: center;
   background: var(--field);
   color: var(--text-3);
-  font-size: 13px;
+  font-size: var(--fs-base);
 }
 
 .hscroll {
@@ -112,21 +112,21 @@
 }
 
 .pd-story__eyebrow {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.3em;
   color: var(--text-3);
 }
 
 .pd-story__h3 {
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: var(--fs-3xl);
   letter-spacing: 0.16em;
   margin: 8px 0 12px;
   color: var(--text);
 }
 
 .pd-story__p {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   line-height: 2;
   color: var(--text-2);
   text-align: left;
@@ -137,14 +137,14 @@
 }
 
 .mod-hint {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   padding: 12px 22px 18px;
 }
 
 .hint {
   text-align: center;
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   padding: 10px 0 2px;
 }

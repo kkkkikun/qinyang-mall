@@ -58,8 +58,8 @@
     <view class="sec sec-pad">
       <view class="row row-b">
         <view>
-          <view style="font-size:15px;font-weight:600">需要帮助？</view>
-          <view class="fs12 muted-2" style="margin-top:3px">量体方法有疑问，可直接联系店铺客服</view>
+          <view class="sec-title">需要帮助？</view>
+          <view class="fs12 muted-2 mt-3">量体方法有疑问，可直接联系店铺客服</view>
         </view>
         <button class="btn btn--ghost btn--sm" bindtap="goContact">联系客服</button>
       </view>

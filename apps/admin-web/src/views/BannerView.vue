@@ -14,6 +14,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('还没有轮播图', '首页轮播为空时顾客看到的是常规商品流')"
         :pagination="{ current: 1, pageSize: 999, total: rows.length }"
         :bordered="false"
       />
@@ -81,7 +82,7 @@
         </div>
 
         <t-button theme="primary" :loading="saving" @click="handleSave">保存</t-button>
-        <t-button theme="default" style="margin-left: 8px" @click="dialogVisible = false">取消</t-button>
+        <t-button theme="default" class="ml-8" @click="dialogVisible = false">取消</t-button>
       </t-form>
     </t-dialog>
   </div>
@@ -96,7 +97,7 @@ import { toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime } from '../utils/format';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 
 const auth = useAuthStore();
 
@@ -431,7 +432,7 @@ onMounted(load);
   border-radius: 3px;
   background: var(--qy-tan);
   color: #fff;
-  font-size: 14px;
+  font-size: var(--qy-font-base);
   cursor: pointer;
   line-height: 1;
 }

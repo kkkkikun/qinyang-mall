@@ -15,6 +15,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('没有操作记录', '关键的审核、报价、订单操作都会留痕在这里')"
         :pagination="pagination"
         :bordered="false"
         @page-change="handlePageChange"
@@ -34,7 +35,7 @@
           <t-descriptions-item label="来源 IP">{{ detail.ip || '—' }}</t-descriptions-item>
         </t-descriptions>
 
-        <div class="section-title" style="margin-top: 20px">变更前后对比</div>
+        <div class="section-title mt-20">变更前后对比</div>
         <div v-if="!diffRows.length" class="empty-text">该记录没有可对比的数据</div>
         <div v-else class="diff-grid">
           <div class="diff-block">
@@ -64,7 +65,7 @@ import { AdminRole, type AuditLogDto } from '@qinyang/contracts';
 import { auditLogApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
 import { formatDateTime } from '../utils/format';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 
 const filters = reactive({
   action: '',

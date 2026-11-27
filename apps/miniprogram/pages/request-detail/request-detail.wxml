@@ -17,13 +17,13 @@
 
   <block wx:elif="{{dto}}">
     <!-- 状态 -->
-    <view class="sec sec-pad" style="margin-top:8px">
+    <view class="sec sec-pad mt-8">
       <view class="row row-b">
         <text class="serif rd-status">{{statusLabel}}</text>
         <text class="fs12 muted">{{dto.requestNo}}</text>
       </view>
-      <view class="fs12 muted-2" style="margin-top:6px">提交时间：{{createdAtText}}</view>
-      <view class="fs12 muted-2" style="margin-top:3px">量体模板：{{dto.templateName}} · v{{dto.templateVersion}}</view>
+      <view class="fs12 muted-2 mt-6">提交时间：{{createdAtText}}</view>
+      <view class="fs12 muted-2 mt-3">量体模板：{{dto.templateName}} · v{{dto.templateVersion}}</view>
     </view>
 
     <!-- 商品 -->
@@ -35,7 +35,7 @@
         </view>
         <view class="grow">
           <view class="fs13">QINYANG｜{{dto.productName}}</view>
-          <view class="fs11 muted-2" style="margin-top:3px">{{dto.productCode}}</view>
+          <view class="fs11 muted-2 mt-3">{{dto.productCode}}</view>
         </view>
         <view class="rd-go" bindtap="goProduct">查看</view>
       </view>
@@ -43,8 +43,8 @@
 
     <!-- 当前报价 -->
     <view class="sec sec-pad">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">当前报价</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">当前报价</text>
         <text class="fs12 muted" wx:if="{{dto.activeQuote}}">本次报价</text>
       </view>
       <block wx:if="{{dto.activeQuote}}">
@@ -56,7 +56,7 @@
         <view class="kv" wx:if="{{dto.activeQuote.note}}">
           <text class="kv__k">说明</text><text class="kv__v">{{dto.activeQuote.note}}</text>
         </view>
-        <button class="btn btn--tan btn--block" style="margin-top:12px" bindtap="goQuote">查看报价并确认</button>
+        <button class="btn btn--tan btn--block mt-12" bindtap="goQuote">查看报价并确认</button>
       </block>
       <view wx:else class="fs13 muted-2">{{quoteEmptyText}}</view>
     </view>
@@ -80,8 +80,8 @@
 
     <!-- 联系方式 -->
     <view class="sec sec-pad">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">联系方式</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">联系方式</text>
       </view>
       <view class="kv"><text class="kv__k">称呼</text><text class="kv__v">{{dto.contact.name}}</text></view>
       <view class="kv"><text class="kv__k">电话</text><text class="kv__v">{{dto.contact.phone}}</text></view>
@@ -90,8 +90,8 @@
     </view>
 
     <view class="sec sec-pad" wx:if="{{dto.remark}}">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">留言</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">留言</text>
       </view>
       <view class="fs13">{{dto.remark}}</view>
     </view>
@@ -104,8 +104,8 @@
     <!-- 操作 -->
     <view class="sec sec-pad">
       <view class="row gap10">
-        <button class="btn btn--ghost" style="flex:1" bindtap="goContact">联系客服</button>
-        <button class="btn btn--ghost" style="flex:1" wx:if="{{canCancel}}" disabled="{{cancelling}}" bindtap="cancel">
+        <button class="btn btn--ghost flex-1" bindtap="goContact">联系客服</button>
+        <button class="btn btn--ghost flex-1" wx:if="{{canCancel}}" disabled="{{cancelling}}" bindtap="cancel">
           {{cancelling ? '处理中…' : '取消申请'}}
         </button>
       </view>

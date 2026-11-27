@@ -151,6 +151,24 @@ def main() -> int:
             if icon and not (APP / icon).exists():
                 err(f"tabBar 图标不存在：{icon}")
 
+    # 8. 字号必须走令牌（禁止裸字号）
+    #
+    # 背景：全站曾散落 21 档裸字号（8px~30px，含 59 处半像素值），
+    # 改一处字号要翻十几个页面，排版也失去秩序感。
+    # 现已统一收敛到 app.wxss 的 --fs-* 标度，这里做回归拦截。
+    raw_font_size = re.compile(r"font-size:\s*[0-9]+(?:\.[0-9]+)?px")
+    comment_re = re.compile(r"/\*.*?\*/", re.S)
+    for wxss in sorted(APP.rglob("*.wxss")):
+        text = wxss.read_text(encoding="utf-8")
+        # 注释里可能写着「原先是 font-size:15px」之类的说明，不算违规
+        code = comment_re.sub("", text)
+        for match in raw_font_size.finditer(code):
+            line_no = code.count("\n", 0, match.start()) + 1
+            err(
+                f"{wxss.relative_to(APP)}:{line_no} 使用了裸字号 {match.group(0).split(':')[1].strip()}，"
+                "请改用 app.wxss 中的 --fs-* 字号令牌"
+            )
+
     return report()
 
 

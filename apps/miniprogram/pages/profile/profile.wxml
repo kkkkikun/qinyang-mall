@@ -89,12 +89,12 @@
   <view class="me-card">
     <view class="me-card__hd"><text class="me-card__t">服务器地址</text></view>
     <view class="me-card__body">
-      <view class="fs11 muted-2" style="margin-bottom:8px">用于连接商家后台接口，修改后立即生效</view>
+      <view class="fs11 muted-2 mb-8">用于连接商家后台接口，修改后立即生效</view>
       <view class="row gap8">
         <input class="me-input grow" value="{{baseUrl}}" placeholder="http://127.0.0.1:18110/api/v1" bindinput="onBaseUrlInput" />
         <button class="btn btn--ghost btn--sm" bindtap="saveBaseUrl">保存</button>
       </view>
-      <view class="fs11 muted-2" style="margin-top:8px">{{baseUrlSaved ? '已保存' : '当前：' + baseUrl}}</view>
+      <view class="fs11 muted-2 mt-8">{{baseUrlSaved ? '已保存' : '当前：' + baseUrl}}</view>
     </view>
   </view>
 

@@ -28,6 +28,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('还没有订单', '申请确认报价后即可生成订单')"
         :pagination="pagination"
         :bordered="false"
         @page-change="handlePageChange"
@@ -96,7 +97,7 @@
           </t-descriptions-item>
         </t-descriptions>
 
-        <div class="section-title" style="margin-top: 20px">商品快照</div>
+        <div class="section-title mt-20">商品快照</div>
         <div class="snapshot-card">
           <div class="detail-grid">
             <div>
@@ -138,12 +139,12 @@
           </div>
         </div>
 
-        <div class="section-title" style="margin-top: 20px">量体快照</div>
+        <div class="section-title mt-20">量体快照</div>
         <div class="snapshot-card">
           <MeasurementSnapshotView :snapshot="detail.measurementSnapshot" />
         </div>
 
-        <div class="section-title" style="margin-top: 20px">收货与联系方式</div>
+        <div class="section-title mt-20">收货与联系方式</div>
         <div class="snapshot-card">
           <t-descriptions :column="3" size="small">
             <t-descriptions-item label="联系人">{{ detail.contact.name }}</t-descriptions-item>
@@ -151,12 +152,12 @@
             <t-descriptions-item label="地区">{{ detail.contact.region }}</t-descriptions-item>
             <t-descriptions-item label="详细地址">{{ detail.contact.detail || '—' }}</t-descriptions-item>
           </t-descriptions>
-          <div v-if="detail.remark" class="muted" style="margin-top: 8px">
+          <div v-if="detail.remark" class="muted mt-8">
             订单备注：{{ detail.remark }}
           </div>
         </div>
 
-        <div class="section-title" style="margin-top: 20px">状态时间线</div>
+        <div class="section-title mt-20">状态时间线</div>
         <div class="snapshot-card">
           <ul class="timeline">
             <li v-for="event in detail.events || []" :key="event.id" class="timeline-item">
@@ -187,7 +188,7 @@
         </t-form-item>
       </t-form>
       <t-button theme="primary" :loading="submitting" @click="handleSubmitStatus">确认</t-button>
-      <t-button theme="default" style="margin-left: 8px" @click="statusVisible = false">取消</t-button>
+      <t-button theme="default" class="ml-8" @click="statusVisible = false">取消</t-button>
     </t-dialog>
 
     <!-- 填写物流 -->
@@ -204,7 +205,7 @@
         </t-form-item>
       </t-form>
       <t-button theme="primary" :loading="submitting" @click="handleSubmitShip">确认</t-button>
-      <t-button theme="default" style="margin-left: 8px" @click="shipVisible = false">取消</t-button>
+      <t-button theme="default" class="ml-8" @click="shipVisible = false">取消</t-button>
     </t-dialog>
   </div>
 </template>
@@ -226,7 +227,7 @@ import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, formatYuan } from '../utils/format';
 import { orderStatusTheme } from '../utils/status';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 import { downloadCsv } from '../utils/download';
 import { countCsvRows } from '../utils/csv';
 import MeasurementSnapshotView from '../components/MeasurementSnapshotView.vue';

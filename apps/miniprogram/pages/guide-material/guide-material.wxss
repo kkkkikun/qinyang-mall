@@ -6,20 +6,20 @@
 }
 
 .guide-hero__eyebrow {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
 }
 
 .guide-hero__h1 {
   font-family: var(--serif);
-  font-size: 30px;
+  font-size: var(--fs-6xl);
   letter-spacing: 0.1em;
   margin: 6px 0 8px;
   color: var(--text);
 }
 
 .guide-hero__desc {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   line-height: 1.8;
   color: var(--text-2);
 }
@@ -31,14 +31,14 @@
 
 .guide-sec__h2 {
   font-family: var(--serif);
-  font-size: 21px;
+  font-size: var(--fs-3xl);
   letter-spacing: 0.1em;
   color: var(--text);
   margin-bottom: 8px;
 }
 
 .guide-sec__d {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   line-height: 1.8;
   color: var(--text-2);
   margin-bottom: 14px;
@@ -80,27 +80,27 @@
 }
 
 .guide-fig__ph {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
 }
 
 .guide-fig__cap {
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: var(--fs-lg2);
   margin-top: 10px;
   color: var(--text);
   text-align: center;
 }
 
 .guide-fig__type {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   text-align: center;
   margin-top: 3px;
 }
 
 .guide-fig__sub {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   line-height: 1.7;
   margin-top: 4px;
@@ -111,13 +111,13 @@
 }
 
 .guide-tips__item {
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   line-height: 1.7;
 }
 
 .guide-list__item {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   line-height: 2;
   color: var(--text-2);
 }
@@ -125,7 +125,7 @@
 .guide-note {
   background: var(--band);
   padding: 14px 16px;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 

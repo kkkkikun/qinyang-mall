@@ -56,7 +56,7 @@
       </div>
     </div>
 
-    <div class="page-block" style="margin-top: 16px">
+    <div class="page-block mt-16">
       <div class="section-title">说明</div>
       <ul style="margin: 0; padding-left: 20px; color: var(--qy-text-2); line-height: 1.9">
         <li>仅按量体报价的商品不保存价格，顾客端显示「待报价」，需在定制申请中报价后确定金额。</li>

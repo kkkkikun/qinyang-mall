@@ -17,7 +17,7 @@
 
   <block wx:elif="{{quote}}">
     <!-- 报价主体 -->
-    <view class="sec sec-pad" style="margin-top:8px">
+    <view class="sec sec-pad mt-8">
       <view class="row row-b">
         <text class="serif q-title">商家报价</text>
         <text class="tag">本次报价</text>
@@ -38,16 +38,16 @@
     </view>
 
     <view class="sec sec-pad" wx:if="{{quote.note}}">
-      <view class="row row-b" style="margin-bottom:8px">
-        <text style="font-size:15px;font-weight:600">报价说明</text>
+      <view class="row row-b mb-8">
+        <text class="sec-title">报价说明</text>
       </view>
       <view class="fs13" style="line-height:1.9">{{quote.note}}</view>
     </view>
 
     <!-- 商品快照 -->
     <view class="sec sec-pad" wx:if="{{quote.productSnapshot}}">
-      <view class="row row-b" style="margin-bottom:10px">
-        <text style="font-size:15px;font-weight:600">报价商品</text>
+      <view class="row row-b mb-10">
+        <text class="sec-title">报价商品</text>
         <text class="fs12 muted">{{quote.productSnapshot.code}}</text>
       </view>
       <view class="fs13">{{quote.productSnapshot.name}}</view>
@@ -56,8 +56,8 @@
 
     <!-- 量体快照摘要 -->
     <view class="sec sec-pad" wx:if="{{quote.measurementSnapshot}}">
-      <view class="row row-b" style="margin-bottom:10px">
-        <text style="font-size:15px;font-weight:600">量体资料快照</text>
+      <view class="row row-b mb-10">
+        <text class="sec-title">量体资料快照</text>
         <text class="fs12 muted">{{quote.measurementSnapshot.templateName}}</text>
       </view>
       <view class="q-snap">
@@ -74,20 +74,20 @@
 
     <view class="sec sec-pad">
       <view class="row gap10">
-        <button class="btn btn--ghost" style="flex:1" bindtap="goContact">联系客服</button>
-        <button class="btn btn--ghost" style="flex:1" bindtap="goRequest">返回申请</button>
+        <button class="btn btn--ghost flex-1" bindtap="goContact">联系客服</button>
+        <button class="btn btn--ghost flex-1" bindtap="goRequest">返回申请</button>
       </view>
     </view>
 
     <!-- 底部确认 -->
     <view class="pd-bar">
       <block wx:if="{{expired}}">
-        <view class="notice notice--gold" style="margin-bottom:10px">
+        <view class="notice notice--gold mb-10">
           该报价已过有效期，请联系商家重新报价。
         </view>
         <view class="row gap10">
-          <button class="btn btn--ghost" style="flex:1" bindtap="goContact">联系客服</button>
-          <button class="btn btn--tan" style="flex:1" bindtap="reject" disabled="{{rejecting}}">
+          <button class="btn btn--ghost flex-1" bindtap="goContact">联系客服</button>
+          <button class="btn btn--tan flex-1" bindtap="reject" disabled="{{rejecting}}">
             {{rejecting ? '提交中…' : '请商家重新报价'}}
           </button>
         </view>
@@ -96,7 +96,7 @@
         <button class="btn btn--tan btn--block" bindtap="confirm" disabled="{{confirming}}">
           {{confirming ? '确认中…' : '确认报价'}}
         </button>
-        <button class="btn btn--link btn--block" style="margin-top:8px" bindtap="reject" disabled="{{rejecting}}">
+        <button class="btn btn--link btn--block mt-8" bindtap="reject" disabled="{{rejecting}}">
           {{rejecting ? '提交中…' : '不接受，请商家重新报价'}}
         </button>
       </block>

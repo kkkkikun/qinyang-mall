@@ -1,12 +1,12 @@
 /* 订单详情 */
 
 .od-status {
-  font-size: 19px;
+  font-size: var(--fs-2xl);
   letter-spacing: 0.08em;
 }
 
 .od-title {
-  font-size: 17px;
+  font-size: var(--fs-xl);
   letter-spacing: 0.1em;
 }
 
@@ -51,18 +51,18 @@
 }
 
 .timeline__title {
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--text);
 }
 
 .timeline__time {
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   margin-top: 3px;
 }
 
 .timeline__note {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   margin-top: 5px;
   line-height: 1.7;
@@ -78,17 +78,17 @@
 }
 
 .rd-row__k {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
 .rd-row__v {
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--text);
 }
 
 .rd-go {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   text-decoration: underline;
 }

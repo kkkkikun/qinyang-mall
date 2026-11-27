@@ -4,6 +4,13 @@
  * 颜色令牌：
  *   主色金 #D29B5E / 主要按钮麦金 #CD9150 / 次要按钮炭黑 #272727 /
  *   强调红 #F53939 / 页面底 #F2F2F2 / 卡片 #FFFFFF / 输入框 #F7F7F7
+ *
+ * 字号令牌：
+ *   此前全站散落着 21 档裸字号（8px ~ 30px，其中 10.5 / 11.5 / 12.5 / 13.5
+ *   这类半像素值就有 59 处），改一处字号要翻十几个页面，肉眼无法分辨的
+ *   0.5px 差异也让排版失去秩序感。现统一收敛为下面这档具名令牌，
+ *   取值与视觉基线一致（半像素值就近取整，差异 ≤0.5px，不可察觉）。
+ *   新增字号一律走令牌，tools/check_miniprogram.py 会拦截裸字号。
  */
 
 page {
@@ -22,13 +29,29 @@ page {
   --text: #1A1A1A;
   --text-2: #666666;
   --text-3: #999999;
+
+  /* 字号标度：13 档，覆盖全站 */
+  --fs-2xs: 10px;  /* 角标、最小标注 */
+  --fs-xs: 11px;   /* 次要说明 */
+  --fs-sm: 12px;   /* 辅助文字 */
+  --fs-base: 13px; /* 小正文 */
+  --fs-md: 14px;   /* 正文（默认） */
+  --fs-lg: 15px;
+  --fs-lg2: 16px;
+  --fs-xl: 17px;   /* 小标题 */
+  --fs-2xl: 19px;  /* 区块标题 */
+  --fs-3xl: 21px;  /* 金额、大标题 */
+  --fs-4xl: 25px;
+  --fs-5xl: 28px;
+  --fs-6xl: 30px;  /* 页面主标题 */
+
   --serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
 
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--fs-md);
   line-height: 1.5;
 }
 
@@ -72,7 +95,7 @@ view, text, image, button, input, textarea, scroll-view {
   left: 60px;
   right: 120px;
   text-align: center;
-  font-size: 16px;
+  font-size: var(--fs-lg2);
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -94,7 +117,7 @@ view, text, image, button, input, textarea, scroll-view {
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: var(--fs-lg2);
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   color: var(--ink);
@@ -117,7 +140,7 @@ view, text, image, button, input, textarea, scroll-view {
 
 .brand-head__cn {
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: var(--fs-xl);
   letter-spacing: 0.34em;
   text-indent: 0.34em;
   color: var(--text);
@@ -153,7 +176,7 @@ view, text, image, button, input, textarea, scroll-view {
   flex: 1 0 auto;
   text-align: center;
   padding: 11px 0;
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--text);
 }
 
@@ -181,19 +204,19 @@ view, text, image, button, input, textarea, scroll-view {
 
 .mod-title__t {
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: var(--fs-2xl);
   letter-spacing: 0.1em;
   color: var(--text);
 }
 
 .mod-title__e {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.24em;
   color: var(--text-3);
 }
 
 .mod-title__go {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   text-decoration: underline;
 }
@@ -213,7 +236,7 @@ view, text, image, button, input, textarea, scroll-view {
 }
 
 .mod-note {
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   text-align: center;
   padding: 6px 14px 0;
@@ -262,10 +285,10 @@ view, text, image, button, input, textarea, scroll-view {
 .gap10 { gap: 10px; }
 .gap12 { gap: 12px; }
 
-.fs11 { font-size: 11px; }
-.fs12 { font-size: 12px; }
-.fs13 { font-size: 13px; }
-.fs14 { font-size: 14px; }
+.fs11 { font-size: var(--fs-xs); }
+.fs12 { font-size: var(--fs-sm); }
+.fs13 { font-size: var(--fs-base); }
+.fs14 { font-size: var(--fs-md); }
 
 .muted { color: var(--text-3); }
 .muted-2 { color: var(--text-2); }
@@ -285,6 +308,90 @@ view, text, image, button, input, textarea, scroll-view {
   overflow: hidden;
 }
 
+/* ---------------- 骨架屏 ---------------- */
+
+/*
+ * 列表页加载态此前只有一行「正在加载…」文字，
+ * 图片网格页（首页 / 分类）在弱网下会先出现大片空白再突然铺满内容。
+ * 骨架屏按真实卡片的版式占位，视觉过渡更自然。
+ *
+ * 尺寸沿用仓库既有的 padding-bottom 百分比方案（不用 aspect-ratio），
+ * 以兼容较旧的微信基础库。
+ */
+.skeleton {
+  background: linear-gradient(90deg, #f1f1f1 25%, #e7e7e7 37%, #f1f1f1 63%);
+  background-size: 400% 100%;
+  animation: skeleton-sweep 1.4s ease infinite;
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+.sk-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+.sk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sk-thumb {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 116%;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.sk-line {
+  height: 12px;
+  border-radius: 3px;
+}
+
+.sk-line--short {
+  width: 55%;
+}
+
+.sk-list {
+  padding: 0 12px;
+}
+
+.sk-row {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.sk-row__thumb {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+}
+
+.sk-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
 /* ---------------- 按钮 ---------------- */
 
 .btn {
@@ -295,7 +402,7 @@ view, text, image, button, input, textarea, scroll-view {
   height: 40px;
   padding: 0 16px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: var(--fs-md);
   line-height: 1;
   /* 交互反馈：此前全站零动效、零点击反馈，点任何东西视觉上都没反应 */
   transition: opacity .15s ease, transform .1s ease-out, background-color .15s ease;
@@ -311,12 +418,12 @@ view, text, image, button, input, textarea, scroll-view {
 .btn--gold { background: var(--gold); color: #fff; }
 .btn--ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line-2); }
 .btn--block { width: 100%; }
-.btn--sm { height: 30px; padding: 0 12px; font-size: 12.5px; border-radius: 5px; }
+.btn--sm { height: 30px; padding: 0 12px; font-size: var(--fs-sm); border-radius: 5px; }
 .btn--link {
   background: none;
   padding: 0;
   height: auto;
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   text-decoration: underline;
 }
@@ -341,7 +448,7 @@ view, text, image, button, input, textarea, scroll-view {
   border: 1px solid var(--gold);
   color: var(--gold);
   border-radius: 3px;
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   line-height: 1;
 }
 
@@ -361,7 +468,7 @@ view, text, image, button, input, textarea, scroll-view {
 .tabs__item {
   flex: 0 0 auto;
   padding: 13px 14px 11px;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   color: var(--text);
   position: relative;
   white-space: nowrap;
@@ -411,7 +518,7 @@ view, text, image, button, input, textarea, scroll-view {
   border-radius: 5px;
   padding: 0 10px;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: var(--fs-base);
 }
 
 .searchbox image {
@@ -424,28 +531,28 @@ view, text, image, button, input, textarea, scroll-view {
   flex: 1;
   min-width: 0;
   height: 34px;
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
 .search-go {
   color: var(--gold);
-  font-size: 15px;
+  font-size: var(--fs-lg);
   white-space: nowrap;
 }
 
 /* ---------------- 价格 ---------------- */
 
 .price {
-  font-size: 16px;
+  font-size: var(--fs-lg2);
   color: var(--text);
   font-weight: 600;
 }
 
-.price__cur { font-size: 12px; margin-right: 1px; }
+.price__cur { font-size: var(--fs-sm); margin-right: 1px; }
 .price--red { color: var(--red); }
 .price--tbd {
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--gold);
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -516,7 +623,7 @@ view, text, image, button, input, textarea, scroll-view {
   position: absolute;
   left: 8px;
   top: 8px;
-  font-size: 8px;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.18em;
   color: var(--text-2);
   background: rgba(255, 255, 255, 0.82);
@@ -531,14 +638,14 @@ view, text, image, button, input, textarea, scroll-view {
 }
 
 .pcard__name {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   color: var(--text);
   min-height: 37px;
 }
 
 .pcard__ship {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   margin-top: 6px;
 }
@@ -563,7 +670,7 @@ view, text, image, button, input, textarea, scroll-view {
   justify-content: center;
   background: var(--field);
   color: var(--text-3);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   gap: 4px;
 }
 
@@ -594,7 +701,7 @@ view, text, image, button, input, textarea, scroll-view {
   padding: 14px;
   border-bottom: 1px solid var(--line);
   background: var(--card);
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 
 .list-row:last-child { border-bottom: none; }
@@ -624,12 +731,12 @@ view, text, image, button, input, textarea, scroll-view {
 
 .dark-card__t {
   font-family: var(--serif);
-  font-size: 21px;
+  font-size: var(--fs-3xl);
   letter-spacing: 0.14em;
 }
 
 .dark-card__d {
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: rgba(255, 255, 255, 0.62);
   margin-top: 4px;
 }
@@ -672,12 +779,12 @@ view, text, image, button, input, textarea, scroll-view {
 
 .guide-item__t {
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: var(--fs-lg2);
   letter-spacing: 0.1em;
 }
 
 .guide-item__go {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
   text-decoration: underline;
   margin-top: 6px;
@@ -699,7 +806,7 @@ view, text, image, button, input, textarea, scroll-view {
 
 .footer-band__cn {
   font-family: var(--serif);
-  font-size: 15px;
+  font-size: var(--fs-lg);
   letter-spacing: 0.34em;
   text-indent: 0.34em;
   color: var(--text-2);
@@ -712,13 +819,13 @@ view, text, image, button, input, textarea, scroll-view {
 }
 
 .wx-footer__t {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
   letter-spacing: 0.08em;
 }
 
 .wx-footer__t2 {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   margin-top: 7px;
 }
@@ -729,17 +836,17 @@ view, text, image, button, input, textarea, scroll-view {
   padding: 60px 24px;
   text-align: center;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: var(--fs-base);
 }
 
 .state__t {
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--text-2);
   margin-bottom: 6px;
 }
 
 .state__d {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.7;
 }
 
@@ -755,13 +862,13 @@ view, text, image, button, input, textarea, scroll-view {
 }
 
 .empty__t {
-  font-size: 14px;
+  font-size: var(--fs-md);
   color: var(--text-2);
   margin-bottom: 6px;
 }
 
 .empty__d {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.7;
 }
 
@@ -778,7 +885,7 @@ view, text, image, button, input, textarea, scroll-view {
 .notice {
   background: var(--field);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   padding: 10px 14px;
   line-height: 1.7;
 }
@@ -830,7 +937,7 @@ view, text, image, button, input, textarea, scroll-view {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  font-size: 10.5px;
+  font-size: var(--fs-2xs);
   color: var(--text-2);
   width: 44px;
   flex: 0 0 auto;
@@ -854,7 +961,7 @@ view, text, image, button, input, textarea, scroll-view {
 
 .kv {
   padding: 7px 0;
-  font-size: 13px;
+  font-size: var(--fs-base);
   display: flex;
   align-items: center;
 }
@@ -884,7 +991,7 @@ view, text, image, button, input, textarea, scroll-view {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 
@@ -892,3 +999,23 @@ view, text, image, button, input, textarea, scroll-view {
   width: 16px;
   height: 16px;
 }
+
+/* ---------------- 小工具类 ---------------- */
+
+/* 区块小标题：此前在 18 处以内联样式重复（font-size:15px;font-weight:600） */
+.sec-title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.mt-3 { margin-top: 3px; }
+.mt-6 { margin-top: 6px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-12 { margin-bottom: 12px; }

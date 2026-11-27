@@ -36,7 +36,7 @@
             :alt="item.alt ?? item.role"
             style="width: 100%; height: 96px; object-fit: cover; border-radius: 4px"
           />
-          <div class="muted" style="margin-top: 4px; font-size: 12px">
+          <div class="muted" style="margin-top: 4px; font-size: var(--qy-font-xs)">
             排序 {{ item.sortOrder }} · {{ item.width }}×{{ item.height }}
           </div>
           <div class="media-actions">
@@ -254,7 +254,7 @@ async function handleRemove(item: MediaDto): Promise<void> {
   border-radius: 3px;
   background: var(--qy-tan);
   color: #fff;
-  font-size: 14px;
+  font-size: var(--qy-font-base);
   cursor: pointer;
   line-height: 1;
 }

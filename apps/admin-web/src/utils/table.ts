@@ -1,4 +1,4 @@
-import type { VNode } from 'vue';
+import { h, type VNode } from 'vue';
 
 /**
  * t-table 列定义辅助。
@@ -25,4 +25,17 @@ export function cell<T>(render: (row: T) => VNode): TableCellFn {
  */
 export function toTableData<T>(rows: readonly T[]): never[] {
   return rows as unknown as never[];
+}
+
+/**
+ * 表格空状态。
+ *
+ * 默认空态只有一句「暂无数据」，商家看到后不知道是筛选条件太窄，
+ * 还是确实还没有数据。这里按场景给一句解释，避免「是不是坏了」的困惑。
+ */
+export function emptyHint(title: string, hint?: string): VNode {
+  return h('div', { class: 'table-empty' }, [
+    h('div', { class: 'table-empty__t' }, title),
+    hint ? h('div', { class: 'table-empty__d' }, hint) : null,
+  ]);
 }

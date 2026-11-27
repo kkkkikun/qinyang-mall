@@ -26,6 +26,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('还没有定制申请', '顾客提交定制申请后会出现在这里；也可以调整筛选条件再看看')"
         :pagination="pagination"
         :bordered="false"
         @page-change="handlePageChange"
@@ -104,12 +105,12 @@
           </t-descriptions-item>
         </t-descriptions>
 
-        <div class="section-title" style="margin-top: 20px">量体资料</div>
+        <div class="section-title mt-20">量体资料</div>
         <div class="snapshot-card">
           <MeasurementSnapshotView :snapshot="detail.measurements" />
         </div>
 
-        <div class="section-title" style="margin-top: 20px">联系方式</div>
+        <div class="section-title mt-20">联系方式</div>
         <div class="snapshot-card">
           <t-descriptions :column="3" size="small">
             <t-descriptions-item label="联系人">{{ detail.contact.name }}</t-descriptions-item>
@@ -119,19 +120,19 @@
               {{ detail.contact.detail || '—' }}
             </t-descriptions-item>
           </t-descriptions>
-          <div v-if="detail.remark" class="muted" style="margin-top: 8px">
+          <div v-if="detail.remark" class="muted mt-8">
             顾客备注：{{ detail.remark }}
           </div>
         </div>
 
-        <div class="section-title" style="margin-top: 20px">报价历史</div>
+        <div class="section-title mt-20">报价历史</div>
         <QuoteVersionList
           :quotes="quotes"
           :show-withdraw="can('request.quote') && canWithdrawQuote"
           @withdraw="handleWithdrawQuote"
         />
 
-        <div class="section-title" style="margin-top: 20px">处理时间线</div>
+        <div class="section-title mt-20">处理时间线</div>
         <div class="snapshot-card">
           <ul class="timeline">
             <li v-for="(item, index) in timeline" :key="index" class="timeline-item">
@@ -139,7 +140,7 @@
               <div class="timeline-meta">{{ item.meta }}</div>
             </li>
           </ul>
-          <div class="muted" style="margin-top: 8px">
+          <div class="muted mt-8">
             时间线依据申请记录、报价版本与订单生成信息整理。
           </div>
         </div>
@@ -158,7 +159,7 @@
         </t-form-item>
       </t-form>
       <t-button theme="primary" :loading="submitting" @click="handleSubmitReview">确认</t-button>
-      <t-button theme="default" style="margin-left: 8px" @click="reviewVisible = false">取消</t-button>
+      <t-button theme="default" class="ml-8" @click="reviewVisible = false">取消</t-button>
     </t-dialog>
 
     <!-- 报价弹窗 -->
@@ -193,14 +194,14 @@
             <t-textarea v-model="quoteForm.note" :rows="3" placeholder="选填" />
           </t-form-item>
         </div>
-        <div class="muted" style="margin: 4px 0 16px">
+        <div class="muted form-tip">
           创建新报价会生成新版本，历史版本自动置为「已被新版本取代」。
         </div>
         <t-button
           v-if="latestQuote"
           theme="default"
           size="small"
-          style="margin-bottom: 16px"
+          class="mb-16"
           @click="handleReuseLastQuote"
         >
           沿用上一版（货款 {{ formatYuan(latestQuote.amountCents) }} · 运费
@@ -208,7 +209,7 @@
         </t-button>
       </t-form>
       <t-button theme="primary" :loading="submitting" @click="handleSubmitQuote">提交报价</t-button>
-      <t-button theme="default" style="margin-left: 8px" @click="quoteVisible = false">取消</t-button>
+      <t-button theme="default" class="ml-8" @click="quoteVisible = false">取消</t-button>
     </t-dialog>
   </div>
 </template>
@@ -230,7 +231,7 @@ import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, formatYuan } from '../utils/format';
 import { requestStatusTheme } from '../utils/status';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 import { downloadCsv } from '../utils/download';
 import { countCsvRows } from '../utils/csv';
 import MeasurementSnapshotView from '../components/MeasurementSnapshotView.vue';

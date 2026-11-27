@@ -14,6 +14,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('还没有量体模板', '量体模板决定顾客提交申请时要填写哪些尺寸')"
         :pagination="{ current: 1, pageSize: 999, total: rows.length }"
         :bordered="false"
       />
@@ -40,18 +41,18 @@
           </t-descriptions-item>
         </t-descriptions>
 
-        <div v-if="viewTemplate.summary" class="muted" style="margin-top: 8px">
+        <div v-if="viewTemplate.summary" class="muted mt-8">
           {{ viewTemplate.summary }}
         </div>
 
-        <div v-for="section in viewTemplate.measurementSections" :key="section.sectionId" class="measure-section" style="margin-top: 16px">
+        <div v-for="section in viewTemplate.measurementSections" :key="section.sectionId" class="measure-section mt-16">
           <div class="measure-section-head">
             <span>{{ section.title }}</span>
             <span class="muted">
               {{ MEASUREMENT_TYPE_LABELS[section.measurementType] }}
             </span>
           </div>
-          <div v-if="section.description" class="muted" style="padding: 8px 12px 0">
+          <div v-if="section.description" class="muted pad-top-8">
             {{ section.description }}
           </div>
           <div class="measure-field-list">
@@ -101,7 +102,7 @@
           </t-form-item>
         </div>
 
-        <div class="section-title" style="margin-top: 12px">量体分节</div>
+        <div class="section-title mt-12">量体分节</div>
         <div v-for="(section, sectionIndex) in form.sections" :key="sectionIndex" class="measure-section">
           <div class="measure-section-head">
             <span>第 {{ sectionIndex + 1 }} 节</span>
@@ -163,7 +164,7 @@
                 </tr>
               </tbody>
             </table>
-            <t-button theme="default" size="small" style="margin-top: 8px" @click="addField(sectionIndex)">
+            <t-button theme="default" size="small" class="mt-8" @click="addField(sectionIndex)">
               添加字段
             </t-button>
           </div>
@@ -171,13 +172,13 @@
 
         <t-button theme="default" size="small" @click="addSection">添加分节</t-button>
 
-        <div class="page-toolbar" style="margin-top: 16px">
+        <div class="page-toolbar mt-16">
           <t-switch v-model="form.publish" />
           <span class="muted">保存后立即发布（草稿 → 已发布；已发布模板将生成新版本）</span>
         </div>
 
         <t-button theme="primary" :loading="saving" @click="handleSave">保存</t-button>
-        <t-button theme="default" style="margin-left: 8px" @click="editVisible = false">取消</t-button>
+        <t-button theme="default" class="ml-8" @click="editVisible = false">取消</t-button>
       </t-form>
     </t-dialog>
   </div>
@@ -201,7 +202,7 @@ import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, flattenCategories } from '../utils/format';
 import { MEASUREMENT_TYPE_LABELS, TEMPLATE_STATUS_LABELS, templateStatusTheme } from '../utils/status';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 
 const auth = useAuthStore();
 
@@ -532,7 +533,7 @@ onMounted(async () => {
 .qy-field-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--qy-font-sm);
 }
 
 .qy-field-table th {

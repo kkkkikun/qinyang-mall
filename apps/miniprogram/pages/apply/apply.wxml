@@ -25,7 +25,7 @@
         </view>
         <view class="grow">
           <view class="fs13">QINYANG｜{{detail.name}}</view>
-          <view class="fs11 muted-2" style="margin-top:3px">量体模板：{{templateName}}</view>
+          <view class="fs11 muted-2 mt-3">量体模板：{{templateName}}</view>
         </view>
       </view>
     </view>
@@ -118,7 +118,7 @@
     <!-- 底部提交 -->
     <view class="pd-bar">
       <button class="btn btn--ghost" style="flex:0 0 104px" bindtap="goGuide">量体指南</button>
-      <button class="btn btn--tan" style="flex:1" bindtap="submit" disabled="{{submitting}}">
+      <button class="btn btn--tan flex-1" bindtap="submit" disabled="{{submitting}}">
         {{submitting ? '提交中…' : '提交定制申请'}}
       </button>
     </view>

@@ -73,6 +73,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('没有匹配的商品', '换个关键词或清空筛选条件试试')"
         :pagination="pagination"
         :bordered="false"
         :selected-row-keys="selectedIds"
@@ -133,12 +134,12 @@
               </t-form-item>
             </div>
 
-            <div class="muted" style="margin: 4px 0 16px">
+            <div class="muted form-tip">
               报价模式为「仅按量体报价」时不保存价格，前台显示「待报价」，需在定制申请中报价。
             </div>
 
             <t-button theme="primary" :loading="saving" @click="handleSave">保存</t-button>
-            <t-button theme="default" style="margin-left: 8px" @click="drawerVisible = false">取消</t-button>
+            <t-button theme="default" class="ml-8" @click="drawerVisible = false">取消</t-button>
           </t-form>
         </t-tab-panel>
 
@@ -174,7 +175,7 @@ import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, formatYuan, flattenCategories } from '../utils/format';
 import { productStatusTheme } from '../utils/status';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 import ProductMediaPanel from '../components/ProductMediaPanel.vue';
 
 const auth = useAuthStore();

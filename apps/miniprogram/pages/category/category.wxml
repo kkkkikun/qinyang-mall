@@ -10,7 +10,21 @@
     </view>
   </view>
 
-  <view wx:if="{{loading}}" class="state">正在加载分类…</view>
+  <!-- 加载态：左侧分类栏 + 右侧商品网格都占位，避免骨架消失后整页跳动 -->
+  <view wx:if="{{loading}}" class="cat-wrap cat-wrap--skeleton">
+    <view class="side-cat">
+      <view class="sk-side__item skeleton" wx:for="{{[0,1,2,3,4,5]}}" wx:key="*this"></view>
+    </view>
+    <view class="cat-right">
+      <view class="sk-grid">
+        <view class="sk-card" wx:for="{{[0,1,2,3]}}" wx:key="*this">
+          <view class="sk-thumb skeleton"></view>
+          <view class="sk-line skeleton"></view>
+          <view class="sk-line sk-line--short skeleton"></view>
+        </view>
+      </view>
+    </view>
+  </view>
   <view wx:elif="{{error}}" class="state">
     <view class="state__t">{{error}}</view>
     <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>

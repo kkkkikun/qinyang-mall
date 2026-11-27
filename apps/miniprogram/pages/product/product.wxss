@@ -40,7 +40,7 @@
   bottom: 12px;
   background: rgba(26, 26, 26, 0.62);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   padding: 3px 9px;
   border-radius: 11px;
   letter-spacing: 0.04em;
@@ -52,13 +52,13 @@
 }
 
 .pd-price__p {
-  font-size: 25px;
+  font-size: var(--fs-4xl);
   color: var(--text);
   font-weight: 600;
 }
 
 .pd-price__tbd {
-  font-size: 19px;
+  font-size: var(--fs-2xl);
   color: var(--gold);
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -70,14 +70,14 @@
 }
 
 .pd-title__h1 {
-  font-size: 16px;
+  font-size: var(--fs-lg2);
   font-weight: 600;
   line-height: 1.5;
   color: var(--text);
 }
 
 .pd-title__sub {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   margin-top: 6px;
 }
@@ -118,21 +118,21 @@
 }
 
 .pd-story__eyebrow {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   letter-spacing: 0.3em;
   color: var(--text-3);
 }
 
 .pd-story__h3 {
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: var(--fs-3xl);
   letter-spacing: 0.16em;
   margin: 8px 0 12px;
   color: var(--text);
 }
 
 .pd-story__p {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   line-height: 2;
   color: var(--text-2);
   text-align: left;

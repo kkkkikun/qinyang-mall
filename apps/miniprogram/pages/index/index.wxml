@@ -23,7 +23,13 @@
   </scroll-view>
 
   <!-- 加载 / 错误 -->
-  <view wx:if="{{loading}}" class="state">正在加载…</view>
+  <view wx:if="{{loading}}" class="sk-grid">
+    <view class="sk-card" wx:for="{{[0,1,2,3]}}" wx:key="*this">
+      <view class="sk-thumb skeleton"></view>
+      <view class="sk-line skeleton"></view>
+      <view class="sk-line sk-line--short skeleton"></view>
+    </view>
+  </view>
   <view wx:elif="{{error}}" class="state">
     <view class="state__t">{{error}}</view>
     <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
@@ -76,7 +82,7 @@
     </view>
 
     <!-- 量体定制 -->
-    <view class="sec" style="margin-top:8px">
+    <view class="sec mt-8">
       <view class="mod-title"><text class="mod-title__t">量体定制</text></view>
       <view class="mod-body" style="padding-bottom:6px">
         <view class="fs13 muted-2">从一件合身的衣物开始。</view>
@@ -112,7 +118,7 @@
     </view>
 
     <!-- 琴扬甄选 -->
-    <view class="sec" style="margin-top:8px">
+    <view class="sec mt-8">
       <view class="mod-title">
         <text class="mod-title__t">琴扬甄选</text>
         <text class="mod-title__go" bindtap="goCategory">全部款式</text>
@@ -144,7 +150,7 @@
     </view>
 
     <!-- 更多商品 -->
-    <view class="sec" style="margin-top:8px">
+    <view class="sec mt-8">
       <view class="mod-title"><text class="mod-title__t">更多商品</text></view>
       <view class="mod-body">
         <view class="pgrid">

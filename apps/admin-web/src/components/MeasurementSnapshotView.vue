@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="muted" style="margin-bottom: 8px">
+    <div class="muted mb-8">
       量体模板：{{ snapshot.templateName }}（{{ snapshot.templateCode }} · v{{ snapshot.templateVersion }}）
     </div>
 
@@ -11,7 +11,7 @@
         <span>{{ section.title }}</span>
         <span class="muted">{{ typeLabel(section.measurementType) }}</span>
       </div>
-      <div v-if="section.description" class="muted" style="padding: 8px 12px 0">
+      <div v-if="section.description" class="muted pad-top-8">
         {{ section.description }}
       </div>
       <div class="measure-field-list">

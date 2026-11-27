@@ -14,6 +14,7 @@
         :data="tableData"
         :columns="columns"
         :loading="loading"
+                :empty="emptyHint('还没有分类', '先建一个分类，商品才能挂到分类下')"
         :pagination="{ current: 1, pageSize: 999, total: rows.length }"
         :bordered="false"
       />
@@ -43,7 +44,7 @@
         </t-form-item>
 
         <t-button theme="primary" :loading="saving" @click="handleSave">保存</t-button>
-        <t-button theme="default" style="margin-left: 8px" @click="dialogVisible = false">取消</t-button>
+        <t-button theme="default" class="ml-8" @click="dialogVisible = false">取消</t-button>
       </t-form>
     </t-dialog>
   </div>
@@ -58,7 +59,7 @@ import { toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { toCategoryRows, type CategoryRow } from '../utils/format';
-import { cell, toTableData } from '../utils/table';
+import { cell, emptyHint, toTableData } from '../utils/table';
 
 const auth = useAuthStore();
 

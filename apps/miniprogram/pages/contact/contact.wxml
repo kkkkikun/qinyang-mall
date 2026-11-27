@@ -9,12 +9,12 @@
     </view>
   </view>
 
-  <view class="sec sec-pad" style="margin-top:8px">
+  <view class="sec sec-pad mt-8">
     <view class="row gap10">
       <view class="contact__ic"><image src="/assets/icons/headset_blue.png" mode="aspectFit" /></view>
       <view class="grow">
-        <view style="font-size:15px;font-weight:600">琴扬精纺羊绒 · 店铺客服</view>
-        <view class="fs12 muted-2" style="margin-top:3px">可咨询量体方法、定制细节、报价与发货进度</view>
+        <view class="sec-title">琴扬精纺羊绒 · 店铺客服</view>
+        <view class="fs12 muted-2 mt-3">可咨询量体方法、定制细节、报价与发货进度</view>
       </view>
     </view>
   </view>

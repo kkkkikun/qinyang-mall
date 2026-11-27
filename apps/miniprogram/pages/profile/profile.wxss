@@ -17,17 +17,17 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 19px;
+  font-size: var(--fs-2xl);
   flex: 0 0 54px;
 }
 
 .me-head__nm {
-  font-size: 17px;
+  font-size: var(--fs-xl);
   font-weight: 600;
 }
 
 .me-head__sub {
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   margin-top: 3px;
 }
@@ -51,12 +51,12 @@
 .me-stats__b {
   display: block;
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--fs-2xl);
   font-weight: 400;
 }
 
 .me-stats__t {
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
 }
 
@@ -73,12 +73,12 @@
 }
 
 .me-card__t {
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 600;
 }
 
 .me-card__go {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   text-decoration: underline;
 }
@@ -93,7 +93,7 @@
 }
 
 .rec-item__st {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--gold);
 }
 
@@ -106,7 +106,7 @@
 .me-grid__g {
   width: 20%;
   text-align: center;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
 }
 
@@ -136,5 +136,5 @@
   border: 1px solid var(--line-2);
   border-radius: 5px;
   background: var(--field);
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
 }

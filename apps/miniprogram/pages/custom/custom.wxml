@@ -40,7 +40,7 @@
   </view>
 
   <!-- 定制流程 -->
-  <view class="sec" style="margin-top:8px">
+  <view class="sec mt-8">
     <view class="mod-title"><text class="mod-title__t">定制流程</text></view>
     <view class="mod-body">
       <view class="step" wx:for="{{steps}}" wx:key="no">
