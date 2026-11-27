@@ -266,6 +266,38 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && set -a && . infra/docker/.
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node infra/scripts/acceptance.mjs'
 ```
 
+### 服务器被别的作业占满时
+
+服务器 128 核是**共享**的,同一台机器上还跑着别的项目与竞赛作业。
+全量流水线默认把构建绑到核 `0-3`（`taskset -c 0-3`）,
+若这些核正被别人占满,流水线仍能跑完,但**耗时会明显变长、CPU 峰值数据也会失真**。
+
+```bash
+# 先看哪些核是空的（空闲率 > 60% 的核可用来跑构建）
+ssh sqserver 'python3 - << "PY"
+import time
+def snap():
+    d = {}
+    for line in open("/proc/stat"):
+        if line.startswith("cpu") and line[3:4].isdigit():
+            p = line.split(); v = [int(x) for x in p[1:]]
+            d[p[0]] = (sum(v), v[3] + v[4])
+    return d
+a = snap(); time.sleep(2); b = snap()
+rows = []
+for k, (t2, i2) in b.items():
+    t1, i1 = a.get(k, (0, 0)); dt = t2 - t1
+    rows.append((int(k[3:]), 100.0 * (i2 - i1) / dt if dt else 0))
+print([c for c, v in rows if v > 60])
+PY'
+
+# 换到空闲核上跑（build.sh 支持 CPU_LIST 覆盖，仍受「≤4 核」约束）
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && CPU_LIST=112,81,14 bash infra/scripts/build.sh'
+```
+
+> 本项目的常驻服务（compose 隔离栈）只占约 1.2% CPU,不构成负载来源;
+> 流水线阶段结束后不会留下后台进程。
+
 ---
 
 ## 7. 微信小程序预览（Windows 侧）
