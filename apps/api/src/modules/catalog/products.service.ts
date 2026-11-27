@@ -170,6 +170,23 @@ export class ProductsService {
     }
 
     /*
+     * 客户端回传了「我打开时看到的行版本」→ 与库里的现况不符就是有人改过。
+     *
+     * 下面 WHERE 里的 version 只能挡住「两个请求在同一瞬间重叠」：
+     * 商家 A 打开编辑抽屉 → 商家 B 改完保存 → A 十分钟后保存，
+     * A 手里是**整行陈旧内容**，会把 B 的改动静默覆盖，而 A 拿到的是 200。
+     * 所以客户端把打开时看到的版本带回来，这里先做一次比对，不一致就 409。
+     *
+     * 不传 expectedVersion 时保持原行为（服务端读到什么版本就写什么版本）。
+     */
+    if (dto.expectedVersion !== undefined && dto.expectedVersion !== product.version) {
+      throw BusinessException.conflict(
+        '商品已被他人修改，请刷新后重试',
+        ERROR_CODES.VERSION_CONFLICT,
+      );
+    }
+
+    /*
      * 真正的乐观锁：按版本号**条件更新**。
      *
      * 此前这里是 `save(product)` 整行回写，而 TypeORM 的 save() **并不做乐观锁** ——
@@ -203,7 +220,7 @@ export class ProductsService {
       if (affected.affected !== 1) {
         throw BusinessException.conflict(
           '商品已被他人修改，请刷新后重试',
-          ERROR_CODES.INVALID_STATUS_TRANSITION,
+          ERROR_CODES.VERSION_CONFLICT,
         );
       }
       saved = await this.reload(id);
@@ -213,7 +230,7 @@ export class ProductsService {
       if (error instanceof OptimisticLockVersionMismatchError) {
         throw BusinessException.conflict(
           '商品已被他人修改，请刷新后重试',
-          ERROR_CODES.INVALID_STATUS_TRANSITION,
+          ERROR_CODES.VERSION_CONFLICT,
         );
       }
       throw error;
@@ -272,7 +289,7 @@ export class ProductsService {
       if (affected.affected !== 1) {
         throw BusinessException.conflict(
           '商品已被他人修改，请刷新后重试',
-          ERROR_CODES.INVALID_STATUS_TRANSITION,
+          ERROR_CODES.VERSION_CONFLICT,
         );
       }
       saved = await this.reload(id);
@@ -282,7 +299,7 @@ export class ProductsService {
       if (error instanceof OptimisticLockVersionMismatchError) {
         throw BusinessException.conflict(
           '商品已被他人修改，请刷新后重试',
-          ERROR_CODES.INVALID_STATUS_TRANSITION,
+          ERROR_CODES.VERSION_CONFLICT,
         );
       }
       throw error;
@@ -818,6 +835,8 @@ export class ProductsService {
       })),
       reviewStatus: product.status,
       publishedAt: product.publishedAt ? product.publishedAt.toISOString() : null,
+      /** 行版本（乐观锁）：编辑时回传，服务端据此判断「期间是否被人改过」 */
+      version: product.version,
     };
   }
 

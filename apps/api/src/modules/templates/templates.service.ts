@@ -168,6 +168,23 @@ export class TemplatesService {
     }
 
     /*
+     * 客户端回传了「我打开时看到的行版本」→ 与库里的现况不符就是有人改过。
+     *
+     * 下面 WHERE 里的 rowVersion 只能挡住「两个请求在同一瞬间重叠」：
+     * 商家 A 打开编辑表单 → 商家 B 改完保存 → A 十分钟后保存，
+     * A 手里是**整行陈旧内容**，会把 B 的量体字段静默覆盖，而 A 拿到的是 200。
+     * 所以客户端把打开时看到的行版本带回来，这里先做一次比对，不一致就 409。
+     *
+     * 不传 expectedVersion 时保持原行为（服务端读到什么版本就写什么版本）。
+     */
+    if (dto.expectedVersion !== undefined && dto.expectedVersion !== template.rowVersion) {
+      throw BusinessException.conflict(
+        '该模板已被他人修改，请刷新后重试',
+        ERROR_CODES.VERSION_CONFLICT,
+      );
+    }
+
+    /*
      * 条件更新（乐观锁），而不是 save(整行实体)。
      *
      * 为什么不用 save：save 会把「读到的整行快照」原样写回 ——
@@ -190,7 +207,7 @@ export class TemplatesService {
     if (result.affected !== 1) {
       throw BusinessException.conflict(
         '该模板已被他人修改，请刷新后重试',
-        ERROR_CODES.INVALID_STATUS_TRANSITION,
+        ERROR_CODES.VERSION_CONFLICT,
       );
     }
 
@@ -372,6 +389,8 @@ export class TemplatesService {
       code: row.code,
       name: row.name,
       version: row.version,
+      /** 行版本（乐观锁）：与上面的业务 version 不是一回事，改一次就 +1 */
+      rowVersion: row.rowVersion,
       status: row.status,
       applicableCategories: (row.applicableCategories ?? []) as string[],
       summary: row.summary,

@@ -21,6 +21,7 @@ export type PermissionKey =
   | 'template.manage'
   | 'template.delete'
   | 'guide.manage'
+  | 'guide.status'
   | 'audit.view';
 
 const OWNER_PERMISSIONS: PermissionKey[] = [
@@ -40,6 +41,7 @@ const OWNER_PERMISSIONS: PermissionKey[] = [
   'template.manage',
   'template.delete',
   'guide.manage',
+  'guide.status',
   'audit.view',
 ];
 

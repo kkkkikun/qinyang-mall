@@ -430,7 +430,8 @@ describe('一致性回归', () => {
 
     const [a, b] = await pending;
     expect([a.status, b.status].sort()).toEqual([200, 409]);
-    expect([a.body.code, b.body.code]).toContain('INVALID_STATUS_TRANSITION');
+    // 并发写冲突是**行版本**冲突（VERSION_CONFLICT），不是状态机非法迁移
+    expect([a.body.code, b.body.code]).toContain('VERSION_CONFLICT');
   });
 
   it('A6 并发添加同一张图：图集里只有一条', async () => {

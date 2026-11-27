@@ -57,10 +57,15 @@ def template(src: dict) -> dict:
         "code": src.get("template_id"),
         "name": src.get("template_name"),
         "version": 1,
+        # 行版本（乐观锁）：本地兜底数据没有并发写入，固定 1 即可
+        "rowVersion": 1,
         "status": "TemplateStatus.ACTIVE",
         "applicableCategories": list(src.get("applicable_category") or []),
         "summary": src.get("summary") or "",
         "measurementSections": [section(s) for s in (src.get("measurement_sections") or [])],
+        # 本地兜底数据没有真实的创建/更新时间，用固定值占位
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "updatedAt": "2026-01-01T00:00:00.000Z",
     }
 
 

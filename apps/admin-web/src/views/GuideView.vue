@@ -130,7 +130,8 @@
 
 <script setup lang="ts">
 import { computed, h, onMounted, ref } from 'vue';
-import { Button, MessagePlugin } from 'tdesign-vue-next';
+import type { VNode } from 'vue';
+import { Button, MessagePlugin, Popconfirm } from 'tdesign-vue-next';
 import type { GuidePageDto } from '@qinyang/contracts';
 import { guideApi, templateApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
@@ -165,6 +166,8 @@ interface GuideForm {
   title: string;
   summary: string;
   sections: GuideSectionForm[];
+  /** 打开编辑器时的行版本：保存时回传，期间被人改过就 409，不覆盖 */
+  version: number;
 }
 
 /** 可选的量体字段（按 fieldCode 去重，与服务端解析口径一致） */
@@ -226,10 +229,37 @@ const columns = [
   {
     colKey: 'op',
     title: '操作',
-    width: 90,
-    cell: cell<GuidePageDto>((row) =>
-      h(Button, { theme: 'default', size: 'small', onClick: () => openEdit(row) }, () => '编辑')
-    )
+    width: 190,
+    cell: cell<GuidePageDto>((row) => {
+      const actions: VNode[] = [
+        h(Button, { theme: 'default', size: 'small', onClick: () => openEdit(row) }, () => '编辑')
+      ];
+      // 启用 / 停用是「对顾客下线」的性质，与改文案不同 —— 仅店主可做
+      if (can('guide.status')) {
+        actions.push(
+          h(
+            Popconfirm,
+            {
+              content:
+                row.status === 'ACTIVE'
+                  ? '停用后顾客端立即看不到这一页（后台仍可编辑并随时启用）。确认停用？'
+                  : '启用后顾客端立即可见这一页。确认启用？',
+              theme: row.status === 'ACTIVE' ? 'warning' : 'default',
+              onConfirm: () => handleStatusChange(row, row.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE')
+            },
+            {
+              default: () =>
+                h(
+                  Button,
+                  { theme: 'default', size: 'small' },
+                  () => (row.status === 'ACTIVE' ? '停用' : '启用')
+                )
+            }
+          )
+        );
+      }
+      return h('div', { style: 'display:flex; gap:6px; flex-wrap:wrap;' }, actions);
+    })
   }
 ];
 
@@ -277,6 +307,7 @@ function openEdit(row: GuidePageDto): void {
     slug: row.slug,
     title: String(row.title ?? ''),
     summary: row.summary ?? '',
+    version: row.version ?? 0,
     sections: (row.sections ?? []).map((section) => ({
       id: section.id,
       title: String(section.title ?? ''),
@@ -326,6 +357,20 @@ function parseItems(text: string): string[] {
     .filter((line) => line.length > 0);
 }
 
+/** 启用 / 停用图文说明页（店主专属） */
+async function handleStatusChange(
+  row: GuidePageDto,
+  status: 'ACTIVE' | 'DISABLED'
+): Promise<void> {
+  try {
+    await guideApi.changeStatus(row.slug, status);
+    MessagePlugin.success(status === 'ACTIVE' ? '已启用' : '已停用');
+    await load();
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '操作失败'));
+  }
+}
+
 async function save(): Promise<void> {
   const current = form.value;
   if (!current) return;
@@ -346,6 +391,9 @@ async function save(): Promise<void> {
     await guideApi.update(current.slug, {
       title: String(current.title ?? '').trim(),
       summary: String(current.summary ?? '').trim() || null,
+      // 回传打开时的行版本：期间有人改过这一页，服务端会 409，
+      // 而不是拿旧表单把对方的改动覆盖掉
+      expectedVersion: current.version || undefined,
       sections: current.sections.map((section) => ({
         id: section.id,
         title: String(section.title ?? '').trim(),

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BannerDto, BannerUpsertRequest, ERROR_CODES } from '@qinyang/contracts';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { BannerDto, BannerReorderRequest, BannerUpsertRequest, ERROR_CODES } from '@qinyang/contracts';
+import { DataSource, LessThan, MoreThan, Repository } from 'typeorm';
 import { Banner } from '../../database/entities/banner.entity';
 import { BusinessException } from '../../common/errors/business.exception';
 import { AuditService } from '../audit/audit.service';
@@ -12,6 +12,7 @@ export class BannersService {
   constructor(
     @InjectRepository(Banner)
     private readonly banners: Repository<Banner>,
+    private readonly dataSource: DataSource,
     private readonly audit: AuditService,
   ) {}
 
@@ -71,6 +72,24 @@ export class BannersService {
     const banner = await this.banners.findOne({ where: { id } });
     if (!banner) throw BusinessException.notFound('轮播不存在');
 
+    /*
+     * 客户端回传了「我打开时看到的行版本」→ 与库里的现况不符就是有人改过。
+     *
+     * 下面 WHERE 里的 version 只能挡住「两个请求在同一瞬间重叠」：
+     * 商家 A 打开编辑表单 → 商家 B 改完保存 → A 十分钟后保存，
+     * A 手里是**整行陈旧内容**，会把 B 的改动静默覆盖，而 A 拿到的是 200。
+     * 所以客户端把打开时看到的版本带回来，这里先做一次比对，不一致就 409。
+     *
+     * 不传 expectedVersion 时保持原行为（服务端读到什么版本就写什么版本），
+     * CSV 导入等不带版本号的路径不受影响。
+     */
+    if (dto.expectedVersion !== undefined && dto.expectedVersion !== banner.version) {
+      throw BusinessException.conflict(
+        '该轮播已被他人修改，请刷新后重试',
+        ERROR_CODES.VERSION_CONFLICT,
+      );
+    }
+
     const before = { title: banner.title, sortOrder: banner.sortOrder, status: banner.status };
 
     /*
@@ -98,7 +117,7 @@ export class BannersService {
     if (result.affected !== 1) {
       throw BusinessException.conflict(
         '该轮播已被他人修改，请刷新后重试',
-        ERROR_CODES.INVALID_STATUS_TRANSITION,
+        ERROR_CODES.VERSION_CONFLICT,
       );
     }
 
@@ -118,6 +137,75 @@ export class BannersService {
       ip: null,
     });
     return this.toDto(saved);
+  }
+
+  /**
+   * 轮播重排。
+   *
+   * 只接受 **id 顺序**，服务端据此重写 `sortOrder`：
+   *
+   * - **不整行回写**：早期做法是逐条 `PUT /admin/banners/:id` 改排序，
+   *   而那个接口是整行保存 —— 商家 A 刚改了标题，商家 B 接着点「下移」，
+   *   B 手里那份**旧快照**会把 A 的标题改回去（写入者毫无察觉，还拿到 200）。
+   * - **不产生半成品**：逐条更新中途失败会留下「一半新顺序、一半旧顺序」；
+   *   这里在一个事务里改完，要么全成，要么全不成。
+   * - **期间新增的轮播不丢**：不在给定顺序里的轮播按现有次序追加到末尾。
+   */
+  async reorder(dto: BannerReorderRequest, admin: AdminPrincipal): Promise<BannerDto[]> {
+    const ids = dto.ids ?? [];
+    if (ids.length === 0) {
+      throw BusinessException.badRequest('排序列表不能为空');
+    }
+    if (new Set(ids).size !== ids.length) {
+      throw BusinessException.badRequest('排序列表里有重复的轮播');
+    }
+
+    const all = await this.banners.find({
+      order: { sortOrder: 'ASC', createdAt: 'ASC' },
+    });
+    const known = new Set(all.map((row) => row.id));
+    const unknown = ids.filter((id) => !known.has(id));
+    if (unknown.length > 0) {
+      throw BusinessException.notFound('轮播不存在');
+    }
+
+    const ordered = [
+      ...ids.map((id) => all.find((row) => row.id === id)!),
+      ...all.filter((row) => !ids.includes(row.id)),
+    ];
+
+    await this.dataSource.transaction(async (manager) => {
+      const repo = manager.getRepository(Banner);
+      for (let i = 0; i < ordered.length; i += 1) {
+        const row = ordered[i];
+        if (row.sortOrder === i) continue;
+        /*
+         * 条件更新：WHERE 里带上读取时的行版本。
+         * 期间有人改过这条轮播（标题/启停）→ 影响行数为 0 → 409，
+         * 而不是把对方的改动覆盖掉。
+         */
+        const result = await repo.update({ id: row.id, version: row.version }, { sortOrder: i });
+        if (result.affected !== 1) {
+          throw BusinessException.conflict(
+            '轮播已被他人修改，请刷新后重试',
+            ERROR_CODES.VERSION_CONFLICT,
+          );
+        }
+      }
+    });
+
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: 'banner.reorder',
+      targetType: 'banner',
+      targetId: null,
+      after: { order: ordered.map((row) => row.id) },
+      ip: null,
+    });
+
+    return this.listAll();
   }
 
   async remove(id: string, admin: AdminPrincipal): Promise<void> {
@@ -147,6 +235,8 @@ export class BannersService {
       status: banner.status,
       startAt: banner.startAt ? banner.startAt.toISOString() : null,
       endAt: banner.endAt ? banner.endAt.toISOString() : null,
+      /** 行版本（乐观锁）：编辑时回传，服务端据此判断「期间是否被人改过」 */
+      version: banner.version,
     };
   }
 }

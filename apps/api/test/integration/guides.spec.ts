@@ -335,24 +335,85 @@ describe('图文说明页后台维护', () => {
       .expect(400);
   });
 
-  it('并发更新同一页：只会成功一次，另一方拿到 409（不静默覆盖）', async () => {
-    const [a, b] = await Promise.all([
-      http()
-        .put('/api/v1/admin/guides/care')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({ title: '并发版本 A' }),
-      http()
-        .put('/api/v1/admin/guides/care')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({ title: '并发版本 B' }),
-    ]);
+  it('用陈旧版本号提交被拒：不会覆盖他人的改动', async () => {
+    /*
+     * 这里刻意**不**用「两个并发请求」来制造冲突 ——
+     * 两个请求是否真正重叠取决于时序，断言就成了 flaky 的。
+     * 改成客户端语义（商家 A 打开编辑器时的行版本 → 期间商家 B 改过 → A 保存），
+     * 结果是确定的，而且这正是真实场景。
+     */
+    const opened = await http().get('/api/v1/guides/care').expect(200);
+    const openedVersion = opened.body.data.version;
 
-    const statuses = [a.status, b.status].sort();
-    expect(statuses).toEqual([200, 409]);
+    // 商家 B 先改一次
+    await http()
+      .put('/api/v1/admin/guides/care')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ title: '商家 B 的版本' })
+      .expect(200);
 
-    // 冲突方的业务码必须是「状态/版本冲突」，不能是 500
-    const conflict = a.status === 409 ? a : b;
-    expect(conflict.body.code).toBe('INVALID_STATUS_TRANSITION');
+    // 商家 A 拿着旧版本提交 → 409
+    const stale = await http()
+      .put('/api/v1/admin/guides/care')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ title: '商家 A 的旧版本', expectedVersion: openedVersion })
+      .expect(409);
+    expect(stale.body.code).toBe('VERSION_CONFLICT');
+
+    // B 的内容没被 A 的旧表单覆盖
+    const after = await http().get('/api/v1/guides/care').expect(200);
+    expect(after.body.data.title).toBe('商家 B 的版本');
+  });
+
+  it('带当前版本号可以正常保存', async () => {
+    const current = await http().get('/api/v1/guides/care').expect(200);
+    const res = await http()
+      .put('/api/v1/admin/guides/care')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ title: '带版本的保存', expectedVersion: current.body.data.version })
+      .expect(200);
+    expect(res.body.data.title).toBe('带版本的保存');
+  });
+
+  it('不传版本号仍然能保存（向后兼容，导入等路径不受影响）', async () => {
+    await http()
+      .put('/api/v1/admin/guides/care')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ title: '不带版本的保存' })
+      .expect(200);
+  });
+
+  it('停用后顾客端取不到，后台仍可见；再启用即恢复', async () => {
+    // 店员不能启停（仅店主）
+    await http()
+      .post('/api/v1/admin/guides/care/status')
+      .set('Authorization', `Bearer ${staffToken}`)
+      .send({ status: 'DISABLED' })
+      .expect(403);
+
+    await http()
+      .post('/api/v1/admin/guides/care/status')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ status: 'DISABLED' })
+      .expect(200);
+
+    // 顾客端 404
+    await http().get('/api/v1/guides/care').expect(404);
+    // 后台列表仍能看到
+    const list = await http()
+      .get('/api/v1/admin/guides')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .expect(200);
+    const row = list.body.data.find((item: { slug: string }) => item.slug === 'care');
+    expect(row.status).toBe('DISABLED');
+
+    // 重新启用
+    await http()
+      .post('/api/v1/admin/guides/care/status')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ status: 'ACTIVE' })
+      .expect(200);
+    await http().get('/api/v1/guides/care').expect(200);
   });
 
   it('更新后写入审计日志', async () => {

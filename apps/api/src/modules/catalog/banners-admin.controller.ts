@@ -16,16 +16,20 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
   IsIn,
   IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   Min,
 } from 'class-validator';
-import { AdminRole, BannerUpsertRequest } from '@qinyang/contracts';
+import { AdminRole, BannerReorderRequest, BannerUpsertRequest } from '@qinyang/contracts';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -91,6 +95,31 @@ export class BannerUpsertDto implements BannerUpsertRequest {
   @IsDateString()
   @TrimNullable()
   endAt?: string | null;
+
+  /**
+   * 期望的行版本（来自列表/详情返回的 `version`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为现有行为（服务端读到什么版本就写什么版本）。
+   */
+  @ApiPropertyOptional({ description: '期望的行版本；与当前不一致返回 409' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  expectedVersion?: number;
+}
+
+export class BannerReorderDto implements BannerReorderRequest {
+  @ApiProperty({
+    type: [String],
+    example: ['b1f0…', 'c2a9…'],
+    description: '轮播 id 顺序（从最前到最后）；不允许重复',
+  })
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMaxSize(200)
+  @IsUUID('4', { each: true })
+  ids!: string[];
 }
 
 @ApiTags('管理端 · 首页轮播')
@@ -110,6 +139,12 @@ export class BannersAdminController {
   @ApiOperation({ summary: '新增轮播' })
   create(@Body() dto: BannerUpsertDto, @CurrentAdmin() admin: AdminPrincipal) {
     return this.banners.create(dto, admin);
+  }
+
+  @Put('reorder')
+  @ApiOperation({ summary: '轮播排序（只传 id 顺序，服务端重写 sortOrder）' })
+  reorder(@Body() dto: BannerReorderDto, @CurrentAdmin() admin: AdminPrincipal) {
+    return this.banners.reorder(dto, admin);
   }
 
   @Put(':id')

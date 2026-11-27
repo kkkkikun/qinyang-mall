@@ -143,6 +143,9 @@ export const bannerApi = {
   /** PUT /admin/banners/:id */
   update: (id: string, body: BannerUpsertRequest) =>
     request<BannerDto>({ method: 'put', url: `/admin/banners/${id}`, data: body }),
+  /** PUT /admin/banners/reorder —— 只传 id 顺序，服务端重写 sortOrder */
+  reorder: (ids: string[]) =>
+    request<BannerDto[]>({ method: 'put', url: '/admin/banners/reorder', data: { ids } }),
   /** DELETE /admin/banners/:id（OWNER） */
   remove: (id: string) => request<void>({ method: 'delete', url: `/admin/banners/${id}` }),
 };
@@ -316,5 +319,12 @@ export const guideApi = {
       method: 'put',
       url: '/admin/guides/' + encodeURIComponent(slug),
       data: body,
+    }),
+  /** POST /admin/guides/:slug/status（启用 / 停用，店主专属） */
+  changeStatus: (slug: string, status: 'ACTIVE' | 'DISABLED') =>
+    request<GuidePageDto>({
+      method: 'post',
+      url: '/admin/guides/' + encodeURIComponent(slug) + '/status',
+      data: { status },
     }),
 };

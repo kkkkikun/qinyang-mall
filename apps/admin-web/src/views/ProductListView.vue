@@ -186,7 +186,7 @@ import {
   type ProductUpsertRequest,
 } from '@qinyang/contracts';
 import { categoryApi, productApi, templateApi } from '../api/admin';
-import { toErrorMessage } from '../api/http';
+import { ApiError, toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, formatYuan, flattenCategories, toNonNegativeInt } from '../utils/format';
@@ -615,6 +615,15 @@ async function openEdit(row: ProductListItem): Promise<void> {
   form.sortOrder = String(detail.sortOrder ?? 0);
   // 记录「这份表单是从哪条详情填出来的」，保存前据此校验（见 handleSave）
   formSource.value = { id: detail.id, code: detail.code, name: detail.name };
+  /*
+   * 记录「打开抽屉时看到的行版本」（乐观锁）。
+   *
+   * 商品编辑抽屉用的是**详情**（列表行里没有版本字段），
+   * 所以版本取自详情返回的 `version`。
+   * 保存时随请求回传：期间别人改过这件商品 → 服务端 409，
+   * 而不是用这份陈旧的表单把对方的改动覆盖掉。
+   */
+  formVersion.value = detail.version;
 }
 
 const detailCache = ref<ProductDetail | null>(null);
@@ -633,6 +642,14 @@ const detailError = ref(false);
 const formSource = ref<{ id: string; code: string; name: string } | null>(null);
 
 /**
+ * 打开抽屉时商品详情的行版本（乐观锁）。
+ *
+ * 与 `formSource` 平行：一个是「表单内容出自哪条详情」，
+ * 这个是「那条详情当时的版本号」，保存时原样回传给服务端做比对。
+ */
+const formVersion = ref<number | null>(null);
+
+/**
  * 清空抽屉里的详情相关状态。
  *
  * 单独抽成函数而不是在调用处直接赋值：
@@ -643,6 +660,7 @@ function resetDetailState(): void {
   detailCache.value = null;
   detailMedia.value = [];
   formSource.value = null;
+  formVersion.value = null;
   detailError.value = false;
 }
 
@@ -718,6 +736,10 @@ async function handleSave(): Promise<void> {
     measurementTemplateId: form.measurementTemplateId || null,
     sortOrder: toNonNegativeInt(form.sortOrder),
   };
+  // 编辑态带上「打开抽屉时看到的行版本」：期间被人改过就 409，不覆盖对方的改动
+  if (editingId.value && formVersion.value !== null) {
+    payload.expectedVersion = formVersion.value;
+  }
 
   saving.value = true;
   try {
@@ -730,6 +752,8 @@ async function handleSave(): Promise<void> {
       formSource.value = refreshed
         ? { id: refreshed.id, code: refreshed.code, name: refreshed.name }
         : null;
+      // 行版本同步到最新详情：本次保存已经用掉了旧版本，再存一次要用新的
+      formVersion.value = refreshed ? refreshed.version : null;
     } else {
       const created = await productApi.create(payload);
       MessagePlugin.success('商品已创建（初始为草稿）');
@@ -739,13 +763,28 @@ async function handleSave(): Promise<void> {
       formSource.value = refreshed
         ? { id: refreshed.id, code: refreshed.code, name: refreshed.name }
         : null;
+      formVersion.value = refreshed ? refreshed.version : null;
     }
     await load();
   } catch (error) {
-    MessagePlugin.error(toErrorMessage(error, '保存失败'));
+    MessagePlugin.error(toSaveErrorMessage(error, '保存失败'));
   } finally {
     saving.value = false;
   }
+}
+
+/**
+ * 保存失败时的提示文案。
+ *
+ * 409（行版本对不上 / 已发布商品改价的权限闸门）的服务端文案
+ * 本身就是写给商家看的中文，直接透出即可 ——
+ * 不要把原始错误码或异常堆栈丢给商家看。
+ */
+function toSaveErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiError && error.isConflict) {
+    return error.message || fallback;
+  }
+  return toErrorMessage(error, fallback);
 }
 
 onMounted(async () => {

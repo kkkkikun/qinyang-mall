@@ -3,6 +3,7 @@ import {
   MediaRole,
   PricingMode,
   ProductStatus,
+  type ProductUpsertRequest,
 } from '@qinyang/contracts';
 import { Type } from 'class-transformer';
 import { Trim, TrimNullable } from '../../../common/decorators/trim.decorator';
@@ -24,7 +25,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class ProductUpsertDto {
+export class ProductUpsertDto implements ProductUpsertRequest {
   @ApiProperty({ example: 'ED-0032' })
   @IsString()
   @IsNotEmpty()
@@ -100,6 +101,18 @@ export class ProductUpsertDto {
   // 注意：这里刻意**不**接受 status。
   // 新增商品一律草稿，上下架只能走 POST /admin/products/:id/status（店主专属）。
   // 接受 status 会让店员绕过店主审核直接上架。
+
+  /**
+   * 期望的行版本（来自详情返回的 `version`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为现有行为（服务端读到什么版本就写什么版本）。
+   */
+  @ApiPropertyOptional({ description: '期望的行版本；与当前不一致返回 409' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  expectedVersion?: number;
 }
 
 export class ProductStatusDto {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -8,10 +8,13 @@ import {
 } from '@nestjs/swagger';
 import {
   IsArray,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -88,6 +91,25 @@ export class GuidePageUpsertDto implements GuidePageUpsertRequest {
   @ValidateNested({ each: true })
   @Type(() => GuideSectionUpsertDto)
   sections?: GuideSectionUpsertDto[];
+
+  /**
+   * 期望的行版本（来自列表/详情返回的 `version`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为服务端「读到什么版本就写什么版本」。
+   */
+  @ApiPropertyOptional({ description: '期望的行版本；与当前不一致返回 409' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  expectedVersion?: number;
+}
+
+/** 图文说明页启停请求体 */
+export class GuidePageStatusDto {
+  @ApiProperty({ enum: ['ACTIVE', 'DISABLED'] })
+  @IsEnum(['ACTIVE', 'DISABLED'])
+  status: 'ACTIVE' | 'DISABLED';
 }
 
 @ApiTags('管理端 · 图文说明')
@@ -113,5 +135,25 @@ export class GuidesAdminController {
     @CurrentAdmin() admin: AdminPrincipal,
   ) {
     return this.guides.update(slug, dto, admin);
+  }
+
+  @Post(':slug/status')
+  @HttpCode(200)
+  /**
+   * 启用 / 停用图文说明页。
+   *
+   * 此前这一页在顾客端「停用即不可见」，但后台**没有任何入口能改这个状态** ——
+   * 商家想让某一页先下架（比如洗护说明要重写）都做不到。
+   *
+   * 权限：**仅店主**。停用是「对顾客下线」的性质，与「改文案」不是一回事。
+   */
+  @Roles(AdminRole.OWNER)
+  @ApiOperation({ summary: '启用 / 停用图文说明页（店主专属）' })
+  changeStatus(
+    @Param('slug') slug: string,
+    @Body() dto: GuidePageStatusDto,
+    @CurrentAdmin() admin: AdminPrincipal,
+  ) {
+    return this.guides.changeStatus(slug, dto.status, admin);
   }
 }

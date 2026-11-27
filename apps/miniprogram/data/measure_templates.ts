@@ -12,6 +12,7 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
     "code": "TPL-KNIT-TOPS",
     "name": "针织上装 / 衬衫量体模板",
     "version": 1,
+    "rowVersion": 1,
     "status": TemplateStatus.ACTIVE,
     "applicableCategories": [
       "knitwear",
@@ -177,6 +178,7 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
     "code": "TPL-BOTTOM",
     "name": "裤装 / 裙装量体模板",
     "version": 1,
+    "rowVersion": 1,
     "status": TemplateStatus.ACTIVE,
     "applicableCategories": [
       "clothing"
@@ -318,6 +320,7 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
     "code": "TPL-OUTER",
     "name": "外套 / 卫衣量体模板",
     "version": 1,
+    "rowVersion": 1,
     "status": TemplateStatus.ACTIVE,
     "applicableCategories": [
       "clothing"
@@ -455,6 +458,7 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
     "code": "TPL-SCARF",
     "name": "围巾 / 披肩量体模板",
     "version": 1,
+    "rowVersion": 1,
     "status": TemplateStatus.ACTIVE,
     "applicableCategories": [
       "scarves"
@@ -533,6 +537,7 @@ export const MEASURE_TEMPLATES: MeasurementTemplateDto[] = [
     "code": "TPL-GENERIC",
     "name": "通用量体模板",
     "version": 1,
+    "rowVersion": 1,
     "status": TemplateStatus.ACTIVE,
     "applicableCategories": [
       "accessories",

@@ -317,7 +317,7 @@ describe('数据库层约束', () => {
 
     // 冲突方拿到的是业务 409，不是 500
     const conflict = a.status === 409 ? a : b;
-    expect(conflict.body?.code).toBe('INVALID_STATUS_TRANSITION');
+    expect(conflict.body?.code).toBe('VERSION_CONFLICT');
   });
 
   it('并发修改同一条轮播：一方 200、一方 409（不会静默覆盖）', async () => {
@@ -347,7 +347,7 @@ describe('数据库层约束', () => {
     expect([a.status, b.status].sort()).toEqual([200, 409]);
 
     const conflict = a.status === 409 ? a : b;
-    expect(conflict.body?.code).toBe('INVALID_STATUS_TRANSITION');
+    expect(conflict.body?.code).toBe('VERSION_CONFLICT');
   });
 
   it('轮播与模板的行版本列存在、初始为 1，成功更新一次后递增', async () => {

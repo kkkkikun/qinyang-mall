@@ -28,6 +28,14 @@ function config(overrides: Partial<AppConfig> = {}): AppConfig {
       publicBaseUrl: 'http://127.0.0.1:18110/static',
     },
     payment: { enabled: false },
+    auth: {
+      rateLimit: {
+        enabled: false,
+        windowMs: 60_000,
+        adminMaxAttempts: 10,
+        customerMaxAttempts: 30,
+      },
+    },
     corsOrigins: [],
   };
   return { ...base, ...overrides } as AppConfig;

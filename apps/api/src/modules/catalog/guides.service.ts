@@ -65,6 +65,20 @@ export class GuidesService {
     const before = { title: page.title, summary: page.summary };
 
     /*
+     * 客户端回传「我打开时看到的行版本」→ 与库里的现况不符，
+     * 说明期间有人改过这一页，**不能覆盖**（商家 A 的旧表单会抹掉商家 B 的改动）。
+     */
+    if (
+      payload.expectedVersion !== undefined &&
+      payload.expectedVersion !== page.version
+    ) {
+      throw BusinessException.conflict(
+        '该图文说明页已被他人修改，请刷新后重试',
+        ERROR_CODES.VERSION_CONFLICT,
+      );
+    }
+
+    /*
      * 条件更新（乐观锁）：`WHERE id = ? AND version = ?`
      *
      * 两个管理员同时编辑同一页时，两边都会读到同一份内容并先后提交 ——
@@ -84,7 +98,7 @@ export class GuidesService {
     if (affected.affected !== 1) {
       throw BusinessException.conflict(
         '该图文说明页已被他人修改，请刷新后重试',
-        ERROR_CODES.INVALID_STATUS_TRANSITION,
+        ERROR_CODES.VERSION_CONFLICT,
       );
     }
 
@@ -103,6 +117,53 @@ export class GuidesService {
       ip: null,
     });
 
+    return this.toDto(saved, await this.fieldIndex());
+  }
+
+  /**
+   * 启用 / 停用图文说明页。
+   *
+   * 停用后顾客端立即取不到这一页（`GET /guides/:slug` 对停用页返回 404），
+   * 但后台列表仍能看到它 —— 商家随时可以再启用。
+   */
+  async changeStatus(
+    slug: string,
+    status: 'ACTIVE' | 'DISABLED',
+    admin: AdminPrincipal,
+  ): Promise<GuidePageDto> {
+    const page = await this.repo.findOne({ where: { slug } });
+    if (!page) throw BusinessException.notFound('图文说明不存在');
+
+    if (page.status === status) {
+      return this.toDto(page, await this.fieldIndex());
+    }
+
+    // 条件更新：期间若有人改过内容，就不覆盖（避免把别处的改动抹掉）
+    const affected = await this.repo.update(
+      { id: page.id, version: page.version },
+      { status },
+    );
+    if (affected.affected !== 1) {
+      throw BusinessException.conflict(
+        '该图文说明页已被他人修改，请刷新后重试',
+        ERROR_CODES.VERSION_CONFLICT,
+      );
+    }
+
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: 'guide.status',
+      targetType: 'guide_page',
+      targetId: page.id,
+      before: { status: page.status },
+      after: { status },
+      ip: null,
+    });
+
+    const saved = await this.repo.findOne({ where: { id: page.id } });
+    if (!saved) throw BusinessException.notFound('图文说明不存在');
     return this.toDto(saved, await this.fieldIndex());
   }
 
@@ -168,6 +229,7 @@ export class GuidesService {
       sections,
       sortOrder: page.sortOrder,
       status: page.status,
+      version: page.version,
       updatedAt: page.updatedAt.toISOString(),
     };
   }

@@ -4,7 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminUser } from '../../database/entities/admin-user.entity';
 import { Customer } from '../../database/entities/customer.entity';
 import { TokenService } from '../../common/tokens/token.service';
+import { RateLimiterService } from '../../common/rate-limit/rate-limiter.service';
 import { AdminAuthController } from './admin-auth.controller';
+import { AdminSessionService } from './admin-session.service';
 import { AdminAuthService } from './admin-auth.service';
 import { CustomerAuthController } from './customer-auth.controller';
 import { CustomerAuthService } from './customer-auth.service';
@@ -21,7 +23,9 @@ import {
   providers: [
     TokenService,
     AdminAuthService,
+    AdminSessionService,
     CustomerAuthService,
+    RateLimiterService,
     {
       provide: CustomerIdentityProvider,
       inject: [ConfigService],
@@ -31,6 +35,12 @@ import {
           : new WechatIdentityProvider(config),
     },
   ],
-  exports: [TokenService, AdminAuthService, CustomerAuthService],
+  exports: [
+    TokenService,
+    AdminAuthService,
+    AdminSessionService,
+    CustomerAuthService,
+    RateLimiterService,
+  ],
 })
 export class AuthModule {}

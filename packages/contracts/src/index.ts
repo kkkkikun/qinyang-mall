@@ -308,6 +308,8 @@ export interface ProductDetail extends ProductListItem {
   media: MediaDto[];
   reviewStatus: ProductStatus;
   publishedAt?: string | null;
+  /** 行版本（乐观锁）：编辑时回传，服务端据此判断「期间是否被人改过」 */
+  version: number;
 }
 
 export interface ProductUpsertRequest {
@@ -323,6 +325,13 @@ export interface ProductUpsertRequest {
   measurementTemplateId?: string | null;
   sortOrder?: number;
   status?: ProductStatus;
+  /**
+   * 期望的行版本（来自详情返回的 `version`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为服务端「读到什么版本就写什么版本」。
+   */
+  expectedVersion?: number;
 }
 
 export interface ProductMediaUpsertRequest {
@@ -463,6 +472,8 @@ export interface BannerDto {
   status: 'ACTIVE' | 'DISABLED';
   startAt?: string | null;
   endAt?: string | null;
+  /** 行版本（乐观锁）：编辑时回传，服务端据此判断「期间是否被人改过」 */
+  version: number;
 }
 
 export interface BannerUpsertRequest {
@@ -475,6 +486,27 @@ export interface BannerUpsertRequest {
   status?: BannerDto['status'];
   startAt?: string | null;
   endAt?: string | null;
+  /**
+   * 期望的行版本（来自列表/详情返回的 `version`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为服务端「读到什么版本就写什么版本」。
+   */
+  expectedVersion?: number;
+}
+
+/**
+ * 轮播排序。
+ *
+ * 只传 **id 的顺序**，不带内容 —— 服务端按给定顺序重排 `sortOrder`。
+ *
+ * 为什么不用 `PUT /admin/banners/:id` 逐条改排序：
+ * 那种做法每次都是**整行回写**，会把当时读到的旧标题/旧图片覆盖回去；
+ * 而且中途失败会留下「一半新顺序、一半旧顺序」的半成品状态。
+ */
+export interface BannerReorderRequest {
+  /** 轮播 id 顺序（从最前到最后）；不允许重复 */
+  ids: string[];
 }
 
 // ─────────────────────── 量体模板（版本化） ───────────────────────
@@ -505,7 +537,15 @@ export interface MeasurementTemplateDto {
   id: string;
   code: string;
   name: string;
+  /** 业务版本号：第几个发布版本（发布时 +1），与行版本不是一回事 */
   version: number;
+  /**
+   * 行版本（乐观锁）：**每次改动都会递增**。
+   *
+   * 与上面的业务 `version` 区分开：业务版本只在发布时变，
+   * 行版本用来判断「这份内容自打开以来有没有被别人改过」。
+   */
+  rowVersion: number;
   status: TemplateStatus;
   applicableCategories: string[];
   summary?: string | null;
@@ -520,6 +560,8 @@ export interface MeasurementTemplateUpsertRequest {
   applicableCategories: string[];
   summary?: string | null;
   measurementSections: MeasurementSection[];
+  /** 期望的行版本（来自详情返回的 `rowVersion`），用于防止覆盖他人改动 */
+  expectedVersion?: number;
   /** 发布后不可原地修改，需新建版本 */
   publish?: boolean;
 }
@@ -743,6 +785,8 @@ export interface GuidePageDto {
   /** 后台列表用：排序与启停状态 */
   sortOrder: number;
   status: 'ACTIVE' | 'DISABLED';
+  /** 行版本（乐观锁）：编辑时回传，服务端据此判断「期间是否被人改过」 */
+  version: number;
   updatedAt: string;
 }
 
@@ -761,6 +805,13 @@ export interface GuidePageUpsertRequest {
   title?: string;
   summary?: string | null;
   sections?: GuideSectionUpsertPayload[];
+  /**
+   * 期望的行版本（来自列表/详情返回的 `version`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为服务端「读到什么版本就写什么版本」。
+   */
+  expectedVersion?: number;
 }
 
 // ──────────────────────────── 订单 ────────────────────────────
@@ -885,11 +936,21 @@ export const ERROR_CODES = {
   DUPLICATED_SUBMIT: 'DUPLICATED_SUBMIT',
   INVALID_STATUS_TRANSITION: 'INVALID_STATUS_TRANSITION',
   QUOTE_VERSION_CONFLICT: 'QUOTE_VERSION_CONFLICT',
+  /**
+   * 行版本冲突（乐观锁）：客户端回传的 `expectedVersion` 与库里现况不符，
+   * 或「读时校验通过、写入时已被他人改动」。
+   *
+   * 与 `INVALID_STATUS_TRANSITION` 分开：前者是**状态机**不允许，
+   * 这里是**同状态下内容被别人改了** —— 提示商家「刷新后重试」而不是「状态不对」。
+   */
+  VERSION_CONFLICT: 'VERSION_CONFLICT',
   QUOTE_NOT_ACTIVE: 'QUOTE_NOT_ACTIVE',
   PRODUCT_NOT_PUBLISHED: 'PRODUCT_NOT_PUBLISHED',
   PAYMENT_DISABLED: 'PAYMENT_DISABLED',
   MEASUREMENT_INVALID: 'MEASUREMENT_INVALID',
   TEMPLATE_NOT_FOUND: 'TEMPLATE_NOT_FOUND',
+  /** 请求过于频繁（登录限流）：HTTP 429 */
+  RATE_LIMITED: 'RATE_LIMITED',
 } as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];

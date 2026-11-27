@@ -231,7 +231,7 @@ import {
   type MeasurementTemplateUpsertRequest,
 } from '@qinyang/contracts';
 import { categoryApi, templateApi } from '../api/admin';
-import { toErrorMessage } from '../api/http';
+import { ApiError, toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, flattenCategories } from '../utils/format';
@@ -280,6 +280,16 @@ const viewTemplate = ref<MeasurementTemplateDto | null>(null);
 const editVisible = ref(false);
 const saving = ref(false);
 const editingId = ref('');
+/**
+ * 打开编辑弹窗时看到的行版本（乐观锁）。
+ *
+ * 注意是 `rowVersion`（每次改动都 +1 的行版本），
+ * 不是列表里显示的那个业务 `version`（第几个发布版本）。
+ *
+ * 保存时随请求回传：期间别人改过这份草稿 → 服务端 409，
+ * 而不是用这份陈旧的表单把对方的改动覆盖掉。
+ */
+const editingRowVersion = ref<number | null>(null);
 
 const form = reactive<{
   code: string;
@@ -451,6 +461,7 @@ function openView(row: MeasurementTemplateDto): void {
 
 function openCreate(): void {
   editingId.value = '';
+  editingRowVersion.value = null;
   form.code = '';
   form.name = '';
   form.summary = '';
@@ -462,6 +473,8 @@ function openCreate(): void {
 
 function openEdit(row: MeasurementTemplateDto): void {
   editingId.value = row.id;
+  // 行版本取自**列表行**（弹窗就是用列表行填的），保存时回传给服务端比对
+  editingRowVersion.value = row.rowVersion;
   form.code = row.code;
   form.name = row.name;
   form.summary = row.summary ?? '';
@@ -610,6 +623,10 @@ async function handleSave(): Promise<void> {
     measurementSections: sections,
     publish: form.publish,
   };
+  // 编辑态带上「打开时看到的行版本」：期间被人改过就 409，不覆盖对方的改动
+  if (editingId.value && editingRowVersion.value !== null) {
+    payload.expectedVersion = editingRowVersion.value;
+  }
   saving.value = true;
   try {
     if (editingId.value) {
@@ -622,10 +639,23 @@ async function handleSave(): Promise<void> {
     editVisible.value = false;
     await load();
   } catch (error) {
-    MessagePlugin.error(toErrorMessage(error, '保存失败'));
+    MessagePlugin.error(toSaveErrorMessage(error, '保存失败'));
   } finally {
     saving.value = false;
   }
+}
+
+/**
+ * 保存失败时的提示文案。
+ *
+ * 409（行版本对不上 / 状态闸门）的服务端文案本身就是写给商家看的中文，
+ * 直接透出即可 —— 不要把原始错误码或异常堆栈丢给商家看。
+ */
+function toSaveErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiError && error.isConflict) {
+    return error.message || fallback;
+  }
+  return toErrorMessage(error, fallback);
 }
 
 async function handlePublish(row: MeasurementTemplateDto): Promise<void> {

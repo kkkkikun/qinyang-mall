@@ -153,6 +153,37 @@ async function main() {
       check('轮播管理：状态选项齐全', page.statusOptions.length > 0,
         `${page.statusOptions.length} 种`);
       check('轮播管理：店主有轮播管理权限', page.can('banner.manage') === true, '');
+
+      // 编辑器要记住打开时的行版本，保存时回传（防覆盖他人改动）
+      page.openEdit(page.rows[0]);
+      check('轮播管理：编辑器记住了行版本',
+        Number(page.editingVersion ?? 0) === Number(page.rows[0]?.version ?? -1),
+        `表单 ${page.editingVersion} / 列表 ${page.rows[0]?.version}`);
+
+      /*
+       * 排序必须走「整体重排」接口（PUT /admin/banners/reorder）。
+       *
+       * 旧实现是**逐条** PUT /admin/banners/:id 改 sortOrder，而那个接口是整行保存：
+       * 商家 A 刚改了标题，商家 B 接着点「下移」，B 手里那份旧快照会把 A 的标题改回去，
+       * 而 B 拿到的是 200 —— 页面级断言正好能盯住这条：排序前后**文案必须一字不变**。
+       */
+      if (page.rows.length >= 2) {
+        // 按 id 记录文案：**顺序会变，文案不能变**
+        const beforeTitles = new Map(page.rows.map((row) => [row.id, row.title]));
+        const target = page.rows[1];
+        await page.handleMove(target, -1);
+        const titlesIntact = page.rows.every((row) => beforeTitles.get(row.id) === row.title);
+        check('轮播管理：排序只改顺序，不覆盖文案',
+          titlesIntact && page.rows[0]?.id === target.id,
+          `新顺序 ${page.rows.map((row) => String(row.id).slice(0, 4)).join('>')}`);
+        check('轮播管理：排序后排序值连续（点了有反应）',
+          page.rows.every((row, index) => row.sortOrder === index),
+          page.rows.map((row) => row.sortOrder).join(','));
+        // 复原顺序，避免污染开发库
+        await page.handleMove(page.rows[0], 1);
+      } else {
+        check('轮播管理：排序只改顺序，不覆盖文案（轮播不足 2 条，跳过）', true, '数据不足');
+      }
     }
 
     // ── 7. 量体模板 ──────────────────────────────────────────
@@ -187,6 +218,11 @@ async function main() {
       // 可选量体字段清单：来自已发布量体模板，后台要能勾选
       check('图文说明：量体字段清单已加载', (page.fieldOptions ?? []).length > 0,
         `${(page.fieldOptions ?? []).length} 个字段`);
+
+      // 编辑器要记住打开时的行版本，保存时回传（防覆盖他人改动）
+      check('图文说明：编辑器记住了行版本',
+        Number(page.form?.version ?? 0) === Number(page.rows[0]?.version ?? -1),
+        `表单 ${page.form?.version} / 列表 ${page.rows[0]?.version}`);
 
       // 分节 id 必须唯一：按数组长度生成会在删除分节后撞号
       const beforeIds = (page.form?.sections ?? []).map((s) => s.id);
@@ -237,6 +273,23 @@ async function main() {
           : true,
         JSON.stringify((guideBody?.data?.sections?.[0]?.fields ?? []).map((f) => f.fieldCode)));
 
+      // 启停：停用后顾客端立即取不到这一页，再启用恢复
+      const guideRow = page.rows.find((row) => row.slug === guideSlug);
+      const originalStatus = guideRow?.status ?? 'ACTIVE';
+      await page.handleStatusChange(guideRow, originalStatus === 'ACTIVE' ? 'DISABLED' : 'ACTIVE');
+      const afterToggle = await fetch(`${API_BASE}/guides/${guideSlug}`).catch(() => null);
+      check('图文说明：停用后顾客端取不到这一页',
+        originalStatus === 'ACTIVE' ? afterToggle?.status === 404 : afterToggle?.status === 200,
+        `HTTP ${afterToggle?.status ?? '连接失败'}`);
+      await page.handleStatusChange(
+        page.rows.find((row) => row.slug === guideSlug),
+        originalStatus
+      );
+      const afterRestore = await fetch(`${API_BASE}/guides/${guideSlug}`).catch(() => null);
+      check('图文说明：启停可复原，顾客端重新可见',
+        originalStatus === 'ACTIVE' ? afterRestore?.status === 200 : afterRestore?.status === 404,
+        `HTTP ${afterRestore?.status ?? '连接失败'}`);
+
       // 复原，避免污染数据
       page.openEdit(page.rows.find((row) => row.slug === guideSlug) ?? page.rows[0]);
       page.form.title = originalTitle;
@@ -272,6 +325,35 @@ async function main() {
         check('定制申请：详情抽屉可展示时间线', Array.isArray(page.timeline),
           `${page.timeline.length} 个节点`);
       }
+
+      /*
+       * 「退回重新报价」按钮的可见状态必须**与服务端状态机一致**。
+       *
+       * 此前按钮在「已确认」状态下也显示，而服务端
+       * `REQUEST_STATUS_TRANSITIONS[CONFIRMED] = [IN_PRODUCTION, CANCELLED]`
+       * **不含 PENDING_QUOTE** —— UI 承诺了一个必然 409 的操作。
+       *
+       * 这里直接拿契约的状态机表做交叉校验：凡是页面对外承诺的状态，
+       * 服务端必须真的允许。
+       */
+      const { REQUEST_STATUS_TRANSITIONS, RequestStatus } =
+        sandbox.requireFromOut('@qinyang/contracts');
+      const reQuoteViolations = [];
+      for (const status of Object.keys(REQUEST_STATUS_TRANSITIONS)) {
+        page.detail = { ...(page.detail ?? {}), id: 'probe-order', status };
+        const shown = page.canReQuote === true;
+        const allowed = REQUEST_STATUS_TRANSITIONS[status].includes(
+          RequestStatus.PENDING_QUOTE
+        );
+        if (shown && !allowed) {
+          reQuoteViolations.push(`${status}（服务端不允许退回）`);
+        }
+      }
+      check('定制申请：「退回重新报价」只出现在服务端允许的状态上',
+        reQuoteViolations.length === 0,
+        reQuoteViolations.length ? reQuoteViolations.join('、') : '与契约状态机一致');
+      // 复原
+      if (page.rows.length > 0) await page.openDetail(page.rows[0]);
     }
 
     // ── 9. 订单管理 ──────────────────────────────────────────
@@ -291,6 +373,40 @@ async function main() {
           page.nextStatusOptions.length > 0 &&
             page.nextStatusOptions.every((opt) => Boolean(opt.label)),
           page.nextStatusOptions.map((opt) => opt.label).join(' / '));
+
+        /*
+         * 「更新制作状态」下拉的**不变式**（逐个订单状态核对）。
+         *
+         * 此前「制作中」订单的下拉里唯一的候选被过滤掉 → 下拉为空，
+         * 而按钮仍然显示，点「确认」等于**未经二次确认地取消了订单**。
+         *
+         * 两条不变式：
+         * 1. 下拉里**绝不出现「已取消」** —— 取消只走「取消订单」按钮（带二次确认 + 必填原因）；
+         * 2. 任何状态要么有可推进的下拉、要么有「取消订单」这条出路，
+         *    否则商家在那个状态下**无路可走**。
+         */
+        const { ORDER_STATUS_TRANSITIONS, OrderStatus } =
+          sandbox.requireFromOut('@qinyang/contracts');
+        const cancelInOptions = [];
+        const stuckStates = [];
+        for (const status of Object.keys(ORDER_STATUS_TRANSITIONS)) {
+          page.detail = { ...(page.detail ?? {}), id: 'probe-order', status };
+          const options = page.nextStatusOptions ?? [];
+          if (options.some((opt) => opt.value === OrderStatus.CANCELLED)) {
+            cancelInOptions.push(status);
+          }
+          const terminal =
+            status === OrderStatus.COMPLETED || status === OrderStatus.CANCELLED;
+          if (options.length === 0 && !terminal && page.canCancel !== true) {
+            stuckStates.push(status);
+          }
+        }
+        check('订单管理：「更新制作状态」下拉里不出现「已取消」',
+          cancelInOptions.length === 0,
+          cancelInOptions.length ? cancelInOptions.join('、') : '取消只走「取消订单」按钮');
+        check('订单管理：任何状态都有出路（可推进或可取消）',
+          stuckStates.length === 0,
+          stuckStates.length ? `无出路的状态：${stuckStates.join('、')}` : '全部有出路');
       }
     }
 

@@ -93,7 +93,7 @@ import { computed, h, onMounted, reactive, ref, type VNode } from 'vue';
 import { Button, MessagePlugin, Popconfirm, Switch, Tag } from 'tdesign-vue-next';
 import type { BannerDto, BannerUpsertRequest } from '@qinyang/contracts';
 import { bannerApi, mediaApi } from '../api/admin';
-import { toErrorMessage } from '../api/http';
+import { ApiError, toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, toNonNegativeInt } from '../utils/format';
@@ -114,6 +114,13 @@ const uploading = ref(false);
 /** 排序调整进行中：避免连点造成排序请求并发 */
 const moving = ref(false);
 const editingId = ref('');
+/**
+ * 打开编辑弹窗时看到的行版本（乐观锁）。
+ *
+ * 保存时随请求回传：期间别人改过这条轮播 → 服务端 409，
+ * 而不是用这份陈旧的表单把对方的改动覆盖掉。
+ */
+const editingVersion = ref<number | null>(null);
 
 interface BannerFormModel {
   title: string;
@@ -282,6 +289,7 @@ async function load(): Promise<void> {
 
 function openCreate(): void {
   editingId.value = '';
+  editingVersion.value = null;
   form.title = '';
   form.imageUrl = '';
   form.linkType = 'NONE';
@@ -295,6 +303,8 @@ function openCreate(): void {
 
 function openEdit(row: BannerDto): void {
   editingId.value = row.id;
+  // 行版本取自**列表行**（弹窗就是用列表行填的），保存时回传给服务端比对
+  editingVersion.value = row.version;
   form.title = row.title;
   form.imageUrl = row.imageUrl;
   form.linkType = row.linkType;
@@ -308,6 +318,7 @@ function openEdit(row: BannerDto): void {
 
 function handleDialogClose(): void {
   editingId.value = '';
+  editingVersion.value = null;
 }
 
 async function handleSave(): Promise<void> {
@@ -328,6 +339,10 @@ async function handleSave(): Promise<void> {
     startAt: form.startAt || null,
     endAt: form.endAt || null,
   };
+  // 编辑态带上「打开时看到的行版本」：期间被人改过就 409，不覆盖对方的改动
+  if (editingId.value && editingVersion.value !== null) {
+    payload.expectedVersion = editingVersion.value;
+  }
   saving.value = true;
   try {
     if (editingId.value) {
@@ -340,14 +355,33 @@ async function handleSave(): Promise<void> {
     dialogVisible.value = false;
     await load();
   } catch (error) {
-    MessagePlugin.error(toErrorMessage(error, '保存失败'));
+    MessagePlugin.error(toSaveErrorMessage(error, '保存失败'));
   } finally {
     saving.value = false;
   }
 }
 
+/**
+ * 保存失败时的提示文案。
+ *
+ * 409（行版本对不上 / 权限闸门）的服务端文案本身就是写给商家看的中文，
+ * 直接透出即可 —— 不要把原始错误码或异常堆栈丢给商家看。
+ */
+function toSaveErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiError && error.isConflict) {
+    return error.message || fallback;
+  }
+  return toErrorMessage(error, fallback);
+}
+
 async function handleToggleStatus(row: BannerDto, value: boolean): Promise<void> {
   try {
+    /*
+     * 带上「打开列表时看到的行版本」：
+     * 商家 A 改了标题还没保存，商家 B 这时点了启停 ——
+     * 旧写法会把 A 的新标题用 B 手里的旧快照覆盖掉，而 B 拿到的是 200。
+     * 带版本号后服务端发现「期间被人改过」→ 409，提示刷新。
+     */
     await bannerApi.update(row.id, {
       title: row.title,
       imageUrl: row.imageUrl,
@@ -357,10 +391,11 @@ async function handleToggleStatus(row: BannerDto, value: boolean): Promise<void>
       status: value ? 'ACTIVE' : 'DISABLED',
       startAt: row.startAt ?? null,
       endAt: row.endAt ?? null,
+      expectedVersion: row.version,
     });
     await load();
   } catch (error) {
-    MessagePlugin.error(toErrorMessage(error, '状态更新失败'));
+    MessagePlugin.error(toSaveErrorMessage(error, '状态更新失败'));
   }
 }
 
@@ -370,8 +405,11 @@ async function handleToggleStatus(row: BannerDto, value: boolean): Promise<void>
  * 不能简单地把两行的 sortOrder 对调：历史数据里存在 sortOrder 相同的轮播
  * （新建默认 0、删除后重建也会撞值），此时对调写入的是同一个值，
  * 排序没有变化，界面看起来就是「点了没反应」。
- * 这里改成**整体重排**：先在内存里排出新顺序，再把每条轮播写成连续的排序值，
- * 保证顺序唯一且可见。
+ * 这里改成**整体重排**：先在内存里排出新顺序，再把新顺序交给服务端一次性重写。
+ *
+ * 走 `PUT /admin/banners/reorder` 而不是逐条 `PUT /admin/banners/:id`：
+ * 逐条改是**整行回写**，会把别人刚改的标题/图片用旧快照盖回去；
+ * 而且中途失败会留下半新半旧的顺序。
  */
 async function handleMove(row: BannerDto, offset: number): Promise<void> {
   const index = rows.value.findIndex((item) => item.id === row.id);
@@ -386,16 +424,10 @@ async function handleMove(row: BannerDto, offset: number): Promise<void> {
 
   moving.value = true;
   try {
-    for (let i = 0; i < next.length; i += 1) {
-      const item = next[i];
-      if (item.sortOrder === i) {
-        continue;
-      }
-      await bannerApi.update(item.id, { ...toPayload(item), sortOrder: i });
-    }
+    await bannerApi.reorder(next.map((item) => item.id));
     await load();
   } catch (error) {
-    MessagePlugin.error(toErrorMessage(error, '排序更新失败'));
+    MessagePlugin.error(toSaveErrorMessage(error, '排序更新失败'));
   } finally {
     moving.value = false;
   }
@@ -428,19 +460,6 @@ async function handleFileChange(event: Event): Promise<void> {
   } finally {
     uploading.value = false;
   }
-}
-
-function toPayload(row: BannerDto): BannerUpsertRequest {
-  return {
-    title: row.title,
-    imageUrl: row.imageUrl,
-    linkType: row.linkType,
-    linkValue: row.linkValue ?? null,
-    sortOrder: row.sortOrder,
-    status: row.status,
-    startAt: row.startAt ?? null,
-    endAt: row.endAt ?? null,
-  };
 }
 
 onMounted(load);

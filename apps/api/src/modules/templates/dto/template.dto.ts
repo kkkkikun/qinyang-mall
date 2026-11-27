@@ -12,11 +12,13 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -162,4 +164,16 @@ export class TemplateUpsertDto implements MeasurementTemplateUpsertRequest {
   @IsOptional()
   @IsBoolean()
   publish?: boolean;
+
+  /**
+   * 期望的行版本（来自列表/详情返回的 `rowVersion`）。
+   *
+   * 传了就做严格比对：期间被人改过 → 409，不覆盖别人的改动；
+   * 不传则退化为现有行为（服务端读到什么版本就写什么版本）。
+   */
+  @ApiPropertyOptional({ description: '期望的行版本；与当前不一致返回 409' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  expectedVersion?: number;
 }

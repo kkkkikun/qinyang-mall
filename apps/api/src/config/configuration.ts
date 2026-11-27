@@ -44,6 +44,23 @@ export interface AppConfig {
     /** V1 固定为 false：真实微信支付需商家明确批准后单独实现 */
     enabled: boolean;
   };
+  auth: {
+    /**
+     * 登录限流。
+     *
+     * 默认**关闭**：限流放在应用层还是网关层需商家拍板（D-17）。
+     * 能力已就绪，开启只需一个环境变量。
+     */
+    rateLimit: {
+      enabled: boolean;
+      /** 计数窗口长度（毫秒） */
+      windowMs: number;
+      /** 管理员登录：窗口内允许的尝试次数 */
+      adminMaxAttempts: number;
+      /** 顾客登录：窗口内允许的尝试次数 */
+      customerMaxAttempts: number;
+    };
+  };
   corsOrigins: string[];
 }
 
@@ -95,6 +112,14 @@ export const configuration = (): AppConfig => ({
   },
   payment: {
     enabled: bool(process.env.PAYMENT_ENABLED, false),
+  },
+  auth: {
+    rateLimit: {
+      enabled: bool(process.env.AUTH_RATE_LIMIT_ENABLED, false),
+      windowMs: num(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 60_000),
+      adminMaxAttempts: num(process.env.AUTH_RATE_LIMIT_ADMIN_MAX, 10),
+      customerMaxAttempts: num(process.env.AUTH_RATE_LIMIT_CUSTOMER_MAX, 30),
+    },
   },
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')

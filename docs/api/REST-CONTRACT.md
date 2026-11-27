@@ -39,10 +39,35 @@
 
 顾客 token 通过 `x-customer-token` 或 `Authorization: Bearer` 传递。
 
+### 1.1 登录限流（默认关闭）
+
+两个登录接口（顾客 `POST /auth/login`、管理员 `POST /admin/auth/login`）**已接入限流守卫**：
+
+- 键 = 端点 + 来源 IP + 账号（管理员额外区分账号）；
+- 超限返回 **429**，业务码 `RATE_LIMITED`；
+- **登录成功即清零**该键的计数（不误伤同一 IP 的其他账号）。
+
+开关（环境变量，**默认 `AUTH_RATE_LIMIT_ENABLED=false`**）：
+
+| 变量 | 默认 | 含义 |
+| --- | --- | --- |
+| `AUTH_RATE_LIMIT_ENABLED` | `false` | 是否启用登录限流 |
+| `AUTH_RATE_LIMIT_WINDOW_MS` | `60000` | 计数窗口（毫秒） |
+| `AUTH_RATE_LIMIT_ADMIN_MAX` | `10` | 窗口内单账号最大登录尝试次数（管理员） |
+| `AUTH_RATE_LIMIT_CUSTOMER_MAX` | `20` | 窗口内单账号最大登录尝试次数（顾客） |
+
+> **为什么默认关闭**：限流放在应用层还是网关层，取决于最终部署形态（单实例 / 多实例），
+> 属商家决策（`docs/agent/DECISIONS.md` D-038 / 报告 §8 D17）。
+> 能力、配置项与测试均已就绪，拍板后改环境变量即可开启。
+
 ## 2. 管理后台
 
 需要管理员 token：`Authorization: Bearer <adminToken>`。
 权限：`OWNER` 店主可执行全部操作；`STAFF` 店员仅可执行日常操作。
+
+**管理员令牌只作身份凭据**：每次请求按主键重查管理员行 ——
+账号不存在或已停用 → **401**；角色**以库里现况为准**，
+因此降权 / 停用 / 删号**立即生效**（不必等令牌过期）。
 **关键操作**（改价、报价、订单状态、商品上下架、分类删除）一律写审计日志。
 
 | 方法 | 路径 | 权限 | 说明 |
@@ -66,10 +91,12 @@
 | DELETE | `/admin/categories/:id` | OWNER | 删除分类（有商品时拒绝） |
 | GET | `/admin/banners` | 登录 | 轮播列表 |
 | POST | `/admin/banners` | STAFF | 新增轮播 |
-| PUT | `/admin/banners/:id` | STAFF | 修改轮播 |
+| PUT | `/admin/banners/:id` | STAFF | 修改轮播（可选 `expectedVersion`：与库里的行版本不符 → 409） |
+| PUT | `/admin/banners/reorder` | STAFF | 轮播排序：只传 `{ ids: string[] }`（id 顺序），服务端在事务里重写 `sortOrder`；期间被人改过 → 409 |
 | DELETE | `/admin/banners/:id` | OWNER | 删除轮播 |
 | GET | `/admin/guides` | 登录 | 图文说明页列表（量体指南 / 洗护 / 材质，含停用） |
 | PUT | `/admin/guides/:slug` | STAFF | 更新图文说明页（标题 / 摘要 / 分节内容），顾客端立即生效 |
+| POST | `/admin/guides/:slug/status` | OWNER | 启用 / 停用图文说明页（停用后顾客端 404） |
 | GET | `/admin/measurement-templates` | 登录 | 量体模板（含历史版本） |
 | GET | `/admin/measurement-templates/:id` | 登录 | 模板详情 |
 | POST | `/admin/measurement-templates` | OWNER | 新建模板（可 `publish` 直接发布 v1） |
@@ -117,6 +144,31 @@ CONFIRMED ──▶ IN_PRODUCTION ──▶ SHIPPED ──▶ COMPLETED
 ```
 
 任何非法迁移返回 `409 / INVALID_STATUS_TRANSITION`。
+
+### 3.1.1 并发写：行版本（乐观锁）
+
+后台是**多人同时用**的：店主和店员可能同时在改同一条商品、同一张轮播。
+读-改-写（`SELECT` → 改内存 → `UPDATE`）在这种情况下会静默覆盖：
+
+```
+店员 A 打开商品编辑页（读到标题「羊绒衫 · 藏青」）
+店主  B 在另一个窗口把标题改成「羊绒衫 · 藏青（改）」并保存
+店员 A 改完价格点保存 → 整行回写 → 店主的标题被悄悄改回旧值（A 拿到 200，毫无提示）
+```
+
+口径：
+
+- **行版本列**：商品 `version`、轮播 `version`、图文说明页 `version`、量体模板 `rowVersion`（另有业务版本号 `version`，两者不是一回事）。
+- **客户端回传**：编辑类接口支持**可选** `expectedVersion`（值来自列表/详情返回的行版本）。
+  - 传了且与库里的现况不一致 → `409 / VERSION_CONFLICT`（**不覆盖**他人的改动）。
+  - 不传 → 退化为服务端「读到什么版本就写什么版本」（向后兼容，CSV 导入等批处理路径不受影响）。
+- **数据库裁决**：写操作一律用条件更新 `UPDATE … WHERE id = ? AND version = ?`，
+  影响行数不为 1 → `409 / VERSION_CONFLICT`。
+  （TypeORM 的 `save()` **不做**这个校验 —— 它会把读到的整行快照原样写回，必须用 `update()`。）
+- **错误码区分**：`VERSION_CONFLICT` = 「同状态下内容被别人改了，刷新后重试」；
+  `INVALID_STATUS_TRANSITION` = 「这个状态不能做这个动作」。两者提示不同，不混用。
+- **排序类操作单独走接口**：`PUT /admin/banners/reorder` 只接受 id 顺序，
+  服务端在事务里重写 `sortOrder` —— 逐条 `PUT /admin/banners/:id` 是整行回写，会覆盖别人刚改的文案。
 
 ### 3.2 报价
 
@@ -194,4 +246,8 @@ CONFIRMED ──▶ IN_PRODUCTION ──▶ SHIPPED ──▶ COMPLETED
   后台可选字段清单与此处同一口径，不会出现「后台显示 A、顾客端显示 B」。
 - **引用了不存在的 `fieldCode`** → 该字段解析不出（`fields` 里没有它），不报错、不影响其余字段。
 - **`fields` 不可提交** —— 它是服务端解析结果，`PUT` 请求体里带 `fields` 会被参数校验拒绝（400）。
+- **`expectedVersion`（可选）** —— 客户端回传「打开编辑器时看到的行版本」（`GuidePageDto.version`）。
+  传了且与库里的现况不一致 → **409**（不覆盖他人的改动）；不传则退化为服务端「读到什么版本就写什么版本」。
+- **启停是独立接口** —— `POST /admin/guides/:slug/status`（OWNER）。
+  停用后顾客端 `GET /guides/:slug` 返回 404，后台列表仍可见，随时可再启用。
 - **后台没有 ACTIVE 量体模板时** → 退回使用全部模板解析，保证新建页面也能出图。
