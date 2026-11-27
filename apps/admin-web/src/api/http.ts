@@ -37,8 +37,19 @@ export function readToken(): string {
   return localStorage.getItem(TOKEN_STORAGE_KEY) ?? '';
 }
 
+/**
+ * API 基址。
+ *
+ * 浏览器里用同源相对路径（由 nginx 反代 /api 到 API 容器）；
+ * Node 端（后台页面级自动化验证 tools/verify_admin_pages.mjs）需要绝对地址，
+ * 通过 `globalThis.__QY_API_BASE__` 注入 —— 这也是唯一一处为可测性开的后门，
+ * 生产构建下该全局变量不存在，行为与原来完全一致。
+ */
+const baseURL =
+  (globalThis as { __QY_API_BASE__?: string }).__QY_API_BASE__ ?? '/api/v1';
+
 const http: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
+  baseURL,
   timeout: 20000,
 });
 

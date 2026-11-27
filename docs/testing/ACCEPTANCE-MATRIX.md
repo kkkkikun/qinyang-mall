@@ -42,20 +42,20 @@ request-detail / quote / orders / order-detail / contact），
 
 | # | 需求 | 验证方式 | 证据 | 状态 |
 | --- | --- | --- | --- | --- |
-| A1 | 商品新增、修改、查看、上下架 | 集成测试 + 真实 API | 集成断言 4/6/7/8/31；验收项「全部商品经提交审核 → 发布上架 — 13/13」 | ✅ |
-| A2 | 商品分类管理 | 真实 API + 后台页面 | `categories-admin.controller.ts`、`CategoryView.vue` | ✅ |
+| A1 | 商品新增、修改、查看、上下架 | 集成测试 + 真实 API + **后台页面级执行** | 集成断言 4/6/7/8/31；验收项「全部商品经提交审核 → 发布上架 — 13/13」；页面级写路径「新建商品成功 / 编辑商品成功 / 草稿提交审核 / 待审核商品发布 / 状态已落到已发布」 | ✅ |
+| A2 | 商品分类管理 | 真实 API + **后台页面级执行** | `categories-admin.controller.ts`、`CategoryView.vue`；页面级写路径「新建分类成功 / 编辑分类成功 / 删除分类成功 / 删除后列表恢复原状」 | ✅ |
 | A3 | 商品主图与图集管理 | 真实 API + 上传通道 | `product-media` 实体；`POST /admin/media/upload`；`MediaAdminController` | ✅ |
-| A4 | 首页轮播管理 | 真实 API | `banners-admin.controller.ts`、`BannerView.vue` | ✅ |
+| A4 | 首页轮播管理 | 真实 API + **后台页面级执行** | `banners-admin.controller.ts`、`BannerView.vue`；页面级写路径「新建轮播成功 / 停用后状态为已停用 / 删除轮播成功」 | ✅ |
 | A5 | 商品详情内容维护 | 图文页 + 商品详情字段 | `guide-page` 实体、`GET /guides/:slug` | ✅ |
-| A6 | 商品报价模式设置 | 报价模式字段 + 定价规则 | `QUOTE_ONLY` 恒 `priceCents = null`（单元测试 `pricing.spec.ts`） | ✅ |
+| A6 | 商品报价模式设置 | 报价模式字段 + 定价规则 + **页面级执行** | `QUOTE_ONLY` 恒 `priceCents = null`（单元测试 `pricing.spec.ts`）；页面级读路径「未确认价格一律为 null（前端显示「待报价」）」；写路径「仅按量体报价的商品价格为空」 | ✅ |
 | A7 | 草稿 / 待审核 / 已发布状态 | 状态机 + 两步上架 | 集成断言 7「草稿不能直接上架 → 409」 | ✅ |
-| A8 | 定制申请列表 / 详情 / 量体资料查看 | 真实 API | `customization-admin.controller.ts`、`RequestListView.vue` | ✅ |
-| A9 | 审核申请 | 真实审核 | 验收项「店员审核通过 — 状态=PENDING_QUOTE」 | ✅ |
-| A10 | 创建报价 / 修改报价保留历史版本 | 真实报价 v1→v2 | 验收项「店主创建报价 — 版本=1」；集成断言 18「新报价 v2 → 旧版 SUPERSEDED，同时只有一个 ACTIVE」 | ✅ |
+| A8 | 定制申请列表 / 详情 / 量体资料查看 | 真实 API + **后台页面级执行** | `customization-admin.controller.ts`、`RequestListView.vue`；页面级「详情抽屉加载到申请与报价历史 / 可展示时间线」 | ✅ |
+| A9 | 审核申请 | 真实审核 + **页面自身方法** | 验收项「店员审核通过 — 状态=PENDING_QUOTE」；页面级写路径「审核通过 / 审核后状态变为待报价」 | ✅ |
+| A10 | 创建报价 / 修改报价保留历史版本 | 真实报价 v1→v2 + **页面自身方法** | 验收项「店主创建报价 — 版本=1」；集成断言 18「新报价 v2 → 旧版 SUPERSEDED，同时只有一个 ACTIVE」；页面级写路径「无效货款金额被拦截 / 金额非法时未产生报价 / 创建报价成功 / 报价历史出现版本」 | ✅ |
 | A11 | 查看顾客是否确认报价 | 申请详情含报价状态 | `RequestStatusDto` / 申请详情接口返回当前有效报价 | ✅ |
-| A12 | 已确认申请转订单 | 真实建单 | 验收项「由申请生成订单 — 订单=QO-…」 | ✅ |
-| A13 | 更新制作状态 / 发货状态 | 真实流转 | 验收项「店员填写物流并发货 — 状态=SHIPPED」 | ✅ |
-| A14 | 填写物流公司与单号 | 真实写入 | `POST /admin/orders/:id/ship` `{ carrier, trackingNo, note }` | ✅ |
+| A12 | 已确认申请转订单 | 真实建单 + **页面自身方法** | 验收项「由申请生成订单 — 订单=QO-…」；页面级写路径「确认后可建单（页面判定）/ 由申请生成订单成功 / 申请已关联订单」 | ✅ |
+| A13 | 更新制作状态 / 发货状态 | 真实流转 + **页面自身方法** | 验收项「店员填写物流并发货 — 状态=SHIPPED」；页面级写路径「推进订单状态成功 / 状态已落到目标状态 / 物流信息不全时被拦截 / 填写物流并发货成功」 | ✅ |
+| A14 | 填写物流公司与单号 | 真实写入 + **页面自身方法** | `POST /admin/orders/:id/ship` `{ carrier, trackingNo, note }`；页面级写路径「物流信息不全时被拦截 / 填写物流并发货成功 / 订单状态已落到已发货」 | ✅ |
 | A15 | 查看订单完整历史 | 订单事件时间线 | `order-event` 实体；验收项「顾客查看订单进度 — 3 条进度」 | ✅ |
 | A16 | 记录取消及售后处理 | 取消须填原因并留审计 | `POST /admin/orders/:id/cancel`；集成断言 29（审计不含手机号与地址明文） | ✅ |
 | A17 | 区分店主与店员，店员只能执行授权操作 | RBAC 守卫 + 集成断言 | 集成断言 1/6/16/30：店员上下架 403、店员报价 403、店员看审计 403 | ✅ |
@@ -64,6 +64,12 @@ request-detail / quote / orders / order-detail / contact），
 后台共 **9 个视图 + 1 个框架布局**（Dashboard / Product / Category / Banner /
 Template / Request / Order / AuditLog / Login + AppLayout），
 `vue-tsc` 0 错误、`vite build` 成功、`scripts/lint.mjs` 25 文件通过。
+
+**这 10 个组件此前从未在运行时执行过**（只被 `vue-tsc` 与 lint 检查过）。
+本轮补齐页面级执行验证：读路径 55 项 + 写路径 53 项全部通过，
+其中写路径覆盖商家完整动线 —— 审核 → 报价 → 顾客确认 → 建单 → 推进状态 → 发货，
+全部由**页面自身的方法**完成。装置与结果见 `docs/ACCEPTANCE-REPORT.md` §3.4、
+`docs/agent/DECISIONS.md` D-027。两个脚本已纳入全量流水线 `infra/scripts/build.sh`。
 
 ---
 

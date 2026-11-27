@@ -183,11 +183,32 @@ docker inspect qinyang-api --format '{{json .NetworkSettings.Ports}}'
 
 ### 4.3 本地访问（SSH 隧道）
 
+服务器上的服务**只绑定 127.0.0.1**，不暴露校园网；本地通过 SSH 隧道访问。
+
 ```bash
+# 保持这个终端不关，另开一个浏览器窗口
 ssh -N -L 18110:127.0.0.1:18110 -L 18111:127.0.0.1:18111 sqserver
-# 管理后台：http://127.0.0.1:18111
-# API 文档：http://127.0.0.1:18110/docs
 ```
+
+| 入口 | 地址 | 说明 |
+| --- | --- | --- |
+| 管理后台 | <http://127.0.0.1:18111> | nginx 托管后台静态包，并反代 `/api` 到 API 容器 |
+| 后台静态资源 | <http://127.0.0.1:18111/assets/> | 随页面一起加载 |
+| 商品图片 | <http://127.0.0.1:18110/static/...> | 图片地址由 API 以绝对地址给出（`STORAGE_PUBLIC_BASE_URL`），因此 **18110 也要开隧道** |
+| API 文档 | <http://127.0.0.1:18110/docs> | Swagger UI |
+| 接口健康检查 | <http://127.0.0.1:18110/api/v1/health> | 容器健康探针同款 |
+
+管理后台登录账号（仅开发环境）：
+
+| 角色 | 用户名 | 密码 |
+| --- | --- | --- |
+| 店主（全部权限） | `owner` | `SEED_ADMIN_PASSWORD`，默认 `Qinyang@2026` |
+| 店员（受限权限） | `staff` | 同上 |
+
+> 密码来自服务器 `infra/docker/.env`（权限 600，**不入库**），仓库内只存 `infra/docker/.env.example`。
+>
+> **小程序本身无法在浏览器预览**：必须用微信开发者工具导入 `apps/miniprogram`（见 §7）。
+> 本节只覆盖管理后台。
 
 ---
 
@@ -230,6 +251,12 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_miniprog
 
 # 小程序页面级执行验证：17 个页面逐一加载 + 闭环走页面代码
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_miniprogram_pages.mjs'
+
+# 管理后台页面级执行验证（读路径：9 视图 + 布局）
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_admin_pages.mjs'
+
+# 管理后台页面级执行验证（写路径：审核 → 报价 → 建单 → 推进 → 发货）
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && node tools/verify_admin_write.mjs'
 
 # 单元 + 集成测试（服务器）
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && set -a && . infra/docker/.env && set +a \

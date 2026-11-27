@@ -32,6 +32,7 @@ RSYNC_EXCLUDES=(
   --exclude='coverage/'
   --exclude='*.log'
   --exclude='.DS_Store'
+  --exclude='apps/admin-web/.harness-tmp/'
 )
 
 case "$MODE" in

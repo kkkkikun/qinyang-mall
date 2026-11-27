@@ -42,6 +42,9 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
         version: 5.2.1(vite@6.4.6(@types/node@22.20.6)(terser@5.51.4))(vue@3.5.46(typescript@5.7.2))
+      '@vue/compiler-sfc':
+        specifier: 3.5.46
+        version: 3.5.46
       typescript:
         specifier: ^5.7.2
         version: 5.7.2

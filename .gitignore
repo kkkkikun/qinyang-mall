@@ -34,6 +34,8 @@ storage/
 coverage/
 *.log
 tmp/
+# 后台页面级执行验证的 tsc 编译产物
+apps/admin-web/.harness-tmp/
 .cache/
 .DS_Store
 Thumbs.db
