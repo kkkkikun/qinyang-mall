@@ -9,6 +9,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
@@ -167,6 +168,24 @@ export class ProductBatchStatusDto {
   @ApiProperty({ enum: ProductStatus })
   @IsEnum(ProductStatus)
   status!: ProductStatus;
+}
+
+/**
+ * 商品 CSV 批量导入请求。
+ *
+ * 前端读取本地文件后把**文本**提交上来（不走 multipart），
+ * 服务端按 RFC 4180 解析。
+ */
+export class ProductImportDto {
+  @ApiProperty({ description: 'CSV 文本（含表头行）', maxLength: 2000000 })
+  @IsString()
+  @MaxLength(2000000)
+  csv!: string;
+
+  @ApiPropertyOptional({ default: false, description: '只校验不落库（预检）' })
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
 }
 
 export class ProductListQueryDto {

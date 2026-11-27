@@ -23,6 +23,7 @@ import { CustomizationRequest } from '../../database/entities/customization-requ
 import { Product } from '../../database/entities/product.entity';
 import { ProductStatus } from '@qinyang/contracts';
 import { BusinessException } from '../../common/errors/business.exception';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { AuditService } from '../audit/audit.service';
 import { ProductsService } from '../catalog/products.service';
 import { TemplatesService } from '../templates/templates.service';
@@ -125,7 +126,7 @@ export class CustomizationService {
     } catch (error) {
       // 并发提交同一个 submitId 时，唯一索引会让后到者撞 ER_DUP_ENTRY。
       // 意图是「幂等：返回同一条申请」，所以这里回查既有记录而不是报 500。
-      if (this.isDuplicateKey(error)) {
+      if (isDuplicateKey(error)) {
         const existingAfterRace = await this.requests.findOne({
           where: { submitId: dto.submitId },
         });
@@ -142,13 +143,6 @@ export class CustomizationService {
       throw error;
     }
     return this.toDto(saved);
-  }
-
-  /** 判断异常是否为唯一索引冲突（MySQL ER_DUP_ENTRY = 1062） */
-  private isDuplicateKey(error: unknown): boolean {
-    const code = (error as { code?: string | number; errno?: number })?.code;
-    const errno = (error as { errno?: number })?.errno;
-    return code === 'ER_DUP_ENTRY' || code === 1062 || errno === 1062;
   }
 
   async listMine(

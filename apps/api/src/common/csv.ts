@@ -54,3 +54,87 @@ export function buildExportFilename(prefix: string, at: Date = new Date()): stri
     `-${pad(at.getHours())}${pad(at.getMinutes())}`;
   return `${prefix}-${stamp}.csv`;
 }
+
+/**
+ * 解析 CSV 文本为二维数组（RFC 4180）。
+ *
+ * 与 `buildCsv` 成对使用：
+ * - 引号内的逗号、换行都按内容处理（`"含,逗号"` → 一个字段）
+ * - `""` 表示一个字面的双引号
+ * - 支持 \r\n 与 \n 两种换行
+ * - 末尾空行会被丢弃
+ *
+ * @returns 行数组；每行是单元格数组（缺列补空串由调用方处理）
+ */
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
+  let i = 0;
+
+  const pushField = (): void => {
+    row.push(field);
+    field = '';
+  };
+  const pushRow = (): void => {
+    pushField();
+    // 跳过完全空白的行（尾随空行、文件末尾换行）
+    if (row.some((cell) => cell.trim() !== '')) {
+      rows.push(row);
+    }
+    row = [];
+  };
+
+  while (i < text.length) {
+    const char = text[i];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i += 2;
+          continue;
+        }
+        inQuotes = false;
+        i += 1;
+        continue;
+      }
+      field += char;
+      i += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = true;
+      i += 1;
+      continue;
+    }
+    if (char === ',') {
+      pushField();
+      i += 1;
+      continue;
+    }
+    if (char === '\r') {
+      // \r\n 视为一个换行
+      if (text[i + 1] === '\n') i += 1;
+      pushRow();
+      i += 1;
+      continue;
+    }
+    if (char === '\n') {
+      pushRow();
+      i += 1;
+      continue;
+    }
+    field += char;
+    i += 1;
+  }
+
+  // 收尾：最后一行没有换行符时也要落表
+  if (field !== '' || row.length > 0) {
+    pushRow();
+  }
+
+  return rows;
+}

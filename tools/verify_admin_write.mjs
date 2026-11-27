@@ -27,6 +27,7 @@ import {
   compileAdminWeb,
   createChecker,
   createSandbox,
+  runComponent,
   runView
 } from './lib/admin-runtime.mjs';
 
@@ -702,16 +703,93 @@ async function main() {
       }
     }
 
-    // ── 8. 收尾：验证商品下架并推到列表末尾 ──────────────────
+    // ── 8. 商品批量导入（CSV）─────────────────────────────────
+    // 面板是**组件**而非页面，同样要在真实 API 上执行：
+    // 只做类型检查是发现不了「按钮点了没反应 / 预检结果不对」这类死路的。
+    {
+      const adminToken = globalThis.localStorage.getItem('qy_admin_token');
+      const cats = await call('/admin/categories', { token: adminToken });
+      const list = Array.isArray(cats.body?.data) ? cats.body.data : [];
+      const flat = [];
+      const walk = (nodes) => {
+        for (const node of nodes ?? []) {
+          flat.push(node);
+          walk(node.children);
+        }
+      };
+      walk(list);
+      const category = flat.find((item) => item.status === 'ACTIVE');
+      const categoryCode = category?.code ?? '';
+
+      const panel = await runComponent(sandbox, 'ProductImportPanel', {
+        props: { visible: true }
+      });
+
+      // 模板下载：内容里必须有标准表头（否则商家根本不知道填什么列）
+      sandbox.clearMessages();
+      panel.handleDownloadTemplate();
+      const templateMsg = sandbox.lastMessage('info') || '';
+      check('批量导入：模板含标准表头',
+        templateMsg.includes('商品编号') && templateMsg.includes('分类编号') && templateMsg.includes('价格(元)'),
+        templateMsg.split('\n')[0]?.slice(0, 60) ?? '');
+
+      if (!categoryCode) {
+        check('批量导入：前置（存在可用分类）', false, '未找到 ACTIVE 分类');
+      } else {
+        const csv = [
+          '商品编号,商品名称,分类编号,报价模式,价格(元),材质,副标题,商品简介,洗护说明,量体模板编号,排序',
+          `VERIFY-IMP-${STAMP},验证导入商品,${categoryCode},仅按量体报价,,,,,,,9999`,
+          `VERIFY-IMP-BAD-${STAMP},坏行商品,${categoryCode},仅按量体报价,199,,,,,`,
+        ].join('\n');
+
+        // 预检：只校验不落库
+        sandbox.clearMessages();
+        panel.csvText = csv;
+        await panel.handlePreview();
+        const preview = panel.result;
+        check('批量导入：预检识别出错误行',
+          Boolean(preview) && preview.dryRun === true && preview.failed === 1 && preview.pending === 1,
+          preview ? `pending=${preview.pending} failed=${preview.failed}` : '无预检结果');
+        check('批量导入：预检不落库',
+          Boolean(preview) && preview.created === 0,
+          preview ? `created=${preview.created}` : '');
+
+        // 正式导入：好行成功、坏行失败
+        sandbox.clearMessages();
+        await panel.handleImport();
+        const imported = panel.result;
+        check('批量导入：正式导入好行成功、坏行失败',
+          Boolean(imported) && imported.created === 1 && imported.failed === 1,
+          imported ? `created=${imported.created} failed=${imported.failed}` : '无导入结果');
+
+        // 导入结果能在商品列表里看到，且状态是草稿（没绕过店主审核）
+        const listPage = await runView(sandbox, 'ProductListView');
+        listPage.filters.keyword = `VERIFY-IMP-${STAMP}`;
+        await listPage.load();
+        const row = listPage.rows.find((item) => item.code === `VERIFY-IMP-${STAMP}`);
+        check('批量导入：导入的商品出现在列表', Boolean(row),
+          row ? `id=${row.id} 状态=${row.status}` : '列表中未找到');
+        check('批量导入：导入商品状态为草稿', row?.status === 'DRAFT', `status=${row?.status}`);
+      }
+    }
+
+    // ── 9. 收尾：验证商品下架并推到列表末尾 ──────────────────
     // 验证商品没有删除接口（商品只做下架归档），因此收尾时统一：
     // 下架 + 排序推到末尾，避免挤占商家真正要看的列表头部。
     {
       const page = await runView(sandbox, 'ProductListView');
-      page.filters.keyword = 'VERIFY-P-';
+      page.filters.keyword = 'VERIFY-';
       await page.load();
-      const verifies = page.rows.filter((row) => row.code.startsWith('VERIFY-P-'));
+      const verifies = page.rows.filter((row) => row.code.startsWith('VERIFY-'));
       for (const row of verifies) {
-        if (row.status !== 'OFFLINE') {
+        // 导入验证商品是草稿：草稿不能直接下架，需先提交审核再下架
+        let status = row.status;
+        if (status === 'DRAFT') {
+          sandbox.clearMessages();
+          await page.handleStatusChange(row, 'PENDING_REVIEW');
+          status = 'PENDING_REVIEW';
+        }
+        if (status !== 'OFFLINE') {
           sandbox.clearMessages();
           await page.handleStatusChange(row, 'OFFLINE');
         }
@@ -722,7 +800,7 @@ async function main() {
         }
       }
       await page.load();
-      const left = page.rows.filter((row) => row.code.startsWith('VERIFY-P-'));
+      const left = page.rows.filter((row) => row.code.startsWith('VERIFY-'));
       check('收尾：验证商品已全部下架并推到列表末尾',
         left.length > 0 && left.every((row) => row.status === 'OFFLINE' && row.sortOrder === 9999),
         `${left.length} 件验证商品`);

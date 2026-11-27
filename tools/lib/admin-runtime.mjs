@@ -34,6 +34,7 @@ export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const ADMIN = join(REPO, 'apps', 'admin-web');
 export const OUT = join(ADMIN, '.harness-tmp');
 export const VIEWS = join(ADMIN, 'src', 'views');
+export const COMPONENTS = join(ADMIN, 'src', 'components');
 
 export const API_BASE = (
   process.env.QY_API_BASE ?? process.argv[2] ?? 'http://127.0.0.1:18110/api/v1'
@@ -106,6 +107,8 @@ export function createSandbox() {
 
   const messages = [];
   const navigations = [];
+  /** 组件/页面 emit 出来的事件（供断言「页面确实通知了父组件」） */
+  const emits = [];
   let mountedHooks = [];
 
   // vue：真实响应式 + 生命周期记录（无 DOM 环境无法真正 mount）
@@ -210,6 +213,7 @@ export function createSandbox() {
   return {
     messages,
     navigations,
+    emits,
     routeStub,
     routerStub,
     ts,
@@ -254,9 +258,9 @@ function transpile(sandbox, code, fileName) {
   }).outputText;
 }
 
-export function loadView(sandbox, viewName) {
+export function loadView(sandbox, viewName, { dir = VIEWS } = {}) {
   const { parse, compileScript } = sandbox.requireFromOut('@vue/compiler-sfc');
-  const file = join(VIEWS, `${viewName}.vue`);
+  const file = join(dir, `${viewName}.vue`);
   const source = readFileSync(file, 'utf-8');
   const { descriptor } = parse(source, { filename: `${viewName}.vue` });
   const compiled = compileScript(descriptor, { id: `harness-${viewName}` });
@@ -275,11 +279,23 @@ export function loadView(sandbox, viewName) {
   return { options, file };
 }
 
+/** 构造 setup 上下文：记录 emit 事件（页面/组件里 `emit(...)` 不会炸） */
+function setupContext(sandbox) {
+  return {
+    expose: () => undefined,
+    emit: (...args) => {
+      sandbox.emits.push(args);
+    },
+    slots: {},
+    attrs: {}
+  };
+}
+
 /** 执行页面：跑 setup + 触发 onMounted，返回页面暴露的绑定 */
-export async function runView(sandbox, viewName, { query } = {}) {
+export async function runView(sandbox, viewName, { query, props } = {}) {
   const { options } = loadView(sandbox, viewName);
   if (query) Object.assign(sandbox.routeStub.query, query);
-  const raw = await options.setup({}, { expose: () => undefined });
+  const raw = await options.setup(props ?? {}, setupContext(sandbox));
   const hooks = sandbox.runHooks();
   // onMounted 里通常是 async 的 load()，这里等它们真正跑完
   const settled = await Promise.allSettled(hooks);
@@ -292,6 +308,33 @@ export async function runView(sandbox, viewName, { query } = {}) {
   });
   // setup 返回的是原始 ref / computed，模板里由 Vue 实例代理自动解包；
   // 这里用同样的规则包一层，断言时就能直接读到值。
+  const { isRef } = sandbox.requireFromOut('vue');
+  return new Proxy(raw, {
+    get(target, key) {
+      const value = target[key];
+      return isRef(value) ? value.value : value;
+    },
+    set(target, key, value) {
+      const current = target[key];
+      if (isRef(current)) current.value = value;
+      else target[key] = value;
+      return true;
+    }
+  });
+}
+
+/**
+ * 执行一个**组件**（非页面）。
+ *
+ * 组件同样要在真实 API 上执行才有意义 ——
+ * 例如「批量导入」面板的预检 / 导入逻辑，只做类型检查是发现不了
+ * 「按钮点了没反应」这类死路的。
+ */
+export async function runComponent(sandbox, componentName, { props, dir = COMPONENTS } = {}) {
+  const { options } = loadView(sandbox, componentName, { dir });
+  const raw = await options.setup(props ?? {}, setupContext(sandbox));
+  const hooks = sandbox.runHooks();
+  await Promise.allSettled(hooks);
   const { isRef } = sandbox.requireFromOut('vue');
   return new Proxy(raw, {
     get(target, key) {

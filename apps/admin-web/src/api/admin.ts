@@ -25,6 +25,8 @@ import type {
   Paginated,
   ProductBatchStatusResult,
   ProductDetail,
+  ProductImportRequest,
+  ProductImportResult,
   ProductListItem,
   ProductListQuery,
   ProductMediaUpdateRequest,
@@ -78,6 +80,18 @@ export const productApi = {
       method: 'post',
       url: '/admin/products/batch-status',
       data: { ids, status },
+    }),
+  /**
+   * POST /admin/products/import（CSV 批量导入）
+   *
+   * 只新增不覆盖：编号已存在的行会被跳过；导入的商品一律草稿。
+   * `dryRun: true` 时只校验不落库。
+   */
+  importProducts: (body: ProductImportRequest) =>
+    request<ProductImportResult>({
+      method: 'post',
+      url: '/admin/products/import',
+      data: body,
     }),
   /**
    * POST /admin/products/:id/media

@@ -7,7 +7,7 @@
  * 禁止手工修改：请改 `packages/contracts/src/index.ts` 后运行
  * `python3 tools/sync_contracts_to_miniprogram.py` 重新生成。
  *
- * 生成时间：2026-11-27 23:04:23
+ * 生成时间：2026-11-27 23:59:15
  */
 
 /**
@@ -370,6 +370,86 @@ export interface ProductBatchStatusRequest {
 export interface ProductBatchStatusResult {
   updated: number;
   skipped: { id: string; reason: string }[];
+}
+
+// ─────────────────── 商品 CSV 批量导入 ───────────────────
+
+/**
+ * 导入 CSV 的表头（固定顺序，前后端共用同一份定义）。
+ *
+ * 商家用 Excel 维护商品，编号 / 分类 / 模板这些引用必须是人能读懂的，
+ * 因此分类与量体模板都接受 **code**（也兼容直接填 id）。
+ */
+export const PRODUCT_IMPORT_CSV_HEADERS = [
+  '商品编号',
+  '商品名称',
+  '分类编号',
+  '报价模式',
+  '价格(元)',
+  '材质',
+  '副标题',
+  '商品简介',
+  '洗护说明',
+  '量体模板编号',
+  '排序',
+] as const;
+
+/** 导入 CSV 中「报价模式」列可接受的中文写法 */
+export const PRODUCT_IMPORT_PRICING_MODE_ALIASES: Record<string, PricingMode> = {
+  仅按量体报价: PricingMode.QUOTE_ONLY,
+  按量体报价: PricingMode.QUOTE_ONLY,
+  报价: PricingMode.QUOTE_ONLY,
+  固定价可直售: PricingMode.FIXED_PRICE,
+  固定价: PricingMode.FIXED_PRICE,
+  直售: PricingMode.FIXED_PRICE,
+  QUOTE_ONLY: PricingMode.QUOTE_ONLY,
+  FIXED_PRICE: PricingMode.FIXED_PRICE,
+};
+
+/** 商品批量导入请求 */
+export interface ProductImportRequest {
+  /** CSV 文本（含表头行）。前端读取本地文件后直接提交文本，不走 multipart。 */
+  csv: string;
+  /** 只做校验、不落库（预检）。默认 false。 */
+  dryRun?: boolean;
+}
+
+/** 单行导入结果 */
+export type ProductImportRowStatus =
+  /** 已创建 */
+  | 'CREATED'
+  /** 校验通过但处于预检模式，未落库 */
+  | 'PENDING'
+  /** 已存在同类项，按「不覆盖既有数据」跳过 */
+  | 'SKIPPED'
+  /** 校验失败 */
+  | 'FAILED';
+
+export interface ProductImportRowResult {
+  /** CSV 行号（从 1 开始，表头为第 1 行，数据首行即第 2 行） */
+  row: number;
+  code: string;
+  name: string;
+  status: ProductImportRowStatus;
+  productId?: string | null;
+  /** 失败 / 跳过的原因（成功时为 null） */
+  reason?: string | null;
+}
+
+export interface ProductImportResult {
+  /** 是否为预检模式 */
+  dryRun: boolean;
+  /** 数据行总数 */
+  total: number;
+  /** 实际创建数（预检模式恒为 0） */
+  created: number;
+  /** 校验通过、待导入数（仅预检模式 > 0） */
+  pending: number;
+  /** 跳过的行数（编号已存在） */
+  skipped: number;
+  /** 失败行数 */
+  failed: number;
+  rows: ProductImportRowResult[];
 }
 
 export interface ProductListQuery extends PageQuery {

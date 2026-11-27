@@ -18,8 +18,10 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { ProductsService } from './products.service';
+import { ProductImportService } from './product-import.service';
 import {
   ProductBatchStatusDto,
+  ProductImportDto,
   ProductListQueryDto,
   ProductMediaUpdateDto,
   ProductMediaUpsertDto,
@@ -32,7 +34,10 @@ import {
 @UseGuards(AdminAuthGuard, RolesGuard)
 @Controller('admin/products')
 export class ProductsAdminController {
-  constructor(private readonly products: ProductsService) {}
+  constructor(
+    private readonly products: ProductsService,
+    private readonly importService: ProductImportService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: '商品列表（含未发布）' })
@@ -75,6 +80,22 @@ export class ProductsAdminController {
     @CurrentAdmin() admin: AdminPrincipal,
   ) {
     return this.products.batchChangeStatus(dto.ids, dto.status, admin);
+  }
+
+  /**
+   * 商品 CSV 批量导入。
+   *
+   * 只新增不覆盖：编号已存在的行会被跳过；导入的商品一律草稿，
+   * 上架仍走店主审核流程。支持 `dryRun` 预检（只校验不落库）。
+   */
+  @Post('import')
+  @HttpCode(200)
+  @ApiOperation({ summary: '商品 CSV 批量导入（只新增，不覆盖；导入商品为草稿）' })
+  importProducts(
+    @Body() dto: ProductImportDto,
+    @CurrentAdmin() admin: AdminPrincipal,
+  ) {
+    return this.importService.importFromCsv(dto, admin);
   }
 
   @Put(':id')

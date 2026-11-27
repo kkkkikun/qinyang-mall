@@ -51,6 +51,7 @@
 | GET | `/admin/auth/me` | 登录 | 当前管理员 |
 | GET | `/admin/products` | 登录 | `keyword` `categoryId` `status` `pricingMode` `page` `pageSize` |
 | POST | `/admin/products` | STAFF | 新增商品（初始为 DRAFT） |
+| POST | `/admin/products/import` | STAFF | CSV 批量导入 `{ csv, dryRun? }`：**只新增不覆盖**，编号已存在则跳过；导入商品一律 DRAFT；逐行返回 CREATED/PENDING/SKIPPED/FAILED 与原因 |
 | GET | `/admin/products/:id` | 登录 | 商品详情（含图集） |
 | PUT | `/admin/products/:id` | STAFF | 修改商品（已发布商品的价格/文案修改需走重新审核） |
 | POST | `/admin/products/:id/status` | OWNER | `{ status }` 上下架 / 提交审核，OWNER 专属 |
@@ -130,5 +131,28 @@ CONFIRMED ──▶ IN_PRODUCTION ──▶ SHIPPED ──▶ COMPLETED
 
 ### 3.4 权限与归属
 
-- 顾客接口必须校验订单/申请归属本人，越权返回 404（不泄露存在性）。
+- 顾客接口必须校验订单/申请归属本人，越权返回 `404`（不泄露存在性）。
 - 量体资料、联系方式、收货地址不写入普通日志。
+
+### 3.5 商品 CSV 批量导入
+
+`POST /admin/products/import` 请求体为 `{ csv, dryRun? }`（`csv` 为含表头的 CSV 文本，前端读本地文件后提交文本，不走 multipart）。
+
+标准表头（顺序固定，前后端共用 `PRODUCT_IMPORT_CSV_HEADERS`）：
+
+```
+商品编号,商品名称,分类编号,报价模式,价格(元),材质,副标题,商品简介,洗护说明,量体模板编号,排序
+```
+
+口径：
+
+- **只新增不覆盖** —— 编号已存在于库中 → 该行 `SKIPPED`，既有商品不被改动；
+  文件内编号重复 → 该行 `FAILED`。
+- **导入商品一律 `DRAFT`** —— 与 `POST /admin/products` 一致，上架仍走店主审核流程。
+- **`dryRun: true` 为预检** —— 只校验不落库，通过校验的行返回 `PENDING`，`created` 恒为 0。
+- **逐行结论** —— 每行返回 `CREATED / PENDING / SKIPPED / FAILED` 与中文原因，失败行不影响其余行。
+- **分类 / 量体模板引用**接受 `code`（商家可读，如 `knitwear-cardigan`）或 `id`；分类已停用 → 该行失败。
+- **报价模式**接受 `仅按量体报价` / `固定价可直售`（或枚举值），留空按「仅按量体报价」；
+  固定价必须填正数价格（单位元，按整数分存储），仅按量体报价却填了价格 → 该行失败（不静默丢弃数据）。
+- **不代填经营数据** —— 缺名称、缺分类、缺价格一律报错，系统不补默认值。
+- 单次上限 500 行；导入写入审计（`product.import` / `product.import.preview`）。

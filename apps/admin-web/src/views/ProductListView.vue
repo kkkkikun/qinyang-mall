@@ -66,6 +66,13 @@
         <t-button v-if="can('product.create')" theme="primary" @click="openCreate">
           新增商品
         </t-button>
+        <t-button
+          v-if="can('product.import')"
+          theme="default"
+          @click="importVisible = true"
+        >
+          批量导入
+        </t-button>
       </div>
 
       <t-table
@@ -152,6 +159,8 @@
         </t-tab-panel>
       </t-tabs>
     </t-drawer>
+
+    <ProductImportPanel v-model:visible="importVisible" @imported="handleImported" />
   </div>
 </template>
 
@@ -177,11 +186,21 @@ import { formatDateTime, formatYuan, flattenCategories } from '../utils/format';
 import { productStatusTheme } from '../utils/status';
 import { cell, emptyHint, toTableData } from '../utils/table';
 import ProductMediaPanel from '../components/ProductMediaPanel.vue';
+import ProductImportPanel from '../components/ProductImportPanel.vue';
 
 const auth = useAuthStore();
 
 function can(key: PermissionKey): boolean {
   return hasPermission(auth.user?.role, key);
+}
+
+/** 批量导入面板显隐 */
+const importVisible = ref(false);
+
+/** 导入完成后刷新列表 */
+function handleImported(): void {
+  page.value = 1;
+  void load();
 }
 
 /* ------------------------------ 列表 ------------------------------ */

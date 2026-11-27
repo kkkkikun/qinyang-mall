@@ -8,6 +8,7 @@ import { Product } from '../../database/entities/product.entity';
 import { ProductMedia } from '../../database/entities/product-media.entity';
 import { AuditModule } from '../audit/audit.module';
 import { ProductsService } from './products.service';
+import { ProductImportService } from './product-import.service';
 import { CategoriesService } from './categories.service';
 import { BannersService } from './banners.service';
 import { GuidesService } from './guides.service';
@@ -36,7 +37,19 @@ import { MediaAdminController } from './media-admin.controller';
     BannersAdminController,
     MediaAdminController,
   ],
-  providers: [ProductsService, CategoriesService, BannersService, GuidesService],
-  exports: [ProductsService, CategoriesService, BannersService, GuidesService],
+  providers: [
+    ProductsService,
+    ProductImportService,
+    CategoriesService,
+    BannersService,
+    GuidesService,
+  ],
+  exports: [
+    ProductsService,
+    ProductImportService,
+    CategoriesService,
+    BannersService,
+    GuidesService,
+  ],
 })
 export class CatalogModule {}

@@ -6,6 +6,7 @@ import { AdminRole } from '@qinyang/contracts';
  */
 export type PermissionKey =
   | 'product.create'
+  | 'product.import'
   | 'product.edit'
   | 'product.status'
   | 'category.manage'
@@ -21,6 +22,7 @@ export type PermissionKey =
 
 const OWNER_PERMISSIONS: PermissionKey[] = [
   'product.create',
+  'product.import',
   'product.edit',
   'product.status',
   'category.manage',
@@ -37,6 +39,9 @@ const OWNER_PERMISSIONS: PermissionKey[] = [
 
 const STAFF_PERMISSIONS: PermissionKey[] = [
   'product.create',
+  // 批量导入与新增商品同属「录入商品资料」，店员可以做；
+  // 但导入的商品一律草稿，上架仍需店主审核。
+  'product.import',
   'product.edit',
   'banner.manage',
   'request.review',
