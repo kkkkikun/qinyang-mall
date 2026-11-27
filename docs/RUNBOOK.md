@@ -94,6 +94,19 @@ bash infra/scripts/build-monitored.sh
 ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && set -a && . infra/docker/.env && set +a \
   && export DB_HOST=127.0.0.1 DB_PORT=13316 && pnpm --filter @qinyang/api db:migrate'
 
+# ⚠️ 迁移后必须重建 API 容器（容器内 migrationsRun=false，不会自动迁移）
+ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && export PATH=~/tools/node-v24.22.3/bin:$PATH \
+  && set -a && . infra/docker/.env && set +a \
+  && docker build -f infra/docker/Dockerfile.api -t qinyang/api:local . \
+  && docker compose -f infra/docker/docker-compose.test.yml up -d --force-recreate api'
+
+# 数据库层的并发约束（D-028）——「唯一性」由数据库保证，不要在应用层另写一份检查
+#   orders.requestId              唯一索引      一个申请只能有一张订单
+#   quotes(requestId, version)    唯一索引      同一申请同一版本只能有一条报价
+#   quotes.activeRequestId        唯一索引      同一申请同时只能有一条 ACTIVE 报价
+#                                 （生成列：ACTIVE 时等于 requestId，否则 NULL）
+# 应用层遇到重复键会被翻译成 409；状态流转用条件更新（乐观锁）避免并发覆盖。
+
 # 回滚一步
 pnpm --filter @qinyang/api db:revert
 

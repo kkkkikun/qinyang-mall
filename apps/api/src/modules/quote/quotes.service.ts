@@ -12,11 +12,12 @@ import {
   REQUEST_STATUS_LABELS,
   RequestStatus,
 } from '@qinyang/contracts';
-import { In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, IsNull, Repository } from 'typeorm';
 import { CustomizationRequest } from '../../database/entities/customization-request.entity';
 import { Order } from '../../database/entities/order.entity';
 import { Quote } from '../../database/entities/quote.entity';
 import { BusinessException } from '../../common/errors/business.exception';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { AuditService } from '../audit/audit.service';
 import { ProductsService } from '../catalog/products.service';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
@@ -39,6 +40,7 @@ export class QuoteService {
     private readonly orders: Repository<Order>,
     private readonly products: ProductsService,
     private readonly audit: AuditService,
+    private readonly dataSource: DataSource,
   ) {}
 
   /** 该申请当前有效报价 */
@@ -169,14 +171,19 @@ export class QuoteService {
     });
     const version = existing.length === 0 ? 1 : existing[0].version + 1;
 
-    // 旧版本转 SUPERSEDED，同一申请同时只有一个 ACTIVE
-    for (const old of existing) {
-      if (old.status === QuoteStatus.ACTIVE) {
-        old.status = QuoteStatus.SUPERSEDED;
-        await this.quotes.save(old);
-      }
-    }
-
+    /*
+     * 「旧版本转 SUPERSEDED + 插入新版本」必须在同一事务里。
+     *
+     * 并发场景（此前完全没有防护）：
+     * 两个店员同时点「创建报价」，两��都会读到同一批旧版本、算出同一个版本号，
+     * 结果同一申请出现**两条 ACTIVE 报价**——顾客端会看到两份「当前报价」，
+     * 商家自己也会困惑到底哪份有效。
+     *
+     * 现在由数据库兜底：
+     * - UQ_quotes_requestId_version：同申请同版本只能有一条；
+     * - UQ_quotes_activeRequestId（生成列）：同申请同时只能有一条 ACTIVE。
+     * 并发时后者必然撞唯一索引，这里翻译成 409 而不是 500。
+     */
     const entity = this.quotes.create({
       requestId,
       version,
@@ -192,11 +199,36 @@ export class QuoteService {
       createdById: admin.id,
       createdByName: admin.displayName,
     });
-    const saved = await this.quotes.save(entity);
+    let saved: Quote;
+    try {
+      saved = await this.dataSource.transaction(async (manager) => {
+        const quoteRepo = manager.getRepository(Quote);
+        const requestRepo = manager.getRepository(CustomizationRequest);
 
-    // 申请进入「待顾客确认报价」
-    request.status = RequestStatus.QUOTED;
-    await this.requests.save(request);
+        // 旧版本转 SUPERSEDED，同一申请同时只有一个 ACTIVE
+        for (const oldQuote of existing) {
+          if (oldQuote.status === QuoteStatus.ACTIVE) {
+            oldQuote.status = QuoteStatus.SUPERSEDED;
+            await quoteRepo.save(oldQuote);
+          }
+        }
+
+        const created = await quoteRepo.save(entity);
+
+        // 申请进入「待顾客确认报价」
+        request.status = RequestStatus.QUOTED;
+        await requestRepo.save(request);
+        return created;
+      });
+    } catch (error) {
+      if (isDuplicateKey(error)) {
+        throw BusinessException.conflict(
+          '该申请刚刚已有新的报价版本，请刷新后重试',
+          ERROR_CODES.QUOTE_VERSION_CONFLICT,
+        );
+      }
+      throw error;
+    }
 
     await this.audit.record({
       actorId: admin.id,
@@ -240,14 +272,32 @@ export class QuoteService {
         ERROR_CODES.INVALID_STATUS_TRANSITION,
       );
     }
-    quote.status = QuoteStatus.WITHDRAWN;
-    const saved = await this.quotes.save(quote);
+    // 撤回报价与申请回退同事务
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const quoteRepo = manager.getRepository(Quote);
+      const requestRepo = manager.getRepository(CustomizationRequest);
 
-    const request = await this.requests.findOne({ where: { id: quote.requestId } });
-    if (request && request.status === RequestStatus.QUOTED) {
-      request.status = RequestStatus.PENDING_QUOTE;
-      await this.requests.save(request);
-    }
+      // 条件更新：已被顾客确认/拒绝/撤回的报价不能再次撤回
+      const affected = await quoteRepo.update(
+        { id: quote.id, status: QuoteStatus.ACTIVE },
+        { status: QuoteStatus.WITHDRAWN },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '只能撤回当前有效报价',
+          ERROR_CODES.QUOTE_NOT_ACTIVE,
+        );
+      }
+
+      const request = await requestRepo.findOne({ where: { id: quote.requestId } });
+      if (request && request.status === RequestStatus.QUOTED) {
+        request.status = RequestStatus.PENDING_QUOTE;
+        await requestRepo.save(request);
+      }
+      const updated = await quoteRepo.findOne({ where: { id: quote.id } });
+      if (!updated) throw BusinessException.notFound('报价不存在');
+      return updated;
+    });
 
     await this.audit.record({
       actorId: admin.id,
@@ -304,12 +354,35 @@ export class QuoteService {
       );
     }
 
-    quote.status = QuoteStatus.REJECTED;
-    const saved = await this.quotes.save(quote);
+    /*
+     * 条件更新（乐观锁）：只有「仍是 ACTIVE」的那次请求才算数。
+     *
+     * 此前是「先读后写」：两个顾客端（或顾客与客服）同时点确认/拒绝，
+     * 两次都能通过前面的状态校验，最后都写成功 —— 报价被确认的同时又被拒绝。
+     * 用带条件的 UPDATE 让数据库裁决：后到者 affected = 0，直接 409。
+     */
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const quoteRepo = manager.getRepository(Quote);
+      const requestRepo = manager.getRepository(CustomizationRequest);
 
-    // 回到待报价：量体资料与顾客信息都保留，店员可基于反馈重新报价
-    request.status = RequestStatus.PENDING_QUOTE;
-    await this.requests.save(request);
+      const affected = await quoteRepo.update(
+        { id: quote.id, status: QuoteStatus.ACTIVE },
+        { status: QuoteStatus.REJECTED },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '该报价状态已变化，请刷新后重试',
+          ERROR_CODES.QUOTE_NOT_ACTIVE,
+        );
+      }
+
+      // 回到待报价：量体资料与顾客信息都保留，店员可基于反馈重新报价
+      request.status = RequestStatus.PENDING_QUOTE;
+      await requestRepo.save(request);
+      const updated = await quoteRepo.findOne({ where: { id: quote.id } });
+      if (!updated) throw BusinessException.notFound('报价不存在');
+      return updated;
+    });
 
     await this.audit.record({
       actorId: customerId,
@@ -367,11 +440,31 @@ export class QuoteService {
       throw BusinessException.conflict('报价已过有效期，请联系客服重新报价', ERROR_CODES.QUOTE_NOT_ACTIVE);
     }
 
-    quote.confirmedAt = new Date();
-    const saved = await this.quotes.save(quote);
+    // 确认报价与申请转「已确认」必须同事务：
+    // 否则可能出现「报价已确认、申请仍在待确认」——顾客以为确认了，商家却看不到已确认的申请。
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const quoteRepo = manager.getRepository(Quote);
+      const requestRepo = manager.getRepository(CustomizationRequest);
 
-    request.status = RequestStatus.CONFIRMED;
-    await this.requests.save(request);
+      // 条件更新：只有仍未被确认（confirmedAt 为空）的报价才能被确认，
+      // 第二个并发请求会拿到 affected = 0 → 409，而不是把状态覆盖掉。
+      const affected = await quoteRepo.update(
+        { id: quote.id, status: QuoteStatus.ACTIVE, confirmedAt: IsNull() },
+        { confirmedAt: new Date() },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '该报价已被处理，请刷新后重试',
+          ERROR_CODES.QUOTE_VERSION_CONFLICT,
+        );
+      }
+
+      request.status = RequestStatus.CONFIRMED;
+      await requestRepo.save(request);
+      const updated = await quoteRepo.findOne({ where: { id: quote.id } });
+      if (!updated) throw BusinessException.notFound('报价不存在');
+      return updated;
+    });
 
     await this.audit.record({
       actorId: customerId,

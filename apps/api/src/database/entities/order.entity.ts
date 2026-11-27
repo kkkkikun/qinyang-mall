@@ -21,7 +21,13 @@ export class Order {
   @Column({ type: 'varchar', length: 32 })
   orderNo: string;
 
-  @Index()
+  /**
+   * 来源定制申请。
+   *
+   * 唯一索引：数据库层保证「一个申请只对应一张订单」。
+   * 此前只靠应用层先查后写，两个店员并发建单会各插一条 → 顾客看到两条订单。
+   */
+  @Index({ unique: true })
   @Column({ type: 'varchar', length: 36 })
   requestId: string;
 

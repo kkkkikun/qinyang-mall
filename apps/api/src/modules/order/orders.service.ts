@@ -22,7 +22,7 @@ import {
   RequestStatus,
 } from '@qinyang/contracts';
 import { randomBytes } from 'node:crypto';
-import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { CustomizationRequest } from '../../database/entities/customization-request.entity';
 import { Order } from '../../database/entities/order.entity';
 import { OrderEvent } from '../../database/entities/order-event.entity';
@@ -32,6 +32,7 @@ import { AuditService } from '../audit/audit.service';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { buildCsv } from '../../common/csv';
 import { maskPhone } from '../../common/mask';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 
 /** 单次导出上限：防止误操作把整库拖成一份大文件 */
 const EXPORT_LIMIT = 5000;
@@ -48,6 +49,7 @@ export class OrdersService {
     @InjectRepository(CustomizationRequest)
     private readonly requests: Repository<CustomizationRequest>,
     private readonly audit: AuditService,
+    private readonly dataSource: DataSource,
   ) {}
 
   // ───────────────────────── 管理端 ─────────────────────────
@@ -95,18 +97,42 @@ export class OrdersService {
       currency: quote.currency,
       productionDays: quote.productionDays,
     });
-    const saved = await this.orders.save(entity);
-
-    await this.events.save(
-      this.events.create({
-        orderId: saved.id,
-        fromStatus: null,
-        toStatus: OrderStatus.CONFIRMED,
-        operatorId: admin.id,
-        operatorName: admin.displayName,
-        note: `由定制申请 ${request.requestNo} 转为订单`,
-      }),
-    );
+    /*
+     * 订单 + 订单事件必须同生共死：
+     * 此前分两步写，若事件写入失败就会出现「有订单但没有任何进度记录」的订单，
+     * 顾客端看到的订单时间线是空的，商家也无从追溯。
+     *
+     * 并发建单由数据库唯一索引（orders.requestId）兜底：
+     * 两个店员同时点「创建订单」，后者会拿到重复键错误，
+     * 这里翻译成 409，而不是让它变成 500。
+     */
+    let saved: Order;
+    try {
+      saved = await this.dataSource.transaction(async (manager) => {
+        const orderRepo = manager.getRepository(Order);
+        const eventRepo = manager.getRepository(OrderEvent);
+        const created = await orderRepo.save(entity);
+        await eventRepo.save(
+          eventRepo.create({
+            orderId: created.id,
+            fromStatus: null,
+            toStatus: OrderStatus.CONFIRMED,
+            operatorId: admin.id,
+            operatorName: admin.displayName,
+            note: `由定制申请 ${request.requestNo} 转为订单`,
+          }),
+        );
+        return created;
+      });
+    } catch (error) {
+      if (isDuplicateKey(error)) {
+        throw BusinessException.conflict(
+          '该申请已生成订单，请勿重复创建',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      throw error;
+    }
 
     await this.audit.record({
       actorId: admin.id,
@@ -266,20 +292,49 @@ export class OrdersService {
     if (dto.status === OrderStatus.COMPLETED) {
       order.completedAt = new Date();
     }
-    const saved = await this.orders.save(order);
 
-    await this.events.save(
-      this.events.create({
-        orderId: saved.id,
-        fromStatus: before,
-        toStatus: dto.status,
-        operatorId: admin.id,
-        operatorName: admin.displayName,
-        note: dto.note ?? null,
-      }),
-    );
-
-    await this.syncRequestStatus(saved.requestId, dto.status);
+    /*
+     * 订单状态、订单事件、定制申请状态三处必须同时落库。
+     * 此前分三步写：若事件写成功而申请状态写失败，
+     * 就会出现「订单已发货、申请还停在制作中」的自相矛盾状态，
+     * 顾客在申请页与订单页看到的时间进度不一致。
+     */
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(Order);
+      const eventRepo = manager.getRepository(OrderEvent);
+      /*
+       * 条件更新（乐观锁）：只有仍处于原状态的订单才能推进。
+       * 两个店员同时点「推进到已发货」时，后到者 affected = 0 → 409，
+       * 不会产生两条重复的状态变更事件。
+       */
+      const affected = await orderRepo.update(
+        { id: order.id, status: before },
+        {
+          status: dto.status,
+          ...(dto.status === OrderStatus.COMPLETED ? { completedAt: new Date() } : {}),
+        },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '订单状态已被他人变更，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      const updated = await orderRepo.findOne({ where: { id: order.id } });
+      if (!updated) throw BusinessException.notFound('订单不存在');
+      await eventRepo.save(
+        eventRepo.create({
+          orderId: updated.id,
+          fromStatus: before,
+          toStatus: dto.status,
+          operatorId: admin.id,
+          operatorName: admin.displayName,
+          note: dto.note ?? null,
+        }),
+      );
+      await this.syncRequestStatus(updated.requestId, dto.status, manager);
+      return updated;
+    });
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -314,20 +369,42 @@ export class OrdersService {
     order.carrier = dto.carrier.trim();
     order.trackingNo = dto.trackingNo.trim();
     order.shippedAt = new Date();
-    const saved = await this.orders.save(order);
 
-    await this.events.save(
-      this.events.create({
-        orderId: saved.id,
-        fromStatus: before,
-        toStatus: OrderStatus.SHIPPED,
-        operatorId: admin.id,
-        operatorName: admin.displayName,
-        note: dto.note ?? `物流：${order.carrier} ${order.trackingNo}`,
-      }),
-    );
-
-    await this.syncRequestStatus(saved.requestId, OrderStatus.SHIPPED);
+    // 与状态推进同理：物流信息、发货事件、申请状态一起落库
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(Order);
+      const eventRepo = manager.getRepository(OrderEvent);
+      // 条件更新：只有仍在制作中的订单能发货
+      const affected = await orderRepo.update(
+        { id: order.id, status: OrderStatus.IN_PRODUCTION },
+        {
+          status: OrderStatus.SHIPPED,
+          carrier: dto.carrier.trim(),
+          trackingNo: dto.trackingNo.trim(),
+          shippedAt: new Date(),
+        },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '订单状态已被他人变更，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      const updated = await orderRepo.findOne({ where: { id: order.id } });
+      if (!updated) throw BusinessException.notFound('订单不存在');
+      await eventRepo.save(
+        eventRepo.create({
+          orderId: updated.id,
+          fromStatus: before,
+          toStatus: OrderStatus.SHIPPED,
+          operatorId: admin.id,
+          operatorName: admin.displayName,
+          note: dto.note ?? `物流：${order.carrier} ${order.trackingNo}`,
+        }),
+      );
+      await this.syncRequestStatus(updated.requestId, OrderStatus.SHIPPED, manager);
+      return updated;
+    });
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -358,20 +435,37 @@ export class OrdersService {
 
     const before = order.status;
     order.status = OrderStatus.CANCELLED;
-    const saved = await this.orders.save(order);
 
-    await this.events.save(
-      this.events.create({
-        orderId: saved.id,
-        fromStatus: before,
-        toStatus: OrderStatus.CANCELLED,
-        operatorId: admin.id,
-        operatorName: admin.displayName,
-        note: note.trim(),
-      }),
-    );
-
-    await this.syncRequestStatus(saved.requestId, OrderStatus.CANCELLED);
+    // 取消同样三处同事务：订单、事件、申请状态
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(Order);
+      const eventRepo = manager.getRepository(OrderEvent);
+      // 条件更新：只有仍在原状态的订单能被取消
+      const affected = await orderRepo.update(
+        { id: order.id, status: before },
+        { status: OrderStatus.CANCELLED },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '订单状态已被他人变更，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      const updated = await orderRepo.findOne({ where: { id: order.id } });
+      if (!updated) throw BusinessException.notFound('订单不存在');
+      await eventRepo.save(
+        eventRepo.create({
+          orderId: updated.id,
+          fromStatus: before,
+          toStatus: OrderStatus.CANCELLED,
+          operatorId: admin.id,
+          operatorName: admin.displayName,
+          note: note.trim(),
+        }),
+      );
+      await this.syncRequestStatus(updated.requestId, OrderStatus.CANCELLED, manager);
+      return updated;
+    });
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -444,10 +538,16 @@ export class OrdersService {
     return map[from]?.includes(to) ?? false;
   }
 
-  /** 订单状态推进时同步定制申请状态，两者始终一致 */
+  /**
+   * 订单状态推进时同步定制申请状态，两者始终一致。
+   *
+   * 传入 manager 时加入调用方的事务；不传则独立写入
+   * （仅供事务外的兼容路径使用）。
+   */
   private async syncRequestStatus(
     requestId: string,
     orderStatus: OrderStatus,
+    manager?: EntityManager,
   ): Promise<void> {
     const mapping: Partial<Record<OrderStatus, RequestStatus>> = {
       [OrderStatus.IN_PRODUCTION]: RequestStatus.IN_PRODUCTION,
@@ -457,10 +557,13 @@ export class OrdersService {
     };
     const target = mapping[orderStatus];
     if (!target) return;
-    const request = await this.requests.findOne({ where: { id: requestId } });
+    const requestRepo = manager
+      ? manager.getRepository(CustomizationRequest)
+      : this.requests;
+    const request = await requestRepo.findOne({ where: { id: requestId } });
     if (!request || request.status === target) return;
     request.status = target;
-    await this.requests.save(request);
+    await requestRepo.save(request);
   }
 
   private generateOrderNo(): string {
