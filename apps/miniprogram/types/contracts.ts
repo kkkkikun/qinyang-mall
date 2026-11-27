@@ -7,7 +7,7 @@
  * 禁止手工修改：请改 `packages/contracts/src/index.ts` 后运行
  * `python3 tools/sync_contracts_to_miniprogram.py` 重新生成。
  *
- * 生成时间：2026-11-27 22:42:03
+ * 生成时间：2026-11-27 23:04:23
  */
 
 /**
@@ -348,6 +348,30 @@ export interface ProductMediaUpsertRequest {
   sortOrder?: number;
 }
 
+/**
+ * 图集条目更新（排序 / 角色 / 说明）。
+ *
+ * 此前图集一旦上传就固定了顺序，商家想把第 3 张挪到第 1 位
+ * 只能删掉重传 —— 76 件商品 × 每件 9 张图，维护成本很高。
+ */
+export interface ProductMediaUpdateRequest {
+  role?: MediaRole;
+  sortOrder?: number;
+  alt?: string | null;
+}
+
+/** 批量上下架请求（店主专属） */
+export interface ProductBatchStatusRequest {
+  ids: string[];
+  status: ProductStatus;
+}
+
+/** 批量上下架结果：成功数 + 逐条失败原因（不因一条失败而整批回滚） */
+export interface ProductBatchStatusResult {
+  updated: number;
+  skipped: { id: string; reason: string }[];
+}
+
 export interface ProductListQuery extends PageQuery {
   keyword?: string;
   /** 一级或二级分类 id */
@@ -492,6 +516,20 @@ export type CustomizationRequestListItemDto = Omit<
   'measurements' | 'contact' | 'activeQuote'
 > & {
   activeQuote?: QuoteSummaryDto | null;
+};
+
+/**
+ * 管理端申请列表项。
+ *
+ * 在列表项基础上补上「这是谁的申请」—— 此前后台列表里完全看不到顾客，
+ * 商家收到一屏申请既分不清是谁，也没法用手机号定位单子。
+ *
+ * 只带**姓名 + 脱敏手机号**：完整联系方式仍然只在详情接口返回，
+ * 避免一页 20 条把 20 份手机号地址一次性拉出来。
+ */
+export type AdminCustomizationRequestListItemDto = CustomizationRequestListItemDto & {
+  customerName: string;
+  customerPhoneMasked: string | null;
 };
 
 /**

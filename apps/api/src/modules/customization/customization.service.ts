@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  AdminCustomizationRequestListItemDto,
   CustomizationRequestCreateRequest,
   CustomizationRequestDto,
   CustomizationRequestListItemDto,
   CustomizationRequestListQuery,
+  CustomerContact,
   ERROR_CODES,
   MeasurementField,
   MeasurementFieldValue,
@@ -16,7 +18,7 @@ import {
   RequestStatus,
 } from '@qinyang/contracts';
 import { randomBytes } from 'node:crypto';
-import { In, Repository } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { CustomizationRequest } from '../../database/entities/customization-request.entity';
 import { Product } from '../../database/entities/product.entity';
 import { ProductStatus } from '@qinyang/contracts';
@@ -27,10 +29,15 @@ import { TemplatesService } from '../templates/templates.service';
 import { QuoteService } from '../quote/quotes.service';
 import type { Quote } from '../../database/entities/quote.entity';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
+import { maskPhone } from '../../common/mask';
+import { buildCsv } from '../../common/csv';
 import {
   MeasurementValidationException,
   validateMeasurements,
 } from './measurement-validator';
+
+/** 单次导出上限：防止误操作把整库拖成一份大文件 */
+const EXPORT_LIMIT = 5000;
 
 @Injectable()
 export class CustomizationService {
@@ -161,7 +168,9 @@ export class CustomizationService {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      items: await this.toListItems(items),
+      items: await this.toListItems(items, (request, quote, order) =>
+        this.toListDto(request, quote, order),
+      ),
       total,
       page,
       pageSize,
@@ -216,27 +225,93 @@ export class CustomizationService {
 
   async listAdmin(
     query: CustomizationRequestListQuery,
-  ): Promise<Paginated<CustomizationRequestListItemDto>> {
+  ): Promise<Paginated<AdminCustomizationRequestListItemDto>> {
     const page = Math.max(1, Number(query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
 
+    const qb = this.buildAdminQuery(query)
+      .orderBy('r.createdAt', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize);
+
+    const [items, total] = await qb.getManyAndCount();
+    return {
+      items: await this.toListItems(items, (request, quote, order) =>
+        this.toAdminListDto(request, quote, order),
+      ),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  /** 管理端筛选条件（列表与导出共用，保证「看到的」与「导出的」一致） */
+  private buildAdminQuery(query: CustomizationRequestListQuery): SelectQueryBuilder<CustomizationRequest> {
     const qb = this.requests.createQueryBuilder('r');
     if (query.status) qb.andWhere('r.status = :status', { status: query.status });
     if (query.productId) {
       qb.andWhere('r.productId = :productId', { productId: query.productId });
     }
     if (query.keyword) {
-      qb.andWhere('(r.requestNo LIKE :kw)', { kw: `%${query.keyword}%` });
+      // 商家拿到顾客来电时第一反应是「手机号查一下是哪单」，
+      // 此前的关键字只匹配申请编号，等于没得查。
+      qb.andWhere(
+        `(r.requestNo LIKE :kw
+          OR JSON_UNQUOTE(JSON_EXTRACT(r.contact, '$.name')) LIKE :kw
+          OR JSON_UNQUOTE(JSON_EXTRACT(r.contact, '$.phone')) LIKE :kw
+          OR JSON_UNQUOTE(JSON_EXTRACT(r.productSnapshot, '$.name')) LIKE :kw)`,
+        { kw: `%${query.keyword}%` },
+      );
     }
-    qb.orderBy('r.createdAt', 'DESC').skip((page - 1) * pageSize).take(pageSize);
+    return qb;
+  }
 
-    const [items, total] = await qb.getManyAndCount();
-    return {
-      items: await this.toListItems(items),
-      total,
-      page,
-      pageSize,
-    };
+  /**
+   * 管理端导出 CSV。
+   *
+   * 导出的是**当前筛选条件下**的单子（与列表所见一致），
+   * 手机号仍然脱敏 —— 导出的文件会离开后台，不该带着 20 份完整联系方式。
+   * 量体明细也不导出：那是另一份需要商家明确授权的数据。
+   */
+  async exportAdminCsv(query: CustomizationRequestListQuery): Promise<string> {
+    const qb = this.buildAdminQuery(query).orderBy('r.createdAt', 'DESC').take(EXPORT_LIMIT);
+    const items = await qb.getMany();
+    const listItems = await this.toListItems(items, (request, quote, order) =>
+      this.toAdminListDto(request, quote, order),
+    );
+
+    const rows = listItems.map((item) => [
+      item.requestNo,
+      item.customerName,
+      item.customerPhoneMasked ?? '',
+      item.productName,
+      item.productCode,
+      `${item.templateName} v${item.templateVersion}`,
+      item.statusLabel,
+      item.activeQuote ? (item.activeQuote.totalCents / 100).toFixed(2) : '',
+      item.orderNo ?? '',
+      item.createdAt,
+      item.updatedAt,
+      item.remark ?? '',
+    ]);
+
+    return buildCsv(
+      [
+        '申请编号',
+        '顾客姓名',
+        '手机号（脱敏）',
+        '商品名称',
+        '商品编号',
+        '量体模板',
+        '状态',
+        '当前报价（元）',
+        '订单编号',
+        '提交时间',
+        '更新时间',
+        '顾客备注',
+      ],
+      rows,
+    );
   }
 
   async getAdmin(id: string): Promise<CustomizationRequestDto> {
@@ -356,9 +431,14 @@ export class CustomizationService {
   /**
    * 列表项组装：批量预取有效报价与关联订单，避免逐行查询（N+1）。
    */
-  private async toListItems(
+  private async toListItems<T extends CustomizationRequestListItemDto>(
     items: CustomizationRequest[],
-  ): Promise<CustomizationRequestListItemDto[]> {
+    toDto: (
+      request: CustomizationRequest,
+      quote: Quote | null,
+      order: { id: string; orderNo: string } | null,
+    ) => T,
+  ): Promise<T[]> {
     if (items.length === 0) {
       return [];
     }
@@ -368,12 +448,27 @@ export class CustomizationService {
       this.quotes.findOrdersByRequestIds(ids),
     ]);
     return items.map((item) =>
-      this.toListDto(
-        item,
-        quoteMap.get(item.id) ?? null,
-        orderMap.get(item.id) ?? null,
-      ),
+      toDto(item, quoteMap.get(item.id) ?? null, orderMap.get(item.id) ?? null),
     );
+  }
+
+  /**
+   * 管理端列表项 DTO：在摘要之上补上「是谁的申请」。
+   *
+   * 姓名给全（商家要靠它区分顾客），手机号只给脱敏结果 ——
+   * 完整联系方式仍然只在详情接口返回，避免一页 20 条一次性拉出 20 份手机号地址。
+   */
+  private toAdminListDto(
+    request: CustomizationRequest,
+    activeQuote: Quote | null,
+    order: { id: string; orderNo: string } | null,
+  ): AdminCustomizationRequestListItemDto {
+    const contact = (request.contact ?? {}) as Partial<CustomerContact>;
+    return {
+      ...this.toListDto(request, activeQuote, order),
+      customerName: contact.name ?? '',
+      customerPhoneMasked: maskPhone(contact.phone),
+    };
   }
 
   /**

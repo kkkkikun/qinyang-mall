@@ -54,7 +54,9 @@
 | GET | `/admin/products/:id` | 登录 | 商品详情（含图集） |
 | PUT | `/admin/products/:id` | STAFF | 修改商品（已发布商品的价格/文案修改需走重新审核） |
 | POST | `/admin/products/:id/status` | OWNER | `{ status }` 上下架 / 提交审核，OWNER 专属 |
+| POST | `/admin/products/batch-status` | OWNER | `{ ids[], status }` 批量上下架，OWNER 专属；单条失败不影响其余 |
 | POST | `/admin/products/:id/media` | STAFF | 追加图集 `{ role, storageKey, url, width, height, bytes, sortOrder }` |
+| PUT | `/admin/products/:id/media/:mediaId` | STAFF | 调整图集条目（`sortOrder` / `role` / `alt`） |
 | DELETE | `/admin/products/:id/media/:mediaId` | STAFF | 移除图集条目 |
 | GET | `/admin/categories` | 登录 | 分类树 |
 | POST | `/admin/categories` | OWNER | 新增分类 |
@@ -69,7 +71,8 @@
 | POST | `/admin/measurement-templates` | OWNER | 新建模板（可 `publish` 直接发布 v1） |
 | PUT | `/admin/measurement-templates/:id` | OWNER | 修改草稿；已发布模板需新建版本 |
 | POST | `/admin/measurement-templates/:id/publish` | OWNER | 发布（草稿→ACTIVE，已 ACTIVE 则生成新版本） |
-| GET | `/admin/customization-requests` | 登录 | 申请列表 `status` `keyword` `productId` |
+| GET | `/admin/customization-requests` | 登录 | 申请列表 `status` `keyword` `productId`（keyword 同时匹配顾客姓名/手机号/商品名） |
+| GET | `/admin/customization-requests/export` | 登录 | 导出当前筛选的申请为 CSV（`text/csv`，手机号脱敏、不含量体明细） |
 | GET | `/admin/customization-requests/:id` | 登录 | 申请详情（含量体资料、报价历史） |
 | POST | `/admin/customization-requests/:id/review` | STAFF | `{ action: 'APPROVE' \| 'REJECT', note }` 审核申请 |
 | PUT | `/admin/customization-requests/:id/status` | 登录 | `{ status, note }` 直接变更申请状态（受状态机约束） |
@@ -77,6 +80,7 @@
 | GET | `/admin/customization-requests/:id/quotes` | 登录 | 报价历史版本 |
 | POST | `/admin/quotes/:id/withdraw` | OWNER | 撤回报价 |
 | GET | `/admin/orders` | 登录 | 订单列表 `status` `keyword` |
+| GET | `/admin/orders/export` | 登录 | 导出当前筛选的订单为 CSV（`text/csv`，手机号脱敏、不含量体明细） |
 | POST | `/admin/orders` | OWNER | 由已确认申请生成订单 `{ requestId, quoteId }` |
 | GET | `/admin/orders/:id` | 登录 | 订单详情 |
 | POST | `/admin/orders/:id/status` | STAFF | `{ status, note }` 更新制作状态 |

@@ -175,6 +175,20 @@ body {
   font-weight: 600;
 }
 
+/* ---------- 表格单元 ---------- */
+/* 一格内上下两行（如「姓名 + 脱敏手机号」） */
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.35;
+}
+
+.text-muted {
+  color: var(--qy-text-2);
+  font-size: 12px;
+}
+
 .text-red {
   color: var(--qy-red);
   font-weight: 600;

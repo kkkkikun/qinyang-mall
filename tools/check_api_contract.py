@@ -267,6 +267,17 @@ def extract_calls(text: str, default_method: str) -> list[tuple[str, str, int]]:
 
 
 def route_matches(route: str, pattern: str) -> bool:
+    """
+    路由与前端调用模式是否匹配。
+
+    注意：**字面量段不能匹配参数段**。
+    此前这里对「一侧是 :param、另一侧是字面量」一律放行，
+    于是 `GET /admin/customization-requests/export` 会被判为
+    与 `GET /admin/customization-requests/:id` 匹配 ——
+    而真实运行时 Express 只会命中先注册的那条路由，
+    「export 被 :id 吃掉」这类缺陷会被检查器完全放过。
+    现在字面量与参数严格区分，这类冲突会直接暴露。
+    """
     route_parts = [p for p in route.split("/") if p]
     pattern_parts = [p for p in pattern.split("/") if p]
     if len(route_parts) != len(pattern_parts):
@@ -276,8 +287,8 @@ def route_matches(route: str, pattern: str) -> bool:
         pattern_is_param = pattern_part.startswith(":")
         if route_is_param and pattern_is_param:
             continue
-        if route_is_param or pattern_is_param:
-            continue
+        if route_is_param != pattern_is_param:
+            return False
         if route_part != pattern_part:
             return False
     return True

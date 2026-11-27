@@ -1,5 +1,6 @@
-import { request } from './http';
+import { request, requestDownload, type DownloadPayload } from './http';
 import type {
+  AdminCustomizationRequestListItemDto,
   AdminUser,
   AuditLogDto,
   AuditLogListQuery,
@@ -8,7 +9,6 @@ import type {
   CategoryDto,
   CategoryUpsertRequest,
   CustomizationRequestDto,
-  CustomizationRequestListItemDto,
   CustomizationRequestListQuery,
   RequestStatus,
   LoginRequest,
@@ -23,9 +23,11 @@ import type {
   OrderShipRequest,
   OrderStatusUpdateRequest,
   Paginated,
+  ProductBatchStatusResult,
   ProductDetail,
   ProductListItem,
   ProductListQuery,
+  ProductMediaUpdateRequest,
   ProductMediaUpsertRequest,
   ProductStatus,
   ProductUpsertRequest,
@@ -70,12 +72,31 @@ export const productApi = {
       url: `/admin/products/${id}/status`,
       data: { status },
     }),
-  /** POST /admin/products/:id/media */
+  /** POST /admin/products/batch-status（OWNER 专属，批量上下架） */
+  batchUpdateStatus: (ids: string[], status: ProductStatus) =>
+    request<ProductBatchStatusResult>({
+      method: 'post',
+      url: '/admin/products/batch-status',
+      data: { ids, status },
+    }),
+  /**
+   * POST /admin/products/:id/media
+   *
+   * 注意：接口返回的是**商品详情**（含完整图集），不是单条图集条目 ——
+   * 此处原先标注为 MediaDto，与实际响应不符，属于契约漂移。
+   */
   addMedia: (id: string, body: ProductMediaUpsertRequest) =>
-    request<MediaDto>({ method: 'post', url: `/admin/products/${id}/media`, data: body }),
+    request<ProductDetail>({ method: 'post', url: `/admin/products/${id}/media`, data: body }),
+  /** PUT /admin/products/:id/media/:mediaId（调整排序 / 角色） */
+  updateMedia: (id: string, mediaId: string, body: ProductMediaUpdateRequest) =>
+    request<ProductDetail>({
+      method: 'put',
+      url: `/admin/products/${id}/media/${mediaId}`,
+      data: body,
+    }),
   /** DELETE /admin/products/:id/media/:mediaId */
   removeMedia: (id: string, mediaId: string) =>
-    request<void>({
+    request<ProductDetail>({
       method: 'delete',
       url: `/admin/products/${id}/media/${mediaId}`,
     }),
@@ -140,11 +161,17 @@ export const templateApi = {
 export const customizationRequestApi = {
   /** GET /admin/customization-requests */
   list: (query: CustomizationRequestListQuery) =>
-    request<Paginated<CustomizationRequestListItemDto>>({
+    request<Paginated<AdminCustomizationRequestListItemDto>>({
       method: 'get',
       url: '/admin/customization-requests',
       params: query,
     }),
+  /** GET /admin/customization-requests/export（CSV 原样响应） */
+  exportCsv: (query: CustomizationRequestListQuery): Promise<DownloadPayload> =>
+    requestDownload(
+      { method: 'get', url: '/admin/customization-requests/export', params: query },
+      '定制申请.csv',
+    ),
   /** GET /admin/customization-requests/:id */
   detail: (id: string) =>
     request<CustomizationRequestDto>({
@@ -197,6 +224,9 @@ export const orderApi = {
       url: '/admin/orders',
       params: query,
     }),
+  /** GET /admin/orders/export（CSV 原样响应） */
+  exportCsv: (query: OrderListQuery): Promise<DownloadPayload> =>
+    requestDownload({ method: 'get', url: '/admin/orders/export', params: query }, '订单列表.csv'),
   /** GET /admin/orders/:id */
   detail: (id: string) => request<OrderDto>({ method: 'get', url: `/admin/orders/${id}` }),
   /** POST /admin/orders（OWNER，由已确认申请生成订单） */

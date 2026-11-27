@@ -12,6 +12,7 @@ import {
   OrderStatus,
   OrderStatusUpdateRequest,
   PricingMode,
+  CustomerContact,
   ORDER_STATUS_LABELS,
   Paginated,
   ProductSnapshot,
@@ -21,7 +22,7 @@ import {
   RequestStatus,
 } from '@qinyang/contracts';
 import { randomBytes } from 'node:crypto';
-import { In, Repository } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { CustomizationRequest } from '../../database/entities/customization-request.entity';
 import { Order } from '../../database/entities/order.entity';
 import { OrderEvent } from '../../database/entities/order-event.entity';
@@ -29,6 +30,11 @@ import { Quote } from '../../database/entities/quote.entity';
 import { BusinessException } from '../../common/errors/business.exception';
 import { AuditService } from '../audit/audit.service';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
+import { buildCsv } from '../../common/csv';
+import { maskPhone } from '../../common/mask';
+
+/** 单次导出上限：防止误操作把整库拖成一份大文件 */
+const EXPORT_LIMIT = 5000;
 
 @Injectable()
 export class OrdersService {
@@ -125,14 +131,10 @@ export class OrdersService {
     const page = Math.max(1, Number(query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
 
-    const qb = this.orders.createQueryBuilder('o');
-    if (query.status) qb.andWhere('o.status = :status', { status: query.status });
-    if (query.keyword) {
-      qb.andWhere('(o.orderNo LIKE :kw OR o.requestId LIKE :kw)', {
-        kw: `%${query.keyword}%`,
-      });
-    }
-    qb.orderBy('o.createdAt', 'DESC').skip((page - 1) * pageSize).take(pageSize);
+    const qb = this.buildAdminQuery(query)
+      .orderBy('o.createdAt', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize);
 
     const [items, total] = await qb.getManyAndCount();
     return {
@@ -141,6 +143,94 @@ export class OrdersService {
       page,
       pageSize,
     };
+  }
+
+  /** 管理端筛选条件（列表与导出共用，保证「看到的」与「导出的」一致） */
+  private buildAdminQuery(query: OrderListQuery): SelectQueryBuilder<Order> {
+    const qb = this.orders.createQueryBuilder('o');
+    if (query.status) qb.andWhere('o.status = :status', { status: query.status });
+    if (query.keyword) {
+      qb.andWhere('(o.orderNo LIKE :kw OR o.requestId LIKE :kw)', {
+        kw: `%${query.keyword}%`,
+      });
+    }
+    return qb;
+  }
+
+  /**
+   * 管理端导出 CSV（当前筛选条件）。
+   *
+   * 与申请导出同一口径：手机号脱敏、不含量体明细 ——
+   * 导出文件会离开后台，不该带着完整联系方式与顾客隐私。
+   */
+  async exportAdminCsv(query: OrderListQuery): Promise<string> {
+    const qb = this.buildAdminQuery(query).orderBy('o.createdAt', 'DESC').take(EXPORT_LIMIT);
+    const orders = await qb.getMany();
+    if (orders.length === 0) {
+      return buildCsv(
+        [
+          '订单编号',
+          '申请编号',
+          '顾客姓名',
+          '手机号（脱敏）',
+          '商品名称',
+          '商品编号',
+          '状态',
+          '货款（元）',
+          '运费（元）',
+          '合计（元）',
+          '制作周期（天）',
+          '提交时间',
+          '更新时间',
+        ],
+        [],
+      );
+    }
+
+    // 一次取回来源申请的编号与联系方式（避免逐行查询）
+    const requestIds = [...new Set(orders.map((order) => order.requestId))];
+    const requests = await this.requests.find({ where: { id: In(requestIds) } });
+    const requestMap = new Map(requests.map((row) => [row.id, row]));
+
+    const rows = orders.map((order) => {
+      const snapshot = (order.productSnapshot ?? {}) as Partial<ProductSnapshot>;
+      const source = requestMap.get(order.requestId);
+      const contact = (source?.contact ?? {}) as Partial<CustomerContact>;
+      return [
+        order.orderNo,
+        source?.requestNo ?? '',
+        contact.name ?? '',
+        maskPhone(contact.phone) ?? '',
+        snapshot.name ?? '',
+        snapshot.code ?? '',
+        ORDER_STATUS_LABELS[order.status],
+        (order.amountCents / 100).toFixed(2),
+        (order.freightCents / 100).toFixed(2),
+        (order.totalCents / 100).toFixed(2),
+        order.productionDays,
+        order.createdAt.toISOString(),
+        order.updatedAt.toISOString(),
+      ];
+    });
+
+    return buildCsv(
+      [
+        '订单编号',
+        '申请编号',
+        '顾客姓名',
+        '手机号（脱敏）',
+        '商品名称',
+        '商品编号',
+        '状态',
+        '货款（元）',
+        '运费（元）',
+        '合计（元）',
+        '制作周期（天）',
+        '提交时间',
+        '更新时间',
+      ],
+      rows,
+    );
   }
 
   async getAdmin(id: string): Promise<OrderDto> {

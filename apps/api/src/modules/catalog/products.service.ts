@@ -7,6 +7,8 @@ import {
   ProductDetail,
   ProductListItem,
   ProductListQuery,
+  ProductBatchStatusResult,
+  ProductMediaUpdateRequest,
   ProductMediaUpsertRequest,
   ProductSnapshot,
   ProductStatus,
@@ -230,6 +232,73 @@ export class ProductsService {
     });
 
     return this.toDetail(product);
+  }
+
+  /**
+   * 更新图集条目（排序 / 角色 / 说明）。
+   *
+   * 此前图集顺序上传后即固定，商家想调整顺序只能删掉重传；
+   * 这里开放单项更新，配合后台的「上移/下移」按钮即可原地调整。
+   */
+  async updateMedia(
+    id: string,
+    mediaId: string,
+    dto: ProductMediaUpdateRequest,
+    admin: AdminPrincipal,
+  ): Promise<ProductDetail> {
+    const product = await this.findOne(id);
+    if (!product) throw BusinessException.notFound('商品不存在');
+
+    const item = await this.media.findOne({ where: { id: mediaId, productId: product.id } });
+    if (!item) throw BusinessException.notFound('图集条目不存在');
+
+    const before = { role: item.role, sortOrder: item.sortOrder };
+    if (dto.role !== undefined) item.role = dto.role;
+    if (dto.sortOrder !== undefined) item.sortOrder = dto.sortOrder;
+    if (dto.alt !== undefined) item.alt = dto.alt;
+    const saved = await this.media.save(item);
+
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: 'product.media.update',
+      targetType: 'product',
+      targetId: product.id,
+      before,
+      after: { role: saved.role, sortOrder: saved.sortOrder },
+      ip: null,
+    });
+
+    return this.toDetail(product);
+  }
+
+  /**
+   * 批量上下架（店主专属）。
+   *
+   * 单条失败不影响其余条目：逐条给出原因，商家能立刻知道是哪一件没成功。
+   */
+  async batchChangeStatus(
+    ids: string[],
+    status: ProductStatus,
+    admin: AdminPrincipal,
+  ): Promise<ProductBatchStatusResult> {
+    const unique = [...new Set(ids.filter((id) => typeof id === 'string' && id.length > 0))];
+    const skipped: { id: string; reason: string }[] = [];
+    let updated = 0;
+
+    for (const id of unique) {
+      try {
+        await this.changeStatus(id, status, admin);
+        updated += 1;
+      } catch (error) {
+        const message =
+          error instanceof Error && error.message ? error.message : '状态变更失败';
+        skipped.push({ id, reason: message });
+      }
+    }
+
+    return { updated, skipped };
   }
 
   async removeMedia(

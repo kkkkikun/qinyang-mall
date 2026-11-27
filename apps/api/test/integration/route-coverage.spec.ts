@@ -26,6 +26,8 @@ import { AppModule } from '../../src/app.module';
 describe('路由覆盖守卫', () => {
   let app: INestApplication;
   let registered: Set<string>;
+  /** 按注册顺序排列的路由（Express 栈顺序 = 注册顺序） */
+  let routeOrder: string[] = [];
 
   const API_ROOT = path.resolve(__dirname, '../../../..');
   const CONTRACT_PATH = path.join(API_ROOT, 'docs/api/REST-CONTRACT.md');
@@ -43,13 +45,16 @@ describe('路由覆盖守卫', () => {
     const server = app.getHttpAdapter().getInstance();
     const stack = server._router?.stack ?? server.router?.stack ?? [];
     registered = new Set<string>();
+    routeOrder = [];
     for (const layer of stack) {
       if (!layer?.route) continue;
       const methods = Object.keys(layer.route.methods ?? {}).filter(
         (m) => layer.route.methods[m] !== false,
       );
       for (const method of methods) {
-        registered.add(`${method.toUpperCase()} ${layer.route.path}`);
+        const key = `${method.toUpperCase()} ${layer.route.path}`;
+        registered.add(key);
+        routeOrder.push(key);
       }
     }
   });
@@ -95,8 +100,45 @@ describe('路由覆盖守卫', () => {
     expect(undocumented).toEqual([]);
   });
 
-  it('不存在「定义了却没注册进模块」的孤儿控制器', () => {
-    const files: string[] = [];
+  it('字面量路由不会被更早注册的参数路由遮蔽', () => {
+    // Express 按注册顺序匹配：若 `/x/:id` 先于 `/x/export` 注册，
+    // 请求 /x/export 会命中 :id —— 这正是「导出接口 404」那类缺陷的成因。
+    const shadows: string[] = [];
+    for (let i = 0; i < routeOrder.length; i += 1) {
+      const later = routeOrder[i];
+      const laterParts = later.split(' ')[1].split('/').filter(Boolean);
+      for (let j = 0; j < i; j += 1) {
+        const earlier = routeOrder[j];
+        const earlierMethod = earlier.split(' ')[0];
+        const laterMethod = later.split(' ')[0];
+        if (earlierMethod !== laterMethod) continue;
+        const earlierParts = earlier.split(' ')[1].split('/').filter(Boolean);
+        if (earlierParts.length !== laterParts.length) continue;
+        let shadowed = false;
+        for (let k = 0; k < earlierParts.length; k += 1) {
+          if (earlierParts[k].startsWith(':')) {
+            // 参数段会吃掉字面量段
+            if (!laterParts[k].startsWith(':')) {
+              shadowed = true;
+              break;
+            }
+          } else if (earlierParts[k] !== laterParts[k]) {
+            shadowed = false;
+            break;
+          }
+        }
+        if (shadowed) {
+          shadows.push(`${later} 会被先注册的 ${earlier} 截走`);
+        }
+      }
+    }
+    if (shadows.length > 0) {
+      throw new Error(`存在被遮蔽的路由：\n${shadows.join('\n')}`);
+    }
+    expect(shadows).toEqual([]);
+  });
+
+  it('不存在「定义了却没注册进模块」的孤儿控制器', () => {    const files: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);

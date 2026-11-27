@@ -33,6 +33,36 @@
         <t-button theme="primary" @click="handleSearch">查询</t-button>
         <t-button theme="default" @click="handleReset">重置</t-button>
         <span class="page-toolbar-spacer"></span>
+        <template v-if="can('product.status')">
+          <span v-if="selectedIds.length > 0" class="muted">已选 {{ selectedIds.length }} 件</span>
+          <t-popconfirm
+            content="确认将所选商品批量提交审核？草稿商品需先提交审核才能上架。"
+            theme="warning"
+            @confirm="handleBatchStatus(ProductStatus.PENDING_REVIEW)"
+          >
+            <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
+              批量提交审核
+            </t-button>
+          </t-popconfirm>
+          <t-popconfirm
+            content="确认将所选商品批量下架？下架后顾客端立即看不到这些商品。"
+            theme="warning"
+            @confirm="handleBatchStatus(ProductStatus.OFFLINE)"
+          >
+            <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
+              批量下架
+            </t-button>
+          </t-popconfirm>
+          <t-popconfirm
+            content="确认将所选商品批量上架？上架后顾客端立即可见。"
+            theme="warning"
+            @confirm="handleBatchStatus(ProductStatus.PUBLISHED)"
+          >
+            <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
+              批量上架
+            </t-button>
+          </t-popconfirm>
+        </template>
         <t-button v-if="can('product.create')" theme="primary" @click="openCreate">
           新增商品
         </t-button>
@@ -45,6 +75,9 @@
         :loading="loading"
         :pagination="pagination"
         :bordered="false"
+        :selected-row-keys="selectedIds"
+        :row-selectable="() => can('product.status')"
+        @select-change="handleSelectChange"
         @page-change="handlePageChange"
       />
     </div>
@@ -379,6 +412,40 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }): void
 
 /** 需要二次确认的状态变更（会让顾客端看不到这款商品） */
 const DESTRUCTIVE_STATUS: ProductStatus[] = [ProductStatus.OFFLINE, ProductStatus.DRAFT];
+
+/** 批量操作选中的商品 id（仅店主可上下架） */
+const selectedIds = ref<string[]>([]);
+
+function handleSelectChange(keys: (string | number)[]): void {
+  selectedIds.value = keys.map((key) => String(key));
+}
+
+/**
+ * 批量上下架。
+ *
+ * 单条失败不影响其余（后端逐条返回原因），这里把失败原因一并提示出来，
+ * 商家不会遇到「批量操作后不知道哪几件没成功」的情况。
+ */
+async function handleBatchStatus(next: ProductStatus): Promise<void> {
+  const ids = [...selectedIds.value];
+  if (ids.length === 0) {
+    return;
+  }
+  try {
+    const result = await productApi.batchUpdateStatus(ids, next);
+    if (result.skipped.length > 0) {
+      MessagePlugin.warning(
+        `已更新 ${result.updated} 件，${result.skipped.length} 件未成功：${result.skipped[0].reason}`,
+      );
+    } else {
+      MessagePlugin.success(`已批量更新 ${result.updated} 件商品`);
+    }
+    selectedIds.value = [];
+    await load();
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '批量操作失败'));
+  }
+}
 
 async function handleStatusChange(row: ProductListItem, next: ProductStatus): Promise<void> {
   try {

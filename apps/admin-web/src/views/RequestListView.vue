@@ -4,7 +4,7 @@
       <div class="page-toolbar">
         <t-input
           v-model="filters.keyword"
-          placeholder="按申请编号 / 商品名称搜索"
+          placeholder="按申请编号 / 顾客姓名 / 手机号 / 商品搜索"
           style="width: 240px"
           clearable
           @enter="handleSearch"
@@ -18,6 +18,7 @@
         />
         <t-button theme="primary" @click="handleSearch">查询</t-button>
         <t-button theme="default" @click="handleReset">重置</t-button>
+        <t-button theme="default" :loading="exporting" @click="handleExport">导出 CSV</t-button>
       </div>
 
       <t-table
@@ -195,6 +196,16 @@
         <div class="muted" style="margin: 4px 0 16px">
           创建新报价会生成新版本，历史版本自动置为「已被新版本取代」。
         </div>
+        <t-button
+          v-if="latestQuote"
+          theme="default"
+          size="small"
+          style="margin-bottom: 16px"
+          @click="handleReuseLastQuote"
+        >
+          沿用上一版（货款 {{ formatYuan(latestQuote.amountCents) }} · 运费
+          {{ formatYuan(latestQuote.freightCents) }} · {{ latestQuote.productionDays }} 天）
+        </t-button>
       </t-form>
       <t-button theme="primary" :loading="submitting" @click="handleSubmitQuote">提交报价</t-button>
       <t-button theme="default" style="margin-left: 8px" @click="quoteVisible = false">取消</t-button>
@@ -209,8 +220,8 @@ import {
   QuoteStatus,
   RequestStatus,
   REQUEST_STATUS_LABELS,
+  type AdminCustomizationRequestListItemDto,
   type CustomizationRequestDto,
-  type CustomizationRequestListItemDto,
   type QuoteDto,
 } from '@qinyang/contracts';
 import { customizationRequestApi, orderApi, quoteApi } from '../api/admin';
@@ -220,6 +231,8 @@ import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, formatYuan } from '../utils/format';
 import { requestStatusTheme } from '../utils/status';
 import { cell, toTableData } from '../utils/table';
+import { downloadCsv } from '../utils/download';
+import { countCsvRows } from '../utils/csv';
 import MeasurementSnapshotView from '../components/MeasurementSnapshotView.vue';
 import QuoteVersionList from '../components/QuoteVersionList.vue';
 
@@ -234,8 +247,9 @@ const filters = reactive<{ keyword: string; status: '' | RequestStatus }>({
   status: '',
 });
 
-const rows = ref<CustomizationRequestListItemDto[]>([]);
+const rows = ref<AdminCustomizationRequestListItemDto[]>([]);
 const loading = ref(false);
+const exporting = ref(false);
 const page = ref(1);
 const pageSize = ref(10);
 const pagination = reactive({ current: 1, pageSize: 10, total: 0 });
@@ -324,6 +338,20 @@ const timeline = computed<{ title: string; meta: string }[]>(() => {
 
 const columns = [
   { colKey: 'requestNo', title: '申请编号', width: 160 },
+  {
+    colKey: 'customerName',
+    title: '顾客',
+    width: 150,
+    cell: cell<AdminCustomizationRequestListItemDto>((row) => {
+      // 只显示姓名与脱敏手机号；完整联系方式在详情抽屉里看
+      const name = row.customerName || '（未填写）';
+      const phone = row.customerPhoneMasked;
+      return h('div', { class: 'cell-stack' }, [
+        h('span', null, name),
+        phone ? h('span', { class: 'text-muted' }, phone) : null,
+      ]);
+    }),
+  },
   { colKey: 'productName', title: '商品', width: 200 },
   {
     colKey: 'templateName',
@@ -400,6 +428,29 @@ function handleReset(): void {
   void load();
 }
 
+/**
+ * 导出当前筛选结果为 CSV。
+ *
+ * 导出的是**当前筛选条件**下的单子（与列表所见一致），
+ * 手机号脱敏、不含量体明细 —— 导出文件会离开后台。
+ */
+async function handleExport(): Promise<void> {
+  exporting.value = true;
+  try {
+    const { text, filename } = await customizationRequestApi.exportCsv({
+      status: filters.status || undefined,
+      keyword: filters.keyword.trim() || undefined,
+    });
+    downloadCsv(text, filename);
+    const count = countCsvRows(text);
+    MessagePlugin.success(count > 0 ? `已导出 ${count} 条申请` : '当前筛选条件下没有可导出的申请');
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '导出失败'));
+  } finally {
+    exporting.value = false;
+  }
+}
+
 /** t-table 的 page-change 事件参数为 PageInfo（current / previous / pageSize） */
 function handlePageChange(pageInfo: { current: number; pageSize: number }): void {
   page.value = pageInfo.current;
@@ -452,6 +503,29 @@ async function handleSubmitReview(): Promise<void> {
   } finally {
     submitting.value = false;
   }
+}
+
+/**
+ * 最近一版报价（按版本号倒序取第一条有效版本）。
+ *
+ * 改价时沿用上一版的金额/运费/周期是最高频的操作 ——
+ * 此前每一版都要把三个数字重新敲一遍。
+ */
+const latestQuote = computed<QuoteDto | null>(() => {
+  const list = [...quotes.value].sort((a, b) => b.version - a.version);
+  return list.find((quote) => quote.status !== QuoteStatus.REJECTED) ?? list[0] ?? null;
+});
+
+/** 一键把上一版的金额、运费、制作周期填进表单（有效期与说明不沿用） */
+function handleReuseLastQuote(): void {
+  const quote = latestQuote.value;
+  if (!quote) {
+    return;
+  }
+  quoteForm.amountYuan = (quote.amountCents / 100).toFixed(2);
+  quoteForm.freightYuan = (quote.freightCents / 100).toFixed(2);
+  quoteForm.productionDays = String(quote.productionDays);
+  MessagePlugin.success('已填入上一版的货款、运费与制作周期');
 }
 
 function openQuoteDialog(): void {

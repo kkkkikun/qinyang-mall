@@ -18,6 +18,7 @@
         />
         <t-button theme="primary" @click="handleSearch">查询</t-button>
         <t-button theme="default" @click="handleReset">重置</t-button>
+        <t-button theme="default" :loading="exporting" @click="handleExport">导出 CSV</t-button>
         <span class="page-toolbar-spacer"></span>
         <span class="muted">V1 未启用线上收款，订单状态仅由后台推进。</span>
       </div>
@@ -226,6 +227,8 @@ import { hasPermission, type PermissionKey } from '../utils/permissions';
 import { formatDateTime, formatYuan } from '../utils/format';
 import { orderStatusTheme } from '../utils/status';
 import { cell, toTableData } from '../utils/table';
+import { downloadCsv } from '../utils/download';
+import { countCsvRows } from '../utils/csv';
 import MeasurementSnapshotView from '../components/MeasurementSnapshotView.vue';
 
 const auth = useAuthStore();
@@ -241,6 +244,7 @@ const filters = reactive<{ keyword: string; status: '' | OrderStatus }>({
 
 const rows = ref<OrderListItemDto[]>([]);
 const loading = ref(false);
+const exporting = ref(false);
 const page = ref(1);
 const pageSize = ref(10);
 const pagination = reactive({ current: 1, pageSize: 10, total: 0 });
@@ -367,6 +371,24 @@ async function load(): Promise<void> {
 function handleSearch(): void {
   page.value = 1;
   void load();
+}
+
+/** 导出当前筛选结果为 CSV（与列表所见一致，手机号脱敏） */
+async function handleExport(): Promise<void> {
+  exporting.value = true;
+  try {
+    const { text, filename } = await orderApi.exportCsv({
+      status: filters.status || undefined,
+      keyword: filters.keyword.trim() || undefined,
+    });
+    downloadCsv(text, filename);
+    const count = countCsvRows(text);
+    MessagePlugin.success(count > 0 ? `已导出 ${count} 条订单` : '当前筛选条件下没有可导出的订单');
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '导出失败'));
+  } finally {
+    exporting.value = false;
+  }
 }
 
 function handleReset(): void {

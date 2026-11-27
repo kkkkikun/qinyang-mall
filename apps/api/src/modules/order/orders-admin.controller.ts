@@ -6,8 +6,10 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -32,6 +34,8 @@ import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { OrdersService } from './orders.service';
 import { OrderListQueryDto } from './dto/order-list-query.dto';
+import { RawResponse } from '../../common/decorators/raw-response.decorator';
+import { buildContentDisposition, buildExportFilename } from '../../common/csv';
 
 export class OrderCreateDto implements OrderCreateRequest {
   @ApiProperty()
@@ -96,6 +100,22 @@ export class OrdersAdminController {
   @ApiOperation({ summary: '订单列表' })
   list(@Query() query: OrderListQueryDto) {
     return this.orders.listAdmin(query);
+  }
+
+  /**
+   * 导出当前筛选结果为 CSV。
+   *
+   * 注意：必须声明在 `@Get(':id')` **之前** ——
+   * Express 按注册顺序匹配路由，否则 "export" 会被当成订单 id。
+   */
+  @Get('export')
+  @RawResponse()
+  @ApiOperation({ summary: '导出订单 CSV（当前筛选条件）' })
+  async export(@Query() query: OrderListQueryDto, @Res() res: Response): Promise<void> {
+    const csv = await this.orders.exportAdminCsv(query);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', buildContentDisposition(buildExportFilename('订单列表')));
+    res.send(csv);
   }
 
   @Get(':id')

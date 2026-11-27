@@ -6,11 +6,15 @@ import {
 } from '@qinyang/contracts';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   Length,
   Max,
   Min,
@@ -130,6 +134,39 @@ export class ProductMediaUpsertDto {
   @IsOptional()
   @IsInt()
   sortOrder?: number;
+}
+
+export class ProductMediaUpdateDto {
+  @ApiPropertyOptional({ enum: MediaRole })
+  @IsOptional()
+  @IsEnum(MediaRole)
+  role?: MediaRole;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(999)
+  sortOrder?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  alt?: string | null;
+}
+
+export class ProductBatchStatusDto {
+  @ApiProperty({ description: '要批量变更的商品 id 列表', example: ['uuid-1', 'uuid-2'] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(200)
+  @IsUUID('4', { each: true })
+  ids!: string[];
+
+  @ApiProperty({ enum: ProductStatus })
+  @IsEnum(ProductStatus)
+  status!: ProductStatus;
 }
 
 export class ProductListQueryDto {

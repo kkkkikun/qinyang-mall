@@ -19,7 +19,9 @@ import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { ProductsService } from './products.service';
 import {
+  ProductBatchStatusDto,
   ProductListQueryDto,
+  ProductMediaUpdateDto,
   ProductMediaUpsertDto,
   ProductStatusDto,
   ProductUpsertDto,
@@ -59,6 +61,22 @@ export class ProductsAdminController {
     return this.products.create(dto, admin);
   }
 
+  /**
+   * 批量上下架（店主专属）。
+   *
+   * 声明在 `@Put(':id')` 之前，避免 "batch-status" 被当成商品 id。
+   */
+  @Post('batch-status')
+  @HttpCode(200)
+  @Roles(AdminRole.OWNER)
+  @ApiOperation({ summary: '批量上下架（店主专属）' })
+  batchChangeStatus(
+    @Body() dto: ProductBatchStatusDto,
+    @CurrentAdmin() admin: AdminPrincipal,
+  ) {
+    return this.products.batchChangeStatus(dto.ids, dto.status, admin);
+  }
+
   @Put(':id')
   @ApiOperation({ summary: '修改商品' })
   update(
@@ -89,6 +107,17 @@ export class ProductsAdminController {
     @CurrentAdmin() admin: AdminPrincipal,
   ) {
     return this.products.addMedia(id, dto, admin);
+  }
+
+  @Put(':id/media/:mediaId')
+  @ApiOperation({ summary: '调整图集条目（排序 / 角色）' })
+  updateMedia(
+    @Param('id') id: string,
+    @Param('mediaId') mediaId: string,
+    @Body() dto: ProductMediaUpdateDto,
+    @CurrentAdmin() admin: AdminPrincipal,
+  ) {
+    return this.products.updateMedia(id, mediaId, dto, admin);
   }
 
   @Delete(':id/media/:mediaId')

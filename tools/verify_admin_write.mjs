@@ -651,7 +651,58 @@ async function main() {
         `HTTP ${withdrawAfterConfirm.status}`);
     }
 
-    // ── 7. 收尾：验证商品下架并推到列表末尾 ──────────────────
+    // ── 7. 本轮新增的后台效率按钮（导出 / 批量 / 沿用上一版）────
+    {
+      // 7.1 申请列表：导出 CSV
+      const page = await runView(sandbox, 'RequestListView');
+      await page.load();
+      sandbox.clearMessages();
+      await page.handleExport();
+      const exportMsg = sandbox.lastMessage('success') || sandbox.lastMessage('error') || '';
+      check('申请列表：导出 CSV 按钮可用', exportMsg.startsWith('已导出') || exportMsg.includes('没有可导出'),
+        exportMsg);
+
+      // 7.2 报价弹窗：沿用上一版
+      const rows = page.rows;
+      const quoted = rows.find((row) => row.activeQuote);
+      if (quoted) {
+        await page.openDetail(quoted);
+        page.openQuoteDialog();
+        page.handleReuseLastQuote();
+        check('定制申请：沿用上一版填入货款金额',
+          Number(page.quoteForm.amountYuan) > 0,
+          `amountYuan=${page.quoteForm.amountYuan}`);
+        check('定制申请：沿用上一版填入制作周期',
+          Number(page.quoteForm.productionDays) > 0,
+          `productionDays=${page.quoteForm.productionDays}`);
+      } else {
+        check('定制申请：沿用上一版按钮在无历史报价时不出现', page.latestQuote === null,
+          `latestQuote=${String(page.latestQuote)}`);
+      }
+    }
+
+    {
+      // 7.3 商品列表：批量上下架
+      const page = await runView(sandbox, 'ProductListView');
+      await page.load();
+      page.filters.keyword = 'VERIFY-P-';
+      await page.load();
+      const targets = page.rows.filter((row) => row.code.startsWith('VERIFY-P-'));
+      if (targets.length > 0) {
+        page.handleSelectChange(targets.map((row) => row.id));
+        check('商品管理：批量操作能选中多件', page.selectedIds.length === targets.length,
+          `${page.selectedIds.length}/${targets.length}`);
+        sandbox.clearMessages();
+        await page.handleBatchStatus('PENDING_REVIEW');
+        const msg = sandbox.lastMessage('success') || sandbox.lastMessage('warning') || sandbox.lastMessage('error') || '';
+        check('商品管理：批量提交审核有明确结果', msg.includes('已更新') || msg.includes('未成功'),
+          msg);
+      } else {
+        check('商品管理：批量操作前置（验证商品存在）', false, '未找到验证商品');
+      }
+    }
+
+    // ── 8. 收尾：验证商品下架并推到列表末尾 ──────────────────
     // 验证商品没有删除接口（商品只做下架归档），因此收尾时统一：
     // 下架 + 排序推到末尾，避免挤占商家真正要看的列表头部。
     {

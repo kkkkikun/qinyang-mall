@@ -108,3 +108,42 @@ export function toErrorMessage(error: unknown, fallback = '操作失败'): strin
   }
   return fallback;
 }
+
+/** 原样下载响应：正文 + 服务端给的文件名 */
+export interface DownloadPayload {
+  text: string;
+  filename: string;
+}
+
+/** 从 Content-Disposition 里取文件名（优先 RFC 5987 的 filename*） */
+export function parseContentDisposition(disposition: string, fallback: string): string {
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+  if (encoded?.[1]) {
+    try {
+      return decodeURIComponent(encoded[1].trim());
+    } catch {
+      /* 编码异常时退回普通 filename */
+    }
+  }
+  const plain = /filename="([^"]+)"/i.exec(disposition);
+  return plain?.[1]?.trim() || fallback;
+}
+
+/**
+ * 下载型请求：返回原始文本而不是统一包装。
+ *
+ * CSV 导出走的是 `@RawResponse()` 接口（真正的 text/csv），
+ * 不能用 `request()` —— 那会把 CSV 当成 JSON 解析并抛「返回格式异常」。
+ */
+export async function requestDownload(
+  config: AxiosRequestConfig,
+  fallbackFilename = 'export.csv',
+): Promise<DownloadPayload> {
+  const response = await http.request<string>({
+    ...config,
+    responseType: 'text',
+  });
+  const text = typeof response.data === 'string' ? response.data : String(response.data ?? '');
+  const disposition = String(response.headers?.['content-disposition'] ?? '');
+  return { text, filename: parseContentDisposition(disposition, fallbackFilename) };
+}
