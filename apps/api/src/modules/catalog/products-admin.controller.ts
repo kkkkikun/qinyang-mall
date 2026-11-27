@@ -150,4 +150,11 @@ export class ProductsAdminController {
   ) {
     return this.products.removeMedia(id, mediaId, admin);
   }
+
+  @Delete(':id')
+  @Roles(AdminRole.OWNER)
+  @ApiOperation({ summary: '删除商品（未发布且未被定制申请引用时，店主专属）' })
+  remove(@Param('id') id: string, @CurrentAdmin() admin: AdminPrincipal) {
+    return this.products.remove(id, admin);
+  }
 }

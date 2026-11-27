@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -62,5 +63,12 @@ export class TemplatesAdminController {
   @ApiOperation({ summary: '发布模板；已发布模板再次发布则生成新版本' })
   publish(@Param('id') id: string, @CurrentAdmin() admin: AdminPrincipal) {
     return this.templates.publish(id, admin);
+  }
+
+  @Delete(':id')
+  @Roles(AdminRole.OWNER)
+  @ApiOperation({ summary: '删除模板（未被商品引用时，店主专属）' })
+  remove(@Param('id') id: string, @CurrentAdmin() admin: AdminPrincipal) {
+    return this.templates.remove(id, admin);
   }
 }

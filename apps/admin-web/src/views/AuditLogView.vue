@@ -2,12 +2,28 @@
   <div>
     <div class="page-block">
       <div class="page-toolbar">
-        <t-input v-model="filters.action" placeholder="操作标识，如 PRODUCT_STATUS_CHANGE" style="width: 220px" clearable />
-        <t-input v-model="filters.targetType" placeholder="对象类型，如 PRODUCT" style="width: 180px" clearable />
+        <t-input
+          v-model="filters.action"
+          placeholder="操作标识，如 product.update"
+          style="width: 220px"
+          clearable
+        />
+        <t-input
+          v-model="filters.targetType"
+          placeholder="对象类型，如 product"
+          style="width: 180px"
+          clearable
+        />
         <t-input v-model="filters.targetId" placeholder="对象 ID" style="width: 180px" clearable />
         <t-input v-model="filters.actorId" placeholder="操作人 ID" style="width: 180px" clearable />
         <t-button theme="primary" @click="handleSearch">查询</t-button>
         <t-button theme="default" @click="handleReset">重置</t-button>
+      </div>
+
+      <div class="muted form-tip">
+        操作标识与对象类型为<strong>精确匹配、区分大小写</strong>：操作标识是小写点分串
+        （如 product.update、product.status.publish、banner.create、template.publish.new_version、guide.update），
+        对象类型是小写（如 product、banner、order、guide_page、measurement_template）。
       </div>
 
       <t-table

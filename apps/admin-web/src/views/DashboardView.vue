@@ -20,7 +20,7 @@
         <t-statistic :value="stats.draftProducts" title="草稿商品" />
       </div>
       <div class="stat-card">
-        <t-statistic :value="stats.activeBanners" title="启用中的轮播" />
+        <t-statistic :value="stats.activeBanners" title="在投轮播" />
       </div>
       <div class="stat-card">
         <t-statistic :value="stats.pendingReview + stats.pendingQuote" title="待处理申请合计" />
@@ -61,6 +61,7 @@
       <ul style="margin: 0; padding-left: 20px; color: var(--qy-text-2); line-height: 1.9">
         <li>仅按量体报价的商品不保存价格，顾客端显示「待报价」，需在定制申请中报价后确定金额。</li>
         <li>报价每次调整都会生成新版本，历史版本在申请详情中可查。</li>
+        <li>「在投轮播」按顾客端口径统计：状态为启用**且**处于投放期内，与顾客首页实际看到的数量一致。</li>
         <li>V1 未启用线上收款：申请、报价、订单均线下沟通确认，后台不提供收款相关操作与状态。</li>
         <li>关键操作（报价、订单状态、商品上下架、分类删除）由系统写入审计日志，仅店主可查看。</li>
       </ul>
@@ -76,6 +77,7 @@ import {
   OrderStatus,
   ProductStatus,
   RequestStatus,
+  type BannerDto,
   type CustomizationRequestListItemDto,
   type OrderListItemDto,
 } from '@qinyang/contracts';
@@ -97,6 +99,29 @@ const stats = reactive({
 const pendingReviewList = ref<CustomizationRequestListItemDto[]>([]);
 const pendingQuoteList = ref<CustomizationRequestListItemDto[]>([]);
 const productionOrders = ref<OrderListItemDto[]>([]);
+
+/**
+ * 轮播是否对顾客端可见。
+ *
+ * 口径必须与顾客端一致：`banners.service.ts` 的 listActive() 会同时按
+ * `status = ACTIVE` 与投放期（startAt / endAt）过滤。后台原先只数 status，
+ * 数字会大于顾客首页实际轮播数。
+ */
+function isBannerInDeliveryWindow(item: BannerDto): boolean {
+  if (item.status !== 'ACTIVE') {
+    return false;
+  }
+  const now = Date.now();
+  const start = item.startAt ? new Date(item.startAt).getTime() : Number.NaN;
+  const end = item.endAt ? new Date(item.endAt).getTime() : Number.NaN;
+  if (Number.isFinite(start) && start > now) {
+    return false;
+  }
+  if (Number.isFinite(end) && end < now) {
+    return false;
+  }
+  return true;
+}
 
 function goRequests(): void {
   void router.push('/requests');
@@ -125,7 +150,7 @@ onMounted(async () => {
     stats.inProduction = inProduction.total;
     stats.publishedProducts = published.total;
     stats.draftProducts = draft.total;
-    stats.activeBanners = banners.filter((item) => item.status === 'ACTIVE').length;
+    stats.activeBanners = banners.filter(isBannerInDeliveryWindow).length;
 
     pendingReviewList.value = pendingReview.items;
     pendingQuoteList.value = pendingQuote.items;

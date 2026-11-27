@@ -250,12 +250,19 @@ describe('业务闸门', () => {
   });
 
   it('店员也不能手工设置「已确认」', async () => {
+    /*
+     * 改申请状态是**店主专属**（与订单取消同一档权限）。
+     * 店员调用会被角色守卫挡在门外（403），
+     * 根本走不到「已确认不允许手工设置」那层业务闸门（409）——
+     * 守卫比业务规则更靠前，所以这里的断言从 409 变成 403。
+     * 「店主也不能手工设置已确认」由上一个用例覆盖。
+     */
     const res = await http()
       .put(`/api/v1/admin/customization-requests/${requestId}/status`)
       .set('Authorization', `Bearer ${staffToken}`)
       .send({ status: 'CONFIRMED' })
-      .expect(409);
-    expect(res.body.code).toBe('INVALID_STATUS_TRANSITION');
+      .expect(403);
+    expect(res.body.code).toBe('FORBIDDEN');
   });
 
   it('顾客没确认报价就建不了单（纵深防御：即使申请状态被改成已确认）', async () => {

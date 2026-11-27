@@ -147,16 +147,46 @@ function normalizeGuide(raw: unknown, slug: string): GuideContent {
   const sections = rawSections.map((item) => {
     const section = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
     const items = Array.isArray(section.items) ? section.items.map((i) => String(i)) : [];
+    /*
+     * `fields` 是服务端按 fieldCodes 从已发布量体模板解析出的示意图元数据
+     * （字段名 / 测量说明 / 要点 / 配图）。
+     *
+     * 此前这里的归一化只保留 title/description/items/illustration/fieldCodes，
+     * **把 fields 整个丢掉了** —— 服务端就算解析出了示意图，顾客端也拿不到。
+     */
+    const fields = Array.isArray(section.fields)
+      ? (section.fields as unknown[]).map((f) => {
+          const field = (f && typeof f === 'object' ? f : {}) as Record<string, unknown>;
+          return {
+            fieldCode: String(field.fieldCode || ''),
+            fieldName: String(field.fieldName || ''),
+            measurementType: String(field.measurementType || 'body'),
+            instruction: field.instruction ? String(field.instruction) : '',
+            tips: Array.isArray(field.tips) ? field.tips.map((t) => String(t)) : [],
+            illustration: field.illustration ? String(field.illustration) : null
+          };
+        })
+      : [];
     return {
+      id: section.id ? String(section.id) : undefined,
       title: String(section.title || ''),
       description: section.description ? String(section.description) : undefined,
       items,
       illustration: section.illustration ? String(section.illustration) : null,
-      fieldCodes: Array.isArray(section.fieldCodes) ? section.fieldCodes.map((c) => String(c)) : []
+      fieldCodes: Array.isArray(section.fieldCodes) ? section.fieldCodes.map((c) => String(c)) : [],
+      fields
     };
   });
   if (!sections.length && typeof obj.content === 'string' && obj.content) {
-    sections.push({ title: '', description: undefined, items: [obj.content], illustration: null, fieldCodes: [] });
+    sections.push({
+      id: undefined,
+      title: '',
+      description: undefined,
+      items: [obj.content],
+      illustration: null,
+      fieldCodes: [],
+      fields: []
+    });
   }
   return {
     slug: String(obj.slug || slug),

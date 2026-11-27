@@ -23,6 +23,8 @@ import type {
   OrderShipRequest,
   OrderStatusUpdateRequest,
   Paginated,
+  GuidePageDto,
+  GuidePageUpsertRequest,
   ProductBatchStatusResult,
   ProductDetail,
   ProductImportRequest,
@@ -81,6 +83,8 @@ export const productApi = {
       url: '/admin/products/batch-status',
       data: { ids, status },
     }),
+  /** DELETE /admin/products/:id（OWNER 专属，未发布且未被定制申请引用时可删） */
+  remove: (id: string) => request<void>({ method: 'delete', url: `/admin/products/${id}` }),
   /**
    * POST /admin/products/import（CSV 批量导入）
    *
@@ -170,6 +174,12 @@ export const templateApi = {
       method: 'post',
       url: `/admin/measurement-templates/${id}/publish`,
     }),
+  /** DELETE /admin/measurement-templates/:id（OWNER，被商品引用时服务端拒绝） */
+  remove: (id: string) =>
+    request<void>({
+      method: 'delete',
+      url: `/admin/measurement-templates/${id}`,
+    }),
 };
 
 export const customizationRequestApi = {
@@ -256,12 +266,18 @@ export const orderApi = {
   /** POST /admin/orders/:id/ship */
   ship: (id: string, body: OrderShipRequest) =>
     request<OrderDto>({ method: 'post', url: `/admin/orders/${id}/ship`, data: body }),
-  /** POST /admin/orders/:id/cancel（OWNER） */
-  cancel: (id: string, note?: string) =>
+  /**
+   * POST /admin/orders/:id/cancel（OWNER）
+   *
+   * 取消原因在服务端是**必填**（`OrderCancelDto` 带 `@IsNotEmpty`），
+   * 因此这里也按必填声明：调用方必须给出一个非空原因，
+   * 避免发出一个注定 400 的请求。
+   */
+  cancel: (id: string, note: string) =>
     request<OrderDto>({
       method: 'post',
       url: `/admin/orders/${id}/cancel`,
-      data: { note: note ?? null },
+      data: { note },
     }),
 };
 
@@ -289,4 +305,16 @@ export const mediaApi = {
       data: form,
     });
   },
+};
+
+export const guideApi = {
+  /** GET /admin/guides（图文说明页列表） */
+  list: () => request<GuidePageDto[]>({ method: 'get', url: '/admin/guides' }),
+  /** PUT /admin/guides/:slug（更新标题 / 摘要 / 分节内容） */
+  update: (slug: string, body: GuidePageUpsertRequest) =>
+    request<GuidePageDto>({
+      method: 'put',
+      url: '/admin/guides/' + encodeURIComponent(slug),
+      data: body,
+    }),
 };

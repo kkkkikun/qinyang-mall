@@ -94,6 +94,7 @@ export class ProductUpsertDto {
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
   @IsInt()
+  @Min(0)
   sortOrder?: number;
 
   // 注意：这里刻意**不**接受 status。
@@ -119,12 +120,19 @@ export class ProductMediaUpsertDto {
   @Trim()
   storageKey: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  /*
+   * 图片地址必填。
+   *
+   * 此前 `url` 可选，缺省时落库成空串 —— 顾客端 `deriveThumbUrl('')` 得到畸形地址，
+   * 图片直接裂开；若这条空地址还被 `pickCover` 选中，整个商品封面就是裂的。
+   * 上传接口本身就会返回 url，后台也是拿上传结果回填，这里没有「不知道 url」的合理场景。
+   */
+  @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(512)
   @Trim()
-  url?: string;
+  url: string;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
@@ -154,6 +162,7 @@ export class ProductMediaUpsertDto {
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
   @IsInt()
+  @Min(0)
   sortOrder?: number;
 }
 

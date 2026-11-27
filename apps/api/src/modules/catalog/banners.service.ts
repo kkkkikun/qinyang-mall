@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BannerDto, BannerUpsertRequest } from '@qinyang/contracts';
+import { BannerDto, BannerUpsertRequest, ERROR_CODES } from '@qinyang/contracts';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import { Banner } from '../../database/entities/banner.entity';
 import { BusinessException } from '../../common/errors/business.exception';
@@ -72,16 +72,39 @@ export class BannersService {
     if (!banner) throw BusinessException.notFound('轮播不存在');
 
     const before = { title: banner.title, sortOrder: banner.sortOrder, status: banner.status };
-    banner.title = dto.title;
-    banner.imageUrl = dto.imageUrl;
-    banner.storageKey = dto.storageKey ?? banner.storageKey;
-    banner.linkType = dto.linkType;
-    banner.linkValue = dto.linkValue ?? null;
-    banner.sortOrder = dto.sortOrder ?? banner.sortOrder;
-    banner.status = dto.status ?? banner.status;
-    banner.startAt = dto.startAt ? new Date(dto.startAt) : banner.startAt;
-    banner.endAt = dto.endAt ? new Date(dto.endAt) : banner.endAt;
-    const saved = await this.banners.save(banner);
+
+    /*
+     * 条件更新（乐观锁），而不是 save(整行实体)。
+     *
+     * save 会把读到的整行快照写回 —— 两个管理员同时编辑同一条轮播时，
+     * 后写者会用陈旧快照**静默覆盖**先写者（文案、图片、投放时间被回退），
+     * 而调用方拿到 200 毫无提示。
+     * WHERE 里带上 version：期间被别人改过 → 影响行数不为 1 → 409。
+     */
+    const result = await this.banners.update(
+      { id, version: banner.version },
+      {
+        title: dto.title,
+        imageUrl: dto.imageUrl,
+        storageKey: dto.storageKey ?? banner.storageKey,
+        linkType: dto.linkType,
+        linkValue: dto.linkValue ?? null,
+        sortOrder: dto.sortOrder ?? banner.sortOrder,
+        status: dto.status ?? banner.status,
+        startAt: dto.startAt ? new Date(dto.startAt) : banner.startAt,
+        endAt: dto.endAt ? new Date(dto.endAt) : banner.endAt,
+      },
+    );
+    if (result.affected !== 1) {
+      throw BusinessException.conflict(
+        '该轮播已被他人修改，请刷新后重试',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
+    // 条件更新不返回实体，回读一次拿到最新行（含自增后的行版本）
+    const saved = await this.banners.findOne({ where: { id } });
+    if (!saved) throw BusinessException.notFound('轮播不存在');
 
     await this.audit.record({
       actorId: admin.id,

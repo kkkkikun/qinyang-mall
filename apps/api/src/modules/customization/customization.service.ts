@@ -18,17 +18,17 @@ import {
   RequestStatus,
 } from '@qinyang/contracts';
 import { randomBytes } from 'node:crypto';
-import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { CustomizationRequest } from '../../database/entities/customization-request.entity';
 import { Product } from '../../database/entities/product.entity';
-import { ProductStatus } from '@qinyang/contracts';
+import { ProductStatus, QuoteStatus } from '@qinyang/contracts';
 import { BusinessException } from '../../common/errors/business.exception';
 import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { AuditService } from '../audit/audit.service';
 import { ProductsService } from '../catalog/products.service';
 import { TemplatesService } from '../templates/templates.service';
 import { QuoteService } from '../quote/quotes.service';
-import type { Quote } from '../../database/entities/quote.entity';
+import { Quote } from '../../database/entities/quote.entity';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { maskPhone } from '../../common/mask';
 import { buildCsv } from '../../common/csv';
@@ -65,6 +65,7 @@ export class CustomizationService {
     private readonly templates: TemplatesService,
     private readonly quotes: QuoteService,
     private readonly audit: AuditService,
+    private readonly dataSource: DataSource,
   ) {}
 
   // ───────────────────────── 顾客端 ─────────────────────────
@@ -210,8 +211,28 @@ export class CustomizationService {
       );
     }
     const before = { status: request.status };
+    /*
+     * 只写 status 列的条件更新，绝不整行 save。
+     *
+     * 此前 `request.status = CANCELLED; save(request)` 是**整行回写**，
+     * 而 request 是在事务外读的：期间若店员做了审核（写了审核备注），
+     * 顾客这一次取消会把店员的备注覆盖成旧值（陈旧数据回写）。
+     * 状态列本身也可能被店员改成别的值，回写等于把别人的动作撤销。
+     *
+     * 条件更新让数据库裁决：状态已经不是「待审核 / 待报价」时 → 409。
+     */
+    const affected = await this.requests.update(
+      { id: request.id, status: In([RequestStatus.PENDING_REVIEW, RequestStatus.PENDING_QUOTE]) },
+      { status: RequestStatus.CANCELLED },
+    );
+    if (affected.affected !== 1) {
+      throw BusinessException.conflict(
+        '该申请的状态已被其他操作修改，请刷新后重试',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+    // 本地对象与库内状态对齐（响应里要看到刚写入的状态）
     request.status = RequestStatus.CANCELLED;
-    const saved = await this.requests.save(request);
 
     // 取消是顾客侧的关键操作，必须留痕（此前完全没有审计记录）
     await this.audit.record({
@@ -220,13 +241,13 @@ export class CustomizationService {
       actorRole: null,
       action: 'request.cancel',
       targetType: 'customization_request',
-      targetId: saved.id,
+      targetId: request.id,
       before,
-      after: { status: saved.status },
+      after: { status: RequestStatus.CANCELLED },
       ip: null,
     });
 
-    return this.toDto(saved);
+    return this.toDto(request);
   }
 
   // ───────────────────────── 管理端 ─────────────────────────
@@ -348,10 +369,27 @@ export class CustomizationService {
     }
 
     const before = { status: request.status };
-    request.status = target;
-    // 同上：审核备注必须落库，不能只接收不用
-    if (note) request.remark = note;
-    const saved = await this.requests.save(request);
+    /*
+     * 条件更新（乐观锁）：`WHERE id = ? AND status = ?`
+     *
+     * 两个店员同时审核同一申请时，两边都会读到「待审核」并都通过状态检查，
+     * 随后各自 save —— 后写的会把先写的覆盖掉，
+     * 而先写的那次审核备注（"缺胸围"之类）会被静默丢失。
+     *
+     * 由数据库裁决：affected !== 1 说明状态已被别人改过 → 409。
+     */
+    const affected = await this.requests.update(
+      { id: request.id, status: request.status },
+      { status: target, ...(note ? { remark: note } : {}) },
+    );
+    if (affected.affected !== 1) {
+      throw BusinessException.conflict(
+        '该申请的状态已被其他操作修改，请刷新后重试',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+    const saved = await this.requests.findOne({ where: { id: request.id } });
+    if (!saved) throw BusinessException.notFound('定制申请不存在');
 
     await this.audit.record({
       actorId: admin.id,
@@ -361,7 +399,9 @@ export class CustomizationService {
       targetType: 'customization_request',
       targetId: saved.id,
       before,
-      after: { status: saved.status },
+      // 审计记录的是**本次操作的结果**，不是回读到的当前状态：
+      // 回读可能读到别人刚改的状态，那样审计就记了一个谁都没设置过的状态。
+      after: { status: target },
       ip: null,
     });
 
@@ -404,12 +444,67 @@ export class CustomizationService {
       );
     }
 
+    /*
+     * 已生成订单的申请，不能从申请侧取消。
+     *
+     * 订单取消是店主专属接口（POST /admin/orders/:id/cancel），
+     * 而申请侧的取消此前对店员也开放 —— 于是店员可以把申请改成「已取消」，
+     * 订单却仍是「待制作」：申请显示已取消、订单还在生产队列里，状态分裂。
+     *
+     * 这里选**拒绝**而不是「顺手把订单也取消掉」：
+     * 订单取消要写订单事件、要填取消原因、还涉及退款口径，
+     * 由订单接口统一处理才有一致的审计与事件流水；
+     * 申请侧偷偷取消订单会让订单事件里出现一次没有原因的取消。
+     */
+    if (target === RequestStatus.CANCELLED) {
+      const order = await this.quotes.findOrderByRequest(request.id);
+      if (order) {
+        throw BusinessException.conflict(
+          '该申请已生成订单，请在订单页操作',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+    }
+
     const before = { status: request.status };
-    request.status = target;
-    // 备注此前**被接收却从不落库**：商家在「审核备注」里写的
-    // 「缺胸围」之类说明会静默消失，审计里也没有。现在写进申请记录。
-    if (note) request.remark = note;
-    const saved = await this.requests.save(request);
+    /*
+     * 状态变更与报价联动必须同事务。
+     *
+     * 退回「待报价」时，该申请下的**有效报价**必须一并撤回：
+     * 否则顾客端仍显示「当前有效报价」，却又因为申请不是「已报价」而无法确认 ——
+     * 顾客走进死结，店员看到的价格也还是上一版。
+     *
+     * 锁顺序统一为「先报价、后申请」，与报价创建 / 确认 / 撤回保持一致，
+     * 避免两条路径交叉持锁形成死锁。
+     */
+    let withdrawnQuotes = 0;
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const requestRepo = manager.getRepository(CustomizationRequest);
+      const quoteRepo = manager.getRepository(Quote);
+
+      if (target === RequestStatus.PENDING_QUOTE) {
+        const withdrawn = await quoteRepo.update(
+          { requestId: request.id, status: QuoteStatus.ACTIVE },
+          { status: QuoteStatus.WITHDRAWN },
+        );
+        withdrawnQuotes = withdrawn.affected ?? 0;
+      }
+
+      // 同上：条件更新（乐观锁），affected !== 1 → 409
+      const affected = await requestRepo.update(
+        { id: request.id, status: request.status },
+        { status: target, ...(note ? { remark: note } : {}) },
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '该申请的状态已被其他操作修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      const updated = await requestRepo.findOne({ where: { id: request.id } });
+      if (!updated) throw BusinessException.notFound('定制申请不存在');
+      return updated;
+    });
 
     await this.audit.record({
       actorId: admin.id,
@@ -419,7 +514,8 @@ export class CustomizationService {
       targetType: 'customization_request',
       targetId: saved.id,
       before,
-      after: { status: saved.status },
+      // 审计记录的是**本次操作的结果**，不是回读到的当前状态
+      after: { status: target, ...(withdrawnQuotes > 0 ? { withdrawnQuotes } : {}) },
       ip: null,
     });
 

@@ -190,9 +190,20 @@ export class OrdersService {
     const qb = this.orders.createQueryBuilder('o');
     if (query.status) qb.andWhere('o.status = :status', { status: query.status });
     if (query.keyword) {
-      qb.andWhere('(o.orderNo LIKE :kw OR o.requestId LIKE :kw)', {
-        kw: `%${query.keyword}%`,
-      });
+      /*
+       * 关键字要能搜到**顾客和商家看得见的那个编号**。
+       *
+       * 后台列表「来源申请」列显示的是 `requestNo`（形如 RQ-2026-0001），
+       * 而搜索此前只匹配 `orderNo` 与 `requestId`（UUID）——
+       * 商家照着屏幕上看到的编号去搜，搜出来是空的。
+       */
+      qb.andWhere(
+        `(o.orderNo LIKE :kw OR o.requestId LIKE :kw
+          OR o.requestId IN (SELECT r.id FROM customization_requests r WHERE r.requestNo LIKE :kw))`,
+        {
+          kw: `%${query.keyword}%`,
+        },
+      );
     }
     return qb;
   }
@@ -576,8 +587,13 @@ export class OrdersService {
       : this.requests;
     const request = await requestRepo.findOne({ where: { id: requestId } });
     if (!request || request.status === target) return;
-    request.status = target;
-    await requestRepo.save(request);
+    /*
+     * 只写 status 列。
+     *
+     * 此前是 `request.status = target; requestRepo.save(request)` —— 整行回写，
+     * 而 request 是事务外读到的：店员在这期间写的审核备注会被旧值覆盖。
+     */
+    await requestRepo.update({ id: requestId }, { status: target });
   }
 
   private generateOrderNo(): string {

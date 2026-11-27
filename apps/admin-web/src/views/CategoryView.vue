@@ -28,7 +28,10 @@
     >
       <t-form :data="form" :rules="rules" label-align="top">
         <t-form-item label="分类编码" name="code">
-          <t-input v-model="form.code" placeholder="如 men-top" />
+          <t-input v-model="form.code" placeholder="如 men-top" :disabled="editingId !== ''" />
+          <div v-if="editingId" class="muted form-tip">
+            编码创建后不可修改：编码是引用键（量体模板的适用分类存的就是它），改了会让该分类下的商品匹配不到量体模板。需要更名请直接改「分类名称」。
+          </div>
         </t-form-item>
         <t-form-item label="分类名称" name="name">
           <t-input v-model="form.name" placeholder="如 上装" />
@@ -58,7 +61,7 @@ import { categoryApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
-import { toCategoryRows, type CategoryRow } from '../utils/format';
+import { toCategoryRows, toNonNegativeInt, type CategoryRow } from '../utils/format';
 import { cell, emptyHint, toTableData } from '../utils/table';
 
 const auth = useAuthStore();
@@ -74,6 +77,8 @@ const tree = ref<CategoryDto[]>([]);
 const dialogVisible = ref(false);
 const saving = ref(false);
 const editingId = ref('');
+/** 编辑前的原始分类编码（服务端不允许修改编码，编辑时按原值提交） */
+const editingCode = ref('');
 
 interface CategoryFormModel {
   code: string;
@@ -101,11 +106,40 @@ const statusOptions = [
   { label: '停用', value: 'DISABLED' },
 ];
 
-const parentOptions = computed(() =>
-  rows.value
-    .filter((item) => item.id !== editingId.value)
-    .map((item) => ({ label: `${'　'.repeat(item.level)}${item.name}`, value: item.id })),
-);
+/**
+ * 「上级分类」候选项。
+ *
+ * 服务端 `categories.service.ts` 的 assertParent 只接受**一级分类**作为父分类
+ * （父分类 level ≥ 2 会被拒），也不允许把分类挂到自己的子孙下。
+ * 这里先按同一口径过滤，避免商家选到一个必然被服务端拒绝的选项。
+ */
+const parentOptions = computed(() => {
+  const excluded = new Set<string>();
+  if (editingId.value) {
+    excluded.add(editingId.value);
+    for (const id of collectDescendantIds(editingId.value)) {
+      excluded.add(id);
+    }
+  }
+  return rows.value
+    .filter((item) => item.level === 0 && !excluded.has(item.id))
+    .map((item) => ({ label: `${item.name}（一级分类）`, value: item.id }));
+});
+
+/** 某个分类下的全部子孙 id（防止把自己挂到自己的下级下面） */
+function collectDescendantIds(rootId: string): string[] {
+  const result: string[] = [];
+  const walk = (parentId: string): void => {
+    rows.value
+      .filter((item) => item.parentId === parentId)
+      .forEach((child) => {
+        result.push(child.id);
+        walk(child.id);
+      });
+  };
+  walk(rootId);
+  return result;
+}
 
 const tableData = computed(() => toTableData(rows.value));
 
@@ -188,6 +222,7 @@ async function load(): Promise<void> {
 
 function openCreate(): void {
   editingId.value = '';
+  editingCode.value = '';
   form.code = '';
   form.name = '';
   form.parentId = '';
@@ -198,6 +233,9 @@ function openCreate(): void {
 
 function openEdit(row: CategoryRow): void {
   editingId.value = row.id;
+  // 记住原始编码：编辑时服务端会因为「编码被改」返回 409，
+  // 这里统一提交打开抽屉时的原值，避免任何客户端处理差异触发误判。
+  editingCode.value = row.code;
   form.code = row.code;
   form.name = row.name;
   form.parentId = row.parentId ?? '';
@@ -229,10 +267,11 @@ async function handleSave(): Promise<void> {
     return;
   }
   const payload: CategoryUpsertRequest = {
-    code: form.code.trim(),
+    // 编辑态提交原始编码：服务端把「编码变更」视为 409，改名请走分类名称
+    code: editingId.value ? editingCode.value : form.code.trim(),
     name: form.name.trim(),
     parentId: form.parentId || null,
-    sortOrder: Number(form.sortOrder) || 0,
+    sortOrder: toNonNegativeInt(form.sortOrder),
     status: form.status,
   };
   saving.value = true;

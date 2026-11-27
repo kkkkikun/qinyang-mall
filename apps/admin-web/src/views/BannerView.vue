@@ -96,7 +96,7 @@ import { bannerApi, mediaApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, toNonNegativeInt } from '../utils/format';
 import { cell, emptyHint, toTableData } from '../utils/table';
 
 const auth = useAuthStore();
@@ -111,6 +111,8 @@ const loading = ref(false);
 const dialogVisible = ref(false);
 const saving = ref(false);
 const uploading = ref(false);
+/** 排序调整进行中：避免连点造成排序请求并发 */
+const moving = ref(false);
 const editingId = ref('');
 
 interface BannerFormModel {
@@ -233,10 +235,10 @@ const columns = [
           h(Button, { theme: 'default', size: 'small', onClick: () => openEdit(row) }, () => '编辑'),
         );
         actions.push(
-          h(Button, { theme: 'default', size: 'small', onClick: () => handleMove(row, -1) }, () => '上移'),
+          h(Button, { theme: 'default', size: 'small', disabled: moving.value, onClick: () => handleMove(row, -1) }, () => '上移'),
         );
         actions.push(
-          h(Button, { theme: 'default', size: 'small', onClick: () => handleMove(row, 1) }, () => '下移'),
+          h(Button, { theme: 'default', size: 'small', disabled: moving.value, onClick: () => handleMove(row, 1) }, () => '下移'),
         );
       }
       if (can('banner.delete')) {
@@ -321,7 +323,7 @@ async function handleSave(): Promise<void> {
     imageUrl: form.imageUrl.trim(),
     linkType: form.linkType,
     linkValue: form.linkType === 'NONE' ? null : form.linkValue.trim() || null,
-    sortOrder: Number(form.sortOrder) || 0,
+    sortOrder: toNonNegativeInt(form.sortOrder),
     status: form.status,
     startAt: form.startAt || null,
     endAt: form.endAt || null,
@@ -362,19 +364,40 @@ async function handleToggleStatus(row: BannerDto, value: boolean): Promise<void>
   }
 }
 
+/**
+ * 上移 / 下移。
+ *
+ * 不能简单地把两行的 sortOrder 对调：历史数据里存在 sortOrder 相同的轮播
+ * （新建默认 0、删除后重建也会撞值），此时对调写入的是同一个值，
+ * 排序没有变化，界面看起来就是「点了没反应」。
+ * 这里改成**整体重排**：先在内存里排出新顺序，再把每条轮播写成连续的排序值，
+ * 保证顺序唯一且可见。
+ */
 async function handleMove(row: BannerDto, offset: number): Promise<void> {
   const index = rows.value.findIndex((item) => item.id === row.id);
-  const target = rows.value[index + offset];
-  if (!target) {
+  const targetIndex = index + offset;
+  if (index < 0 || targetIndex < 0 || targetIndex >= rows.value.length) {
     MessagePlugin.info('已经在边界位置');
     return;
   }
+  const next = [...rows.value];
+  const [moved] = next.splice(index, 1);
+  next.splice(targetIndex, 0, moved);
+
+  moving.value = true;
   try {
-    await bannerApi.update(row.id, { ...toPayload(row), sortOrder: target.sortOrder });
-    await bannerApi.update(target.id, { ...toPayload(target), sortOrder: row.sortOrder });
+    for (let i = 0; i < next.length; i += 1) {
+      const item = next[i];
+      if (item.sortOrder === i) {
+        continue;
+      }
+      await bannerApi.update(item.id, { ...toPayload(item), sortOrder: i });
+    }
     await load();
   } catch (error) {
     MessagePlugin.error(toErrorMessage(error, '排序更新失败'));
+  } finally {
+    moving.value = false;
   }
 }
 

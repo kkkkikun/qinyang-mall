@@ -22,6 +22,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { AdminRole } from '@qinyang/contracts';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
@@ -57,6 +58,7 @@ export class CategoryUpsertDto implements CategoryUpsertRequest {
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
   @IsInt()
+  @Min(0)
   sortOrder?: number;
 
   @ApiPropertyOptional({ enum: ['ACTIVE', 'DISABLED'], default: 'ACTIVE' })

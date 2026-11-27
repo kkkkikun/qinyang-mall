@@ -6,6 +6,7 @@ import {
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VersionColumn,
 } from 'typeorm';
 
 /**
@@ -27,6 +28,21 @@ export class MeasurementTemplate {
 
   @Column({ type: 'int', default: 1 })
   version: number;
+
+  /**
+   * 乐观锁行版本（**不是**上面那个 `version`）。
+   *
+   * 业务 `version` 是「第几个发布版本」：由发布动作递增，
+   * 并参与唯一索引 `UQ_measurement_templates_code_version`。
+   * 编辑一份草稿不应该改变发布版本号 —— 否则草稿会占掉下一个发布版本号，
+   * 发布时与唯一索引撞车。
+   *
+   * 因此行版本单独用 `rowVersion`：改动一次递增一次，
+   * 管理端更新改为条件更新（`WHERE id = ? AND rowVersion = ?`）后，
+   * 两个管理员同时编辑同一份模板时，后写者拿到 409 而不是静默覆盖先写者。
+   */
+  @VersionColumn()
+  rowVersion: number;
 
   /*
    * 数据库另有两个**未映射**的列（见迁移 AddTemplateConstraints）：

@@ -370,19 +370,11 @@ export class ProductImportService {
       if (!priceText) {
         return { row: rowNumber, code, name, reason: '固定价可直售模式必须填写「价格(元)」' };
       }
-      const price = Number(priceText);
-      if (!Number.isFinite(price) || price <= 0) {
-        return {
-          row: rowNumber,
-          code,
-          name,
-          reason: `价格「${priceText}」不是合法的正数`,
-        };
+      const parsed = parsePriceYuanToCents(priceText);
+      if (!parsed.ok) {
+        return { row: rowNumber, code, name, reason: parsed.reason };
       }
-      if (price > 1000000) {
-        return { row: rowNumber, code, name, reason: '价格超过 100 万元上限' };
-      }
-      priceCents = Math.round(price * 100);
+      priceCents = parsed.cents;
     } else if (priceText) {
       // 仅按量体报价却填了价格：静默忽略会丢数据，必须报错让商家自己决定
       return {
@@ -497,6 +489,39 @@ export class ProductImportService {
 /** 去掉 UTF-8 BOM */
 function stripBom(text: string): string {
   return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
+/** 价格的判定结果：失败时给出**行内可读**的原因 */
+type PriceParseResult = { ok: true; cents: number } | { ok: false; reason: string };
+
+/**
+ * 「元」文本 → 整数分。
+ *
+ * 此前用 `Math.round(Number(price) * 100)`：8.115 会算成 811 分（应为 812），
+ * 1.005 会算成 100 分（应为 101）—— 浮点二进制表示的舍入误差。
+ * 表单录入只接受整数分，两条录入路径口径必须一致，
+ * 否则同一件商品从 CSV 导入与从表单录入会得到两个价格。
+ *
+ * 这里改成**十进制字符串**解析，并限制最多两位小数：
+ * 超过两位小数直接判错（写清原因），而不是悄悄四舍五入改掉商家的定价。
+ */
+function parsePriceYuanToCents(text: string): PriceParseResult {
+  const raw = text.trim();
+  if (!/^\d+(\.\d+)?$/.test(raw)) {
+    return { ok: false, reason: `价格「${raw}」不是合法的金额` };
+  }
+  const [yuan, frac = ''] = raw.split('.');
+  if (frac.length > 2) {
+    return { ok: false, reason: `价格「${raw}」最多两位小数` };
+  }
+  const cents = Number(yuan) * 100 + Number((frac + '00').slice(0, 2));
+  if (cents <= 0) {
+    return { ok: false, reason: `价格「${raw}」必须大于 0` };
+  }
+  if (cents > 100_000_000) {
+    return { ok: false, reason: '价格超过 100 万元上限' };
+  }
+  return { ok: true, cents };
 }
 
 /** 必须存在的表头 */

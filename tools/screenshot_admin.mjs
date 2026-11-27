@@ -60,6 +60,7 @@ const PAGES = [
   ['/categories', 'categories'],
   ['/banners', 'banners'],
   ['/templates', 'templates'],
+  ['/guides', 'guides'],
   ['/requests', 'requests'],
   ['/orders', 'orders'],
   ['/audit-logs', 'audit-logs'],

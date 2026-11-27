@@ -102,7 +102,22 @@ function fromApi(slug: string, content: GuideContent): GuideVM {
     description: section.description || '',
     items: section.items || [],
     image: resolveIllustration(section.illustration),
-    fields: []
+    /*
+     * 示意图字段由服务端按 `fieldCodes` 从**已发布量体模板**解析。
+     *
+     * 此前这里写死 `fields: []`，于是接口一有内容，
+     * 量体示意图（胸围/身高/体重…）就整体消失 ——
+     * 顾客看到的是纯文字说明，反而不如接口没内容时的本地模板版本。
+     * 现在按服务端下发的字段元数据渲染，与量体表单里的说法保持一致。
+     */
+    fields: (section.fields || []).map((field) => ({
+      key: field.fieldCode,
+      name: field.fieldName,
+      instruction: field.instruction || '',
+      tips: field.tips || [],
+      image: resolveIllustration(field.illustration),
+      typeLabel: typeLabel(field.measurementType)
+    }))
   }));
   return {
     slug,

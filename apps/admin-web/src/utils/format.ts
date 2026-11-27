@@ -86,3 +86,18 @@ export function parseYuanInput(value: string | number | null | undefined): numbe
   }
   return yuanToCents(num);
 }
+
+/**
+ * 排序值 → 非负整数。
+ *
+ * 服务端只校验「是整数」（`@IsInt`），负数同样能落库；
+ * 但顾客端按 sortOrder 升序排列，负数会把商品 / 轮播顶到列表最前面。
+ * 客户端先兜一道，避免误填负数影响线上排序。
+ */
+export function toNonNegativeInt(value: string | number | null | undefined): number {
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num)) {
+    return 0;
+  }
+  return Math.max(0, Math.trunc(num));
+}

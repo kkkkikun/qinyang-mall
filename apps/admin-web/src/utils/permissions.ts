@@ -9,6 +9,7 @@ export type PermissionKey =
   | 'product.import'
   | 'product.edit'
   | 'product.status'
+  | 'product.delete'
   | 'category.manage'
   | 'banner.manage'
   | 'banner.delete'
@@ -18,6 +19,8 @@ export type PermissionKey =
   | 'order.status'
   | 'order.cancel'
   | 'template.manage'
+  | 'template.delete'
+  | 'guide.manage'
   | 'audit.view';
 
 const OWNER_PERMISSIONS: PermissionKey[] = [
@@ -25,6 +28,7 @@ const OWNER_PERMISSIONS: PermissionKey[] = [
   'product.import',
   'product.edit',
   'product.status',
+  'product.delete',
   'category.manage',
   'banner.manage',
   'banner.delete',
@@ -34,6 +38,8 @@ const OWNER_PERMISSIONS: PermissionKey[] = [
   'order.status',
   'order.cancel',
   'template.manage',
+  'template.delete',
+  'guide.manage',
   'audit.view',
 ];
 
@@ -46,6 +52,8 @@ const STAFF_PERMISSIONS: PermissionKey[] = [
   'banner.manage',
   'request.review',
   'order.status',
+  // 图文说明页与「编辑商品文案」同属内容维护，店员可以做。
+  'guide.manage',
 ];
 
 export const ROLE_PERMISSIONS: Record<AdminRole, PermissionKey[]> = {

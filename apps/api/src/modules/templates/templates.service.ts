@@ -167,12 +167,36 @@ export class TemplatesService {
       );
     }
 
-    template.name = dto.name;
-    template.applicableCategories = dto.applicableCategories ?? [];
-    template.summary = dto.summary ?? null;
-    template.measurementSections = dto.measurementSections ?? [];
+    /*
+     * 条件更新（乐观锁），而不是 save(整行实体)。
+     *
+     * 为什么不用 save：save 会把「读到的整行快照」原样写回 ——
+     * 两个管理员同时编辑同一份草稿时，后写者拿着陈旧快照**静默覆盖**先写者，
+     * 量体字段被回退，而调用方拿到 200 毫无提示。
+     *
+     * 为什么 WHERE 里还要带 status：上面的「只有 DRAFT 可改」是**读时**检查，
+     * 写入时可能已被别人发布/归档 —— 典型的 TOCTOU。
+     * 把 status 一起写进 WHERE，判断与写入才是原子的。
+     */
+    const result = await this.repo.update(
+      { id, rowVersion: template.rowVersion, status: TemplateStatus.DRAFT },
+      {
+        name: dto.name,
+        applicableCategories: dto.applicableCategories ?? [],
+        summary: dto.summary ?? null,
+        measurementSections: dto.measurementSections ?? [],
+      },
+    );
+    if (result.affected !== 1) {
+      throw BusinessException.conflict(
+        '该模板已被他人修改，请刷新后重试',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
 
-    const saved = await this.repo.save(template);
+    // 条件更新不返回实体，回读一次拿到最新行（含自增后的行版本）
+    const saved = await this.repo.findOne({ where: { id } });
+    if (!saved) throw BusinessException.notFound('量体模板不存在');
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -184,6 +208,68 @@ export class TemplatesService {
       ip: null,
     });
     return this.toDto(saved);
+  }
+
+  /**
+   * 删除模板。
+   *
+   * 背景：此前后台**没有**删除模板的入口 ——
+   * 商家建错了模板只能留着（量体模板列表里会一直挂着这些垃圾），
+   * 而「发布新版本」也解决不了「这个模板压根不该存在」。
+   *
+   * 允许删除 DRAFT / ARCHIVED / ACTIVE：
+   * 商家可能建错并已经发布，此时没有别的入口能把它清掉。
+   *
+   * 硬约束：模板被商品引用时不能删 ——
+   * 删掉后商品解析不到量体模板，顾客端提交定制申请时会被服务端拒收，
+   * 等于把一个模板问题变成了一批订单问题。
+   */
+  async remove(id: string, admin: AdminPrincipal): Promise<void> {
+    const template = await this.repo.findOne({ where: { id } });
+    if (!template) throw BusinessException.notFound('量体模板不存在');
+
+    const before = {
+      code: template.code,
+      name: template.name,
+      version: template.version,
+      status: template.status,
+    };
+
+    /*
+     * 引用检查与删除放在同一个事务里：
+     * 「有多少商品在用」与「删掉模板」必须原子，
+     * 否则删完之后又有人把商品绑上来，同样会留下解析不到模板的商品。
+     */
+    await this.dataSource.transaction(async (manager) => {
+      /*
+       * 这里直接查 products 表，不走 Product 实体仓储 ——
+       * 商品实体正在被别的改动触碰，模板服务不应该和它耦合。
+       */
+      const rows: Array<{ cnt: string | number }> = await manager.query(
+        'SELECT COUNT(*) AS cnt FROM `products` WHERE `measurementTemplateId` = ?',
+        [id],
+      );
+      const referenced = Number(rows?.[0]?.cnt ?? 0);
+      if (referenced > 0) {
+        throw BusinessException.conflict(
+          `该模板已被 ${referenced} 件商品引用，不能删除`,
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      await manager.getRepository(MeasurementTemplate).delete({ id });
+    });
+
+    // 审计写在事务外：审计失败不阻断主业务（沿用本模块既有约定）
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: 'template.delete',
+      targetType: 'measurement_template',
+      targetId: id,
+      before,
+      ip: null,
+    });
   }
 
   /**

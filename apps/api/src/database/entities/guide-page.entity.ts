@@ -5,6 +5,7 @@ import {
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VersionColumn,
 } from 'typeorm';
 
 /**
@@ -36,6 +37,20 @@ export class GuidePage {
 
   @Column({ type: 'varchar', length: 16, default: 'ACTIVE' })
   status: 'ACTIVE' | 'DISABLED';
+
+  /*
+   * 行版本（乐观锁）。
+   *
+   * 这一页是**顾客直接看到**的内容，两个管理员同时编辑时，
+   * 后写者拿着陈旧快照写回会把先写者写好的整套说明静默回退。
+   * 更新一律走条件更新 `WHERE id = ? AND version = ?`，
+   * 影响行数不为 1 → 409。
+   *
+   * 注意：TypeORM 的 `save()` **不做**乐观锁校验（只在 SET 里把 version 加 1），
+   * 所以必须用 `update()` 的条件更新，不能靠 save() 抛异常。
+   */
+  @VersionColumn()
+  version: number;
 
   @CreateDateColumn()
   createdAt: Date;

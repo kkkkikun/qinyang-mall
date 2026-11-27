@@ -39,3 +39,7 @@ apps/admin-web/.harness-tmp/
 .cache/
 .DS_Store
 Thumbs.db
+
+# 其它项目遗留的截图（feed-*/post-detail-*/login-* 等），不属于本仓库，
+# 不入库以免污染交付物；本项目的对照截图在 docs/screenshots/admin-before|admin-after
+docs/screenshots/after/

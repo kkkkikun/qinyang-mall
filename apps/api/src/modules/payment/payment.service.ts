@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { PaymentRecord } from '../../database/entities/payment-record.entity';
 import { Order } from '../../database/entities/order.entity';
 import { BusinessException } from '../../common/errors/business.exception';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { DisabledPaymentGateway, PaymentGateway } from './payment.gateway';
 
 @Injectable()
@@ -28,16 +29,29 @@ export class PaymentService {
     const idempotencyKey = `order:${order.id}`;
     const existing = await this.records.findOne({ where: { idempotencyKey } });
     if (!existing) {
-      await this.records.save(
-        this.records.create({
-          orderId: order.id,
-          provider: this.gateway.provider,
-          status: PaymentStatus.DISABLED,
-          amountCents: order.totalCents,
-          idempotencyKey,
-          externalTradeId: null,
-        }),
-      );
+      try {
+        await this.records.save(
+          this.records.create({
+            orderId: order.id,
+            provider: this.gateway.provider,
+            status: PaymentStatus.DISABLED,
+            amountCents: order.totalCents,
+            idempotencyKey,
+            externalTradeId: null,
+          }),
+        );
+      } catch (error) {
+        /*
+         * 并发重复支付：两个店员同时点「去支付」，
+         * 后到者会撞唯一索引 UQ_payment_records_idempotencyKey。
+         *
+         * 这个接口的契约是「恒定返回 409 PAYMENT_DISABLED」，
+         * 重复键属于**预期内**（记录已存在就是幂等的意思），
+         * 不能让它冒泡成 500 —— 商家看到的是「支付失败」而不是
+         * 「V1 未启用线上收款」，反而更困惑。
+         */
+        if (!isDuplicateKey(error)) throw error;
+      }
     }
 
     throw BusinessException.conflict(

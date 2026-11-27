@@ -42,35 +42,47 @@
       @close="handleDetailClose"
     >
       <div v-if="detailLoading" class="empty-text">加载中…</div>
+      <div v-else-if="detailError" class="empty-text">
+        申请详情加载失败，无法查看与操作。请关闭抽屉后重新打开该申请。
+      </div>
       <div v-else-if="detail" class="detail-drawer-body">
         <div class="page-toolbar">
           <t-button
             v-if="canReview"
             theme="primary"
             size="small"
+            :disabled="submitting"
             @click="openReview('APPROVE')"
           >
             审核通过
           </t-button>
-          <t-button v-if="canReview" theme="danger" variant="outline" size="small" @click="openReview('REJECT')">
+          <t-button
+            v-if="canReview"
+            theme="danger"
+            variant="outline"
+            size="small"
+            :disabled="submitting"
+            @click="openReview('REJECT')"
+          >
             谢绝申请
           </t-button>
           <t-button
             v-if="can('request.quote') && canCreateQuote"
             theme="primary"
             size="small"
+            :disabled="submitting"
             @click="openQuoteDialog"
           >
             创建报价
           </t-button>
-          <!-- 已报价/已确认的申请，店员此前无法退回，只能找开发改库 -->
+          <!-- 已报价的申请可退回重新报价；已确认的申请只能取消（服务端状态机不允许退回） -->
           <t-popconfirm
             v-if="can('request.quote') && canReQuote"
             content="退回后申请回到「待报价」，可重新创建报价版本（顾客会看到状态变化）。确认退回？"
             theme="warning"
             @confirm="handleReQuote"
           >
-            <t-button theme="default" size="small">退回重新报价</t-button>
+            <t-button theme="default" size="small" :disabled="submitting">退回重新报价</t-button>
           </t-popconfirm>
           <!-- 建单后顾客立刻能看到订单，误建会多出一条业务记录 -->
           <t-popconfirm
@@ -79,7 +91,7 @@
             theme="warning"
             @confirm="handleCreateOrder"
           >
-            <t-button theme="primary" size="small">创建订单</t-button>
+            <t-button theme="primary" size="small" :disabled="submitting">创建订单</t-button>
           </t-popconfirm>
         </div>
 
@@ -135,7 +147,7 @@
         <div class="section-title mt-20">处理时间线</div>
         <div class="snapshot-card">
           <ul class="timeline">
-            <li v-for="(item, index) in timeline" :key="index" class="timeline-item">
+            <li v-for="item in timeline" :key="item.id" class="timeline-item">
               <div class="timeline-title">{{ item.title }}</div>
               <div class="timeline-meta">{{ item.meta }}</div>
             </li>
@@ -263,6 +275,8 @@ const statusOptions = Object.values(RequestStatus).map((value) => ({
 
 const detailVisible = ref(false);
 const detailLoading = ref(false);
+/** 详情加载失败标记：为 true 时抽屉里没有任何可操作的数据 */
+const detailError = ref(false);
 const detail = ref<CustomizationRequestDto | null>(null);
 const quotes = ref<QuoteDto[]>([]);
 
@@ -304,18 +318,20 @@ const canCreateOrder = computed(
     Boolean(detail.value?.activeQuote && detail.value.activeQuote.status === QuoteStatus.ACTIVE),
 );
 
-const timeline = computed<{ title: string; meta: string }[]>(() => {
+const timeline = computed<{ id: string; title: string; meta: string }[]>(() => {
   const current = detail.value;
   if (!current) {
     return [];
   }
-  const items: { title: string; meta: string }[] = [
-    { title: '提交定制申请', meta: formatDateTime(current.createdAt) },
+  // 用稳定的业务键做列表 key：数组下标会随插入/排序错位
+  const items: { id: string; title: string; meta: string }[] = [
+    { id: 'created', title: '提交定制申请', meta: formatDateTime(current.createdAt) },
   ];
   [...quotes.value]
     .sort((a, b) => a.version - b.version)
     .forEach((quote) => {
       items.push({
+        id: `quote-${quote.id}`,
         title: `创建报价 v${quote.version}（合计 ${formatYuan(quote.totalCents)}）`,
         meta: `${formatDateTime(quote.createdAt)} · ${quote.createdByName}`,
       });
@@ -323,14 +339,20 @@ const timeline = computed<{ title: string; meta: string }[]>(() => {
   const confirmed = quotes.value.find((quote) => quote.confirmedAt);
   if (confirmed) {
     items.push({
+      id: `confirmed-${confirmed.id}`,
       title: `顾客确认报价 v${confirmed.version}`,
       meta: formatDateTime(confirmed.confirmedAt),
     });
   }
   if (current.orderId) {
-    items.push({ title: `生成订单 ${current.orderNo ?? ''}`, meta: formatDateTime(current.updatedAt) });
+    items.push({
+      id: `order-${current.orderId}`,
+      title: `生成订单 ${current.orderNo ?? ''}`,
+      meta: formatDateTime(current.updatedAt),
+    });
   }
   items.push({
+    id: 'current-status',
     title: `当前状态：${current.statusLabel || REQUEST_STATUS_LABELS[current.status]}`,
     meta: `最近更新 ${formatDateTime(current.updatedAt)}`,
   });
@@ -469,6 +491,11 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }): void
 }
 
 async function openDetail(row: CustomizationRequestDto): Promise<void> {
+  // 先清空上一条申请的数据：加载失败时若还留着旧数据，
+  // 抽屉里的写操作（审核 / 报价 / 建单）会作用在错误的申请上。
+  detail.value = null;
+  quotes.value = [];
+  detailError.value = false;
   detailVisible.value = true;
   detailLoading.value = true;
   try {
@@ -479,6 +506,9 @@ async function openDetail(row: CustomizationRequestDto): Promise<void> {
     detail.value = detailResult;
     quotes.value = quoteList;
   } catch (error) {
+    detail.value = null;
+    quotes.value = [];
+    detailError.value = true;
     MessagePlugin.error(toErrorMessage(error, '申请详情加载失败'));
   } finally {
     detailLoading.value = false;
@@ -488,6 +518,7 @@ async function openDetail(row: CustomizationRequestDto): Promise<void> {
 function handleDetailClose(): void {
   detail.value = null;
   quotes.value = [];
+  detailError.value = false;
 }
 
 function openReview(action: 'APPROVE' | 'REJECT'): void {
@@ -592,6 +623,10 @@ async function handleWithdrawQuote(quote: QuoteDto): Promise<void> {
   if (!current) {
     return;
   }
+  if (submitting.value) {
+    return;
+  }
+  submitting.value = true;
   try {
     await quoteApi.withdraw(quote.id);
     MessagePlugin.success('报价已撤回');
@@ -599,6 +634,8 @@ async function handleWithdrawQuote(quote: QuoteDto): Promise<void> {
     await load();
   } catch (error) {
     MessagePlugin.error(toErrorMessage(error, '撤回报价失败'));
+  } finally {
+    submitting.value = false;
   }
 }
 
@@ -611,12 +648,17 @@ const canWithdrawQuote = computed(
       detail.value.status === RequestStatus.QUOTED),
 );
 
-/** 是否可以「退回重新报价」：已报价或已确认的申请 */
+/**
+ * 是否可以「退回重新报价」。
+ *
+ * 只允许「已报价（QUOTED）」：服务端契约
+ * `REQUEST_STATUS_TRANSITIONS[QUOTED] = [CONFIRMED, PENDING_QUOTE, CANCELLED]`
+ * 允许回到「待报价」，而 `[CONFIRMED] = [IN_PRODUCTION, CANCELLED]` **不含 PENDING_QUOTE**。
+ * 此前按钮在「已确认」状态下也显示，点下去必然被服务端 409 拒绝 ——
+ * UI 承诺了一个永远失败的操作。已确认的申请只能走「取消申请」。
+ */
 const canReQuote = computed(
-  () =>
-    detail.value !== null &&
-    (detail.value.status === RequestStatus.QUOTED ||
-      detail.value.status === RequestStatus.CONFIRMED),
+  () => detail.value !== null && detail.value.status === RequestStatus.QUOTED,
 );
 
 /** 退回重新报价：把申请打回待报价，店员可再创建一个报价版本 */
@@ -625,6 +667,10 @@ async function handleReQuote(): Promise<void> {
   if (!current) {
     return;
   }
+  if (submitting.value) {
+    return;
+  }
+  submitting.value = true;
   try {
     await customizationRequestApi.changeStatus(
       current.id,
@@ -636,6 +682,8 @@ async function handleReQuote(): Promise<void> {
     await load();
   } catch (error) {
     MessagePlugin.error(toErrorMessage(error, '退回失败'));
+  } finally {
+    submitting.value = false;
   }
 }
 
@@ -645,6 +693,10 @@ async function handleCreateOrder(): Promise<void> {
     MessagePlugin.error('当前没有可用于生成订单的有效报价');
     return;
   }
+  if (submitting.value) {
+    return;
+  }
+  submitting.value = true;
   try {
     const order = await orderApi.create({
       requestId: current.id,
@@ -655,6 +707,8 @@ async function handleCreateOrder(): Promise<void> {
     await load();
   } catch (error) {
     MessagePlugin.error(toErrorMessage(error, '创建订单失败'));
+  } finally {
+    submitting.value = false;
   }
 }
 

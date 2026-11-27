@@ -27,6 +27,7 @@
           <t-menu-item value="/products">商品管理</t-menu-item>
           <t-menu-item value="/categories">分类管理</t-menu-item>
           <t-menu-item value="/banners">首页轮播</t-menu-item>
+          <t-menu-item value="/guides">图文说明</t-menu-item>
           <t-menu-item value="/requests">定制申请</t-menu-item>
           <t-menu-item value="/orders">订单管理</t-menu-item>
           <t-menu-item value="/templates">量体模板</t-menu-item>

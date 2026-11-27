@@ -5,6 +5,7 @@ import {
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VersionColumn,
 } from 'typeorm';
 
 export type BannerStatus = 'ACTIVE' | 'DISABLED';
@@ -45,6 +46,18 @@ export class Banner {
 
   @Column({ type: 'datetime', nullable: true })
   endAt: Date | null;
+
+  /**
+   * 乐观锁行版本。
+   *
+   * 管理端更新此前是「先读后写 → save(整行实体)」，两个管理员同时编辑同一条轮播时，
+   * 后写者会用陈旧快照**静默覆盖**先写者（文案、图片、投放时间被回退），
+   * 而调用方拿到 200 毫无提示。
+   * 改为条件更新（`WHERE id = ? AND version = ?`）后，
+   * 版本不匹配会拿到 409 而不是覆盖。
+   */
+  @VersionColumn()
+  version: number;
 
   @CreateDateColumn()
   createdAt: Date;

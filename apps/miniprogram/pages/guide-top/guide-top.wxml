@@ -28,6 +28,11 @@
       <view class="guide-sec__h2" wx:if="{{item.title}}">{{item.title}}</view>
       <view class="guide-sec__d" wx:if="{{item.description}}">{{item.description}}</view>
 
+      <!-- 分节级示意图：商家在后台为该分节指定的示意图（此前存了但从不渲染） -->
+      <view class="guide-sec__fig" wx:if="{{item.image && !imgErr[item.key]}}">
+        <image src="{{item.image}}" mode="aspectFit" binderror="onImgErr" data-key="{{item.key}}" />
+      </view>
+
       <view class="guide-fig" wx:if="{{item.fields.length}}">
         <view class="guide-fig__item {{index === 0 ? 'guide-fig__item--wide' : ''}}" wx:for="{{item.fields}}" wx:key="key" wx:for-index="idx">
           <view class="guide-fig__ill">

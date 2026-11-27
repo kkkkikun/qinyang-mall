@@ -170,6 +170,91 @@ async function main() {
         page.viewTemplate?.name ?? '');
     }
 
+    // ── 7bis. 图文说明（顾客端可见内容的维护入口）─────────────
+    {
+      const page = await runView(sandbox, 'GuideView');
+      check('图文说明：加载到图文说明页', page.rows.length > 0, `${page.rows.length} 页`);
+      check('图文说明：每页都有标题与分节结构',
+        page.rows.every((row) => Boolean(row.title) && Array.isArray(row.sections)),
+        `${page.rows.length} 页`);
+      page.openEdit(page.rows[0]);
+      check('图文说明：编辑抽屉可打开', page.editVisible === true && Boolean(page.form),
+        page.form?.title ?? '');
+      check('图文说明：编辑表单带出原有分节',
+        Array.isArray(page.form?.sections) && page.form.sections.length === (page.rows[0].sections ?? []).length,
+        `${page.form?.sections?.length ?? 0} 节`);
+
+      // 可选量体字段清单：来自已发布量体模板，后台要能勾选
+      check('图文说明：量体字段清单已加载', (page.fieldOptions ?? []).length > 0,
+        `${(page.fieldOptions ?? []).length} 个字段`);
+
+      // 分节 id 必须唯一：按数组长度生成会在删除分节后撞号
+      const beforeIds = (page.form?.sections ?? []).map((s) => s.id);
+      page.addSection();
+      const afterIds = (page.form?.sections ?? []).map((s) => s.id);
+      check('图文说明：新增分节的 id 不与已有重复',
+        new Set(afterIds).size === afterIds.length,
+        afterIds.join(' | '));
+      page.removeSection(afterIds.length - 1);
+      check('图文说明：删除分节后分节数复原',
+        (page.form?.sections ?? []).length === beforeIds.length,
+        `${(page.form?.sections ?? []).length} 节`);
+
+      // 要点必须能逐行录入：早先用派生的 :value + @change，回车打不出第二条
+      check('图文说明：要点按行拆分',
+        JSON.stringify(page.parseItems('第一条要点\n第二条要点')) === JSON.stringify(['第一条要点', '第二条要点']),
+        JSON.stringify(page.parseItems('第一条要点\n第二条要点')));
+
+      // 改标题 + 改要点 + 改 fieldCodes → 存回 → 顾客端立刻能看到
+      const originalTitle = String(page.rows[0].title);
+      const originalSections = JSON.parse(JSON.stringify(page.rows[0].sections ?? []));
+      const stamp = `（页面验证 ${Date.now().toString().slice(-6)}）`;
+      const firstSection = page.form.sections[0];
+      const firstFieldCode = (page.fieldOptions ?? [])[0]?.value ?? '';
+      page.form.title = originalTitle + stamp;
+      firstSection.itemsText = '验证要点一\n验证要点二';
+      firstSection.fieldCodes = firstFieldCode ? [firstFieldCode] : [];
+      await page.save();
+      check('图文说明：保存后列表标题已更新',
+        page.rows.some((row) => String(row.title).endsWith(stamp)),
+        page.rows.map((row) => row.title).join(' | '));
+
+      // 端到端：顾客端接口拿到的正是刚存的内容，且 fieldCodes 已被解析成示意图字段
+      const guideSlug = String(page.rows[0].slug);
+      const guideRes = await fetch(`${API_BASE}/guides/${guideSlug}`).catch(() => null);
+      let guideBody = null;
+      if (guideRes && guideRes.ok) guideBody = await guideRes.json();
+      check('图文说明：顾客端接口读到刚保存的标题',
+        String(guideBody?.data?.title ?? '').endsWith(stamp),
+        String(guideBody?.data?.title ?? ''));
+      check('图文说明：要点逐行落库（换行没有被吃掉）',
+        JSON.stringify(guideBody?.data?.sections?.[0]?.items ?? []) ===
+          JSON.stringify(['验证要点一', '验证要点二']),
+        JSON.stringify(guideBody?.data?.sections?.[0]?.items ?? []));
+      check('图文说明：fieldCodes 被解析成示意图字段元数据',
+        firstFieldCode
+          ? (guideBody?.data?.sections?.[0]?.fields ?? []).some((f) => f.fieldCode === firstFieldCode)
+          : true,
+        JSON.stringify((guideBody?.data?.sections?.[0]?.fields ?? []).map((f) => f.fieldCode)));
+
+      // 复原，避免污染数据
+      page.openEdit(page.rows.find((row) => row.slug === guideSlug) ?? page.rows[0]);
+      page.form.title = originalTitle;
+      page.form.sections = originalSections.map((section) => ({
+        ...section,
+        itemsText: (section.items ?? []).join('\n')
+      }));
+      await page.save();
+      const restored = await fetch(`${API_BASE}/guides/${guideSlug}`).catch(() => null);
+      const restoredBody = restored && restored.ok ? await restored.json() : null;
+      const restoredSections = restoredBody?.data?.sections ?? [];
+      check('图文说明：复原后顾客端标题与要点回到原样',
+        String(restoredBody?.data?.title ?? '') === originalTitle &&
+          JSON.stringify(restoredSections.map((s) => s.items)) ===
+            JSON.stringify(originalSections.map((s) => s.items ?? [])),
+        `标题=${restoredBody?.data?.title ?? ''} ｜ 报错=${sandbox.lastMessage('error') ?? '无'}`);
+    }
+
     // ── 8. 定制申请 ──────────────────────────────────────────
     {
       const page = await runView(sandbox, 'RequestListView');

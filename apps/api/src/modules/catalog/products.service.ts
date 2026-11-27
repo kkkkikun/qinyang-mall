@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   AdminRole,
@@ -15,7 +15,7 @@ import {
   ProductStatus,
   ProductUpsertRequest,
 } from '@qinyang/contracts';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, OptimisticLockVersionMismatchError, QueryDeepPartialEntity, Repository } from 'typeorm';
 import { Category } from '../../database/entities/category.entity';
 import { Product } from '../../database/entities/product.entity';
 import { ProductMedia } from '../../database/entities/product-media.entity';
@@ -30,6 +30,8 @@ import type { AdminPrincipal } from '../../common/decorators/current-admin.decor
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     @InjectRepository(Product)
     private readonly products: Repository<Product>,
@@ -40,6 +42,7 @@ export class ProductsService {
     @InjectRepository(MeasurementTemplate)
     private readonly templates: Repository<MeasurementTemplate>,
     private readonly audit: AuditService,
+    private readonly dataSource: DataSource,
   ) {}
 
   // ───────────────────────── 顾客端 ─────────────────────────
@@ -166,18 +169,55 @@ export class ProductsService {
       }
     }
 
-    product.name = dto.name;
-    product.subtitle = dto.subtitle ?? null;
-    product.categoryId = dto.categoryId;
-    product.pricingMode = dto.pricingMode;
-    product.priceCents = nextPriceCents;
-    product.material = dto.material ?? null;
-    product.description = dto.description ?? null;
-    product.careGuide = dto.careGuide ?? null;
-    product.measurementTemplateId = dto.measurementTemplateId ?? null;
-    product.sortOrder = dto.sortOrder ?? product.sortOrder;
+    /*
+     * 真正的乐观锁：按版本号**条件更新**。
+     *
+     * 此前这里是 `save(product)` 整行回写，而 TypeORM 的 save() **并不做乐观锁** ——
+     * 它生成的 UPDATE 是 `SET ..., version = version + 1 WHERE id = ?`，
+     * WHERE 里没有版本号：两个店员同时改同一件商品时，后保存的那份会**静默覆盖**
+     * 先保存的那份（改动直接丢失，商家毫无感知），
+     * 更糟的是陈旧实体还会把 version 写回旧值（1 → 1），版本号形同虚设。
+     *
+     * 改成「WHERE id = ? AND version = ?」后：版本号对不上就一条都写不进去，
+     * affected = 0 → 409「商品已被他人修改，请刷新后重试」。
+     */
+    const changes = {
+      name: dto.name,
+      subtitle: dto.subtitle ?? null,
+      categoryId: dto.categoryId,
+      pricingMode: dto.pricingMode,
+      priceCents: nextPriceCents,
+      material: dto.material ?? null,
+      description: dto.description ?? null,
+      careGuide: dto.careGuide ?? null,
+      measurementTemplateId: dto.measurementTemplateId ?? null,
+      sortOrder: dto.sortOrder ?? product.sortOrder,
+    };
 
-    const saved = await this.products.save(product);
+    let saved: Product;
+    try {
+      const affected = await this.products.update(
+        { id: product.id, version: product.version },
+        changes,
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '商品已被他人修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      saved = await this.reload(id);
+    } catch (error) {
+      // 防御性：若将来改用 findOne 的乐观锁读（lock: optimistic），
+      // 冲突同样是「别人先改了一步」，一并翻译成 409 而不是 500。
+      if (error instanceof OptimisticLockVersionMismatchError) {
+        throw BusinessException.conflict(
+          '商品已被他人修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      throw error;
+    }
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -211,11 +251,42 @@ export class ProductsService {
     }
 
     const before = this.auditSnapshot(product);
-    product.status = status;
+    /*
+     * 同 update：按版本号**条件更新**，期间被人改过就 409（而不是静默覆盖）。
+     *
+     * 条件里额外带上 `status: product.status`（期望旧状态）：
+     * 状态机合法性与乐观锁一次搞定 —— 期间有人把状态改成别的（比如抢先上架），
+     * 这一条就写不进去（affected = 0 → 409），
+     * 不会出现「按旧状态算出来的合法流转被写到新状态上」。
+     */
+    const changes: QueryDeepPartialEntity<Product> = { status };
     if (status === ProductStatus.PUBLISHED && !product.publishedAt) {
-      product.publishedAt = new Date();
+      changes.publishedAt = new Date();
     }
-    const saved = await this.products.save(product);
+    let saved: Product;
+    try {
+      const affected = await this.products.update(
+        { id: product.id, version: product.version, status: product.status },
+        changes,
+      );
+      if (affected.affected !== 1) {
+        throw BusinessException.conflict(
+          '商品已被他人修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      saved = await this.reload(id);
+    } catch (error) {
+      // 防御性：若将来改用 findOne 的乐观锁读（lock: optimistic），
+      // 冲突同样是「别人先改了一步」，一并翻译成 409 而不是 500。
+      if (error instanceof OptimisticLockVersionMismatchError) {
+        throw BusinessException.conflict(
+          '商品已被他人修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      throw error;
+    }
 
     await this.audit.record({
       actorId: admin.id,
@@ -232,6 +303,66 @@ export class ProductsService {
     return this.toDetail(saved);
   }
 
+  /** 条件更新成功后重新读取商品（拿到最新版本号与时间戳） */
+  private async reload(id: string): Promise<Product> {
+    const fresh = await this.findOne(id);
+    if (!fresh) throw BusinessException.notFound('商品不存在');
+    return fresh;
+  }
+
+  /**
+   * 删除商品。
+   *
+   * 此前商品只有「下架」，没有「删除」——
+   * 商家误建或误导入的商品会**永远**躺在商品列表里（只是被推到末尾），
+   * 每一次自动化验证也会留下一件 `VERIFY-*` 垃圾商品。
+   *
+   * 删除口径（宁可少删，不可错删）：
+   * - **已发布（PUBLISHED）不直接删** —— 先下架再删，避免线上商品凭空消失；
+   * - **被定制申请引用过的不删** —— 申请、报价、订单都指向它，
+   *   删掉后商家的历史单据就断了线。
+   */
+  async remove(id: string, admin: AdminPrincipal): Promise<void> {
+    const product = await this.findOne(id);
+    if (!product) throw BusinessException.notFound('商品不存在');
+
+    if (product.status === ProductStatus.PUBLISHED) {
+      throw BusinessException.conflict(
+        '已发布商品不能直接删除，请先下架再删除',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
+    const rows = await this.dataSource.query(
+      'SELECT COUNT(*) AS cnt FROM customization_requests WHERE productId = ?',
+      [id],
+    );
+    const referenced = Number(rows?.[0]?.cnt ?? 0);
+    if (referenced > 0) {
+      throw BusinessException.conflict(
+        `该商品已被 ${referenced} 笔定制申请引用，不能删除`,
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
+    // 图集与商品本体一起删：留下孤儿图集行没有意义，还会让唯一索引占位
+    await this.dataSource.transaction(async (manager) => {
+      await manager.delete(ProductMedia, { productId: id });
+      await manager.delete(Product, { id });
+    });
+
+    await this.audit.record({
+      actorId: admin.id,
+      actorName: admin.displayName,
+      actorRole: admin.role,
+      action: 'product.delete',
+      targetType: 'product',
+      targetId: id,
+      before: { code: product.code, name: product.name, status: product.status },
+      ip: null,
+    });
+  }
+
   async addMedia(
     id: string,
     dto: ProductMediaUpsertRequest,
@@ -240,31 +371,80 @@ export class ProductsService {
     const product = await this.findOne(id);
     if (!product) throw BusinessException.notFound('商品不存在');
 
-    // 同一张图片（storageKey 相同）重复添加时改为更新角色与排序，
-    // 而不是再插一条 —— 此前「设为封面」会新增一条重复记录，
-    // 顾客端图集里同一张图出现两次。
-    const existing = await this.media.findOne({
-      where: { productId: product.id, storageKey: dto.storageKey },
+    /*
+     * 图片地址必填。
+     *
+     * 此前 url 允许空串，于是图集里会出现 url = '' 的条目 ——
+     * 顾客端拼出来的图片地址是空串，直接裂图；
+     * 而「有图」这件事在后台看起来是正常的，商家很难自己发现。
+     */
+    const url = dto.url?.trim();
+    if (!url) {
+      throw BusinessException.badRequest('图片地址不能为空');
+    }
+
+    /*
+     * 同一张图片（storageKey 相同）重复添加时改为更新角色与排序，
+     * 而不是再插一条 —— 「设为封面」会新增一条重复记录，
+     * 顾客端图集里同一张图出现两次。
+     *
+     * 但「先查后写」在并发下会双双落空：两个店员同时点「添加图片」，
+     * 两次都查不到 → 插出两条同 storageKey 的行。
+     * （数据库层唯一索引 (productId, storageKey) 上线后是双保险，
+     * 但这里不能依赖它 —— 索引到位之前也要保证只有一条。）
+     *
+     * 做法：在事务里**锁住商品行**，把「查 → 写」串行化，
+     * 后到者必然能看到先到者刚插入的那条，转成更新。
+     */
+    await this.dataSource.transaction(async (manager) => {
+      const mediaRepo = manager.getRepository(ProductMedia);
+      const productRepo = manager.getRepository(Product);
+      const locked = await productRepo.findOne({
+        where: { id: product.id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!locked) throw BusinessException.notFound('商品不存在');
+
+      const existing = await mediaRepo.findOne({
+        where: { productId: product.id, storageKey: dto.storageKey },
+      });
+      if (existing) {
+        await mediaRepo.update(
+          { id: existing.id },
+          {
+            role: dto.role,
+            url,
+            alt: dto.alt ?? existing.alt,
+            sortOrder: dto.sortOrder ?? existing.sortOrder,
+          },
+        );
+        return;
+      }
+      try {
+        await mediaRepo.save(
+          mediaRepo.create({
+            productId: product.id,
+            role: dto.role,
+            storageKey: dto.storageKey,
+            url,
+            width: dto.width ?? 0,
+            height: dto.height ?? 0,
+            bytes: dto.bytes ?? 0,
+            alt: dto.alt ?? null,
+            sortOrder: dto.sortOrder ?? 0,
+          }),
+        );
+      } catch (error) {
+        // 唯一索引上线后的兜底：同一张图被并发插入 → 翻译成人话
+        if (isDuplicateKey(error)) {
+          throw BusinessException.conflict(
+            '该图片已在图集中，请刷新后重试',
+            ERROR_CODES.DUPLICATED_SUBMIT,
+          );
+        }
+        throw error;
+      }
     });
-    const entity = existing
-      ? this.media.create({
-          ...existing,
-          role: dto.role,
-          alt: dto.alt ?? existing.alt,
-          sortOrder: dto.sortOrder ?? existing.sortOrder,
-        })
-      : this.media.create({
-          productId: product.id,
-          role: dto.role,
-          storageKey: dto.storageKey,
-          url: dto.url ?? '',
-          width: dto.width ?? 0,
-          height: dto.height ?? 0,
-          bytes: dto.bytes ?? 0,
-          alt: dto.alt ?? null,
-          sortOrder: dto.sortOrder ?? 0,
-        });
-    await this.media.save(entity);
 
     await this.audit.record({
       actorId: admin.id,
@@ -338,9 +518,20 @@ export class ProductsService {
         await this.changeStatus(id, status, admin);
         updated += 1;
       } catch (error) {
-        const message =
-          error instanceof Error && error.message ? error.message : '状态变更失败';
-        skipped.push({ id, reason: message });
+        /*
+         * 「为什么没成功」是给商家看的，不能把底层异常原文回显。
+         * 此前直接用 error.message，于是 TypeORM 的英文报错
+         * （含表名、列名、SQL 片段）会原样出现在后台界面上。
+         *
+         * 业务异常的消息本来就是写给商家看的（"不允许从 DRAFT 变更为…"），
+         * 可以直接用；其余一律归为「状态已被他人变更」，细节只进服务端日志。
+         */
+        if (error instanceof BusinessException) {
+          skipped.push({ id, reason: error.message });
+        } else {
+          this.logger.error(`批量上下架失败 id=${id}：${(error as Error).message}`);
+          skipped.push({ id, reason: '该商品状态已被他人变更，请刷新后重试' });
+        }
       }
     }
 
@@ -469,31 +660,35 @@ export class ProductsService {
     });
     const categoryNames = new Map(categoryRows.map((c) => [c.id, c.name]));
 
-    // 列表只需要封面：只取 COVER（无封面时退回 FRONT），
-    // 此前把该页商品的**全部**图集行都拉回来（20 商品 × 约 9 张 ≈ 180 行），
-    // 而列表只用到 1 张。
+    /*
+     * 列表封面与详情封面**必须是同一个口径**。
+     *
+     * 此前列表只取 role IN (COVER, FRONT)，详情却是 COVER ?? FRONT ?? media[0] ——
+     * 只上传了 DETAIL 图的商品，列表里没有封面（顾客看到空白卡片），
+     * 详情页却有图。同一件商品在两个页面长得不一样，是最容易被当成「商品没图」的投诉。
+     *
+     * 这里改成与 pickCover 完全一致：COVER → FRONT → 任意一张。
+     * 仍然是**一次批量查询**取回本页商品的图集行（不逐商品查库），
+     * 只多带回一些行，不引入 N+1。
+     */
     const mediaRows = await this.media.find({
-      where: {
-        productId: In(items.map((item) => item.id)),
-        role: In([MediaRole.COVER, MediaRole.FRONT]),
-      },
-      order: { sortOrder: 'ASC' },
+      where: { productId: In(items.map((item) => item.id)) },
+      order: { sortOrder: 'ASC', createdAt: 'ASC' },
+      select: { id: true, productId: true, role: true, url: true, sortOrder: true, createdAt: true },
     });
-    const coverMap = new Map<string, string | null>();
+    const mediaByProduct = new Map<string, ProductMedia[]>();
     for (const row of mediaRows) {
-      if (row.role === MediaRole.COVER && !coverMap.has(row.productId)) {
-        coverMap.set(row.productId, row.url);
-      }
-    }
-    for (const row of mediaRows) {
-      if (!coverMap.has(row.productId)) {
-        coverMap.set(row.productId, row.url);
+      const list = mediaByProduct.get(row.productId);
+      if (list) {
+        list.push(row);
+      } else {
+        mediaByProduct.set(row.productId, [row]);
       }
     }
 
     return {
       items: items.map((item) => {
-        const coverUrl = coverMap.get(item.id) ?? null;
+        const coverUrl = this.pickCover(mediaByProduct.get(item.id) ?? []);
         return this.toListItem(
           item,
           categoryNames.get(item.categoryId) ?? '',

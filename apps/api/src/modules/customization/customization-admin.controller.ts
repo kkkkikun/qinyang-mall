@@ -158,9 +158,18 @@ export class CustomizationAdminController {
     return this.service.review(id, dto.action, dto.note, admin);
   }
 
+  /**
+   * 变更申请状态（店主专属）。
+   *
+   * 此前这个接口没有角色限制：任意店员都能把申请改成「已取消」，
+   * 而订单取消（POST /admin/orders/:id/cancel）是店主专属 ——
+   * 于是店员通过申请侧达到了取消订单的同等效果，
+   * 且只改申请不改订单，出现「申请已取消、订单仍在待制作」的状态分裂。
+   */
   @Put(':id/status')
   @HttpCode(200)
-  @ApiOperation({ summary: '变更申请状态' })
+  @Roles(AdminRole.OWNER)
+  @ApiOperation({ summary: '变更申请状态（店主专属）' })
   changeStatus(
     @Param('id') id: string,
     @Body() dto: RequestStatusDto,

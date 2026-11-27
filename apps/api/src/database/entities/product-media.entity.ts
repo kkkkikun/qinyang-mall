@@ -14,6 +14,14 @@ export class ProductMedia {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  /**
+   * 所属商品。
+   *
+   * 与 `storageKey` 组成唯一索引：同一商品下同一个 storageKey 只能有一条图集记录。
+   * 「追加图集」此前是「先查后写」，并发下两个店员会把同一张图插两次；
+   * 唯一性下沉到数据库后由索引裁决（见迁移 AddProductMediaUniqueIndex）。
+   */
+  @Index('UQ_product_media_productId_storageKey', ['productId', 'storageKey'], { unique: true })
   @Index()
   @Column({ type: 'varchar', length: 36 })
   productId: string;

@@ -89,7 +89,19 @@ Page({
           this.setData({ loading: false, error: '暂无分类数据' });
           return;
         }
-        const cur = tops.filter((t) => t.id === this.data.curCatId)[0] || tops[0];
+        /*
+         * 默认分类落在**第一个有商品的一级分类**上。
+         *
+         * 此前直接取 `tops[0]`（按 sortOrder 第一个），而种子的分类树里
+         * 「其他服装」排在最前却一件商品都没有 —— 顾客打开分类页第一眼是空列表，
+         * 要自己横向滑动、找到有商品的分类才有内容。
+         * 一级分类的商品数是向下汇总的（自身 + 所有下级分组），
+         * 所以这里可以直接用 productCount 判断。
+         */
+        const cur =
+          tops.filter((t) => t.id === this.data.curCatId)[0] ||
+          tops.find((t) => (t.count ?? 0) > 0) ||
+          tops[0];
         const groups = this.pickGroups(active, cur.id);
         this.setData({
           topCats: tops,

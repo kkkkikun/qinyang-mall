@@ -63,6 +63,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '订单管理' },
       },
       {
+        path: 'guides',
+        name: 'guides',
+        component: () => import('../views/GuideView.vue'),
+        meta: { title: '图文说明' },
+      },
+      {
         path: 'templates',
         name: 'templates',
         component: () => import('../views/TemplateListView.vue'),

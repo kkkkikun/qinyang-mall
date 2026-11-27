@@ -2,7 +2,9 @@
   <div>
     <div class="page-block">
       <div class="page-toolbar">
-        <span class="muted">模板发布后不可原地修改；再次发布会生成新版本，旧版本转为「已归档」。</span>
+        <span class="muted">
+          模板发布后不可原地修改；再次发布会生成新版本，旧版本转为「已归档」——发布新版本会替换当前生效版本。
+        </span>
         <span class="page-toolbar-spacer"></span>
         <t-button v-if="can('template.manage')" theme="primary" @click="openCreate">
           新建模板
@@ -68,6 +70,10 @@
                 <span v-else class="muted">未限定范围</span>
               </div>
               <div v-if="field.instruction" class="muted">{{ field.instruction }}</div>
+              <div v-if="field.tips && field.tips.length" class="muted">
+                测量提示：{{ field.tips.join('；') }}
+              </div>
+              <div v-if="field.illustration" class="muted">示意图：{{ field.illustration }}</div>
             </div>
           </div>
         </div>
@@ -103,7 +109,7 @@
         </div>
 
         <div class="section-title mt-12">量体分节</div>
-        <div v-for="(section, sectionIndex) in form.sections" :key="sectionIndex" class="measure-section">
+        <div v-for="(section, sectionIndex) in form.sections" :key="section.sectionId" class="measure-section">
           <div class="measure-section-head">
             <span>第 {{ sectionIndex + 1 }} 节</span>
             <t-popconfirm
@@ -143,25 +149,53 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(field, fieldIndex) in section.fields" :key="fieldIndex">
-                  <td><t-input v-model="field.fieldCode" placeholder="如 chest" /></td>
-                  <td><t-input v-model="field.fieldName" placeholder="如 胸围" /></td>
-                  <td><t-input v-model="field.unit" placeholder="cm" /></td>
-                  <td><t-input v-model="field.min" placeholder="选填" /></td>
-                  <td><t-input v-model="field.max" placeholder="选填" /></td>
-                  <td>
-                    <t-switch v-model="field.required" />
-                  </td>
-                  <td>
-                    <t-popconfirm
-                      content="删除该字段后，量体表单将不再采集这一项。确认删除？"
-                      theme="danger"
-                      @confirm="removeField(sectionIndex, fieldIndex)"
-                    >
-                      <t-button theme="danger" variant="outline" size="small">删除字段</t-button>
-                    </t-popconfirm>
-                  </td>
-                </tr>
+                <template
+                  v-for="(field, fieldIndex) in section.fields"
+                  :key="field.fieldCode || `field-${fieldIndex}`"
+                >
+                  <tr>
+                    <td><t-input v-model="field.fieldCode" placeholder="如 chest" /></td>
+                    <td><t-input v-model="field.fieldName" placeholder="如 胸围" /></td>
+                    <td><t-input v-model="field.unit" placeholder="cm" /></td>
+                    <td><t-input v-model="field.min" placeholder="选填" /></td>
+                    <td><t-input v-model="field.max" placeholder="选填" /></td>
+                    <td>
+                      <t-switch v-model="field.required" />
+                    </td>
+                    <td>
+                      <t-popconfirm
+                        content="删除该字段后，量体表单将不再采集这一项。确认删除？"
+                        theme="danger"
+                        @confirm="removeField(sectionIndex, fieldIndex)"
+                      >
+                        <t-button theme="danger" variant="outline" size="small">删除字段</t-button>
+                      </t-popconfirm>
+                    </td>
+                  </tr>
+                  <!-- 字段说明区：顾客端会渲染提示与示意图，保存时必须原样带回 -->
+                  <tr>
+                    <td colspan="7">
+                      <div class="qy-field-extra">
+                        <div>
+                          <div>测量提示（每行一条）</div>
+                          <t-textarea
+                            v-model="field.tips"
+                            :rows="2"
+                            placeholder="每行一条，如：量体时保持自然呼吸，不要刻意收腹"
+                          />
+                        </div>
+                        <div>
+                          <div>示意图标识</div>
+                          <t-input v-model="field.illustration" placeholder="如 chest-front" />
+                        </div>
+                        <div>
+                          <div>字段说明</div>
+                          <t-input v-model="field.instruction" placeholder="选填" />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
               </tbody>
             </table>
             <t-button theme="default" size="small" class="mt-8" @click="addField(sectionIndex)">
@@ -219,6 +253,13 @@ interface FieldDraft {
   max: string;
   step: string;
   instruction: string;
+  /**
+   * 测量提示：草稿里用「每行一条」的纯文本承载，
+   * 保存时拆成字符串数组、读取时用换行拼回来（与契约 `tips: string[]` 等价）。
+   */
+  tips: string;
+  /** 示意图标识（顾客端按标识找示意图，可为空） */
+  illustration: string;
 }
 
 interface SectionDraft {
@@ -317,25 +358,67 @@ const columns = [
             h(Button, { theme: 'default', size: 'small', onClick: () => openEdit(row) }, () => '编辑草稿'),
           );
         }
-        actions.push(
-          h(
-            Popconfirm,
-            {
-              content:
-                row.status === TemplateStatus.ACTIVE
-                  ? '该模板已发布，继续发布将生成新版本（旧版本转为已归档）。确认发布？'
-                  : '确认发布该模板？',
-              theme: 'warning',
-              onConfirm: () => handlePublish(row),
-            },
-            {
-              default: () =>
-                h(Button, { theme: 'primary', size: 'small' }, () =>
-                  row.status === TemplateStatus.ACTIVE ? '发布新版本' : '发布',
-                ),
-            },
-          ),
-        );
+        /**
+         * 发布入口只对「草稿」与「已发布」开放。
+         *
+         * 服务端 publish() 会先把**当前生效版本归档**再把目标置为 ACTIVE：
+         * 对「已归档」的旧版本点发布，等于把线上生效的量体表单回退到旧版本，
+         * 顾客端立刻看到旧表单 —— 而确认框里只有一句「确认发布该模板？」，
+         * 商家完全看不出这是一次线上回滚。因此已归档版本一律不给发布入口。
+         */
+        if (row.status === TemplateStatus.DRAFT) {
+          actions.push(
+            h(
+              Popconfirm,
+              {
+                content:
+                  '发布后该模板立即对顾客端生效，并会替换当前生效版本（同编码的已发布版本将转为「已归档」）。确认发布？',
+                theme: 'warning',
+                onConfirm: () => handlePublish(row),
+              },
+              {
+                default: () => h(Button, { theme: 'primary', size: 'small' }, () => '发布'),
+              },
+            ),
+          );
+        } else if (row.status === TemplateStatus.ACTIVE) {
+          actions.push(
+            h(
+              Popconfirm,
+              {
+                content:
+                  '继续发布会生成新版本（版本号 +1），并把当前生效版本转为「已归档」——这会替换当前生效版本。确认发布？',
+                theme: 'warning',
+                onConfirm: () => handlePublish(row),
+              },
+              {
+                default: () => h(Button, { theme: 'primary', size: 'small' }, () => '发布新版本'),
+              },
+            ),
+          );
+        }
+        /*
+         * 删除入口只对店主开放（服务端同样限制为 OWNER）。
+         *
+         * 被商品引用的模板删不掉 —— 服务端会 409 并说明被几件商品引用，
+         * 避免商家删掉量体模板后顾客提交定制申请被拦下却查不出原因。
+         */
+        if (can('template.delete')) {
+          actions.push(
+            h(
+              Popconfirm,
+              {
+                content:
+                  '删除后不可恢复。若该模板已被商品引用，系统会拒绝删除并告知引用数量。确认删除？',
+                theme: 'danger',
+                onConfirm: () => handleRemove(row),
+              },
+              {
+                default: () => h(Button, { theme: 'danger', size: 'small' }, () => '删除'),
+              },
+            ),
+          );
+        }
       }
       return h('div', { style: 'display:flex; gap:6px; flex-wrap:wrap;' }, actions);
     }),
@@ -418,7 +501,35 @@ function toFieldDraft(field: MeasurementField): FieldDraft {
     max: field.max === null || field.max === undefined ? '' : String(field.max),
     step: field.step === null || field.step === undefined ? '' : String(field.step),
     instruction: field.instruction ?? '',
+    // tips / illustration 原样带出：写死成空会让一次保存把顾客端的测量提示整片抹掉
+    tips: (field.tips ?? []).join('\n'),
+    illustration: field.illustration ?? '',
   };
+}
+
+/** 「每行一条」的提示文本 → 字符串数组（忽略空行） */
+function splitTips(value: string | undefined): string[] {
+  if (!value) {
+    return [];
+  }
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+/** 草稿里的文本字段 → 字符串（字段可能缺失，缺失按空串处理） */
+function draftText(value: string | undefined): string {
+  return typeof value === 'string' ? value : '';
+}
+
+/** 草稿里的数值字段 → 数字 | null（空串 / 非法值按未设置处理） */
+function draftNumber(value: string | number | undefined): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
 }
 
 function addSection(): void {
@@ -443,6 +554,8 @@ function addField(sectionIndex: number): void {
     max: '',
     step: '',
     instruction: '',
+    tips: '',
+    illustration: '',
   });
 }
 
@@ -456,18 +569,19 @@ function toMeasurementSections(): MeasurementSection[] {
     title: section.title.trim(),
     measurementType: section.measurementType,
     description: section.description.trim() || undefined,
-    measurementFields: section.fields.map((field) => ({
-      fieldCode: field.fieldCode.trim(),
-      fieldName: field.fieldName.trim(),
+    measurementFields: (section.fields ?? []).map((field) => ({
+      fieldCode: draftText(field.fieldCode).trim(),
+      fieldName: draftText(field.fieldName).trim(),
       measurementType: section.measurementType,
-      unit: field.unit.trim() || 'cm',
+      unit: draftText(field.unit).trim() || 'cm',
       required: field.required,
-      instruction: field.instruction.trim() || undefined,
-      tips: [],
-      illustration: null,
-      min: field.min === '' ? null : Number(field.min),
-      max: field.max === '' ? null : Number(field.max),
-      step: field.step === '' ? null : Number(field.step),
+      instruction: draftText(field.instruction).trim() || undefined,
+      // 原样往返：不再写死 [] / null，否则一次保存就把顾客端的测量提示与示意图全部抹掉
+      tips: splitTips(draftText(field.tips)),
+      illustration: draftText(field.illustration).trim() || null,
+      min: draftNumber(field.min),
+      max: draftNumber(field.max),
+      step: draftNumber(field.step),
     })),
   }));
 }
@@ -524,6 +638,23 @@ async function handlePublish(row: MeasurementTemplateDto): Promise<void> {
   }
 }
 
+/**
+ * 删除模板。
+ *
+ * 服务端会在**模板被商品引用**时拒绝（409「该模板已被 N 件商品引用，不能删除」）——
+ * 删掉后商品解析不到量体模板，顾客就提交不了定制申请。
+ * 这里的提示文案要把这层风险讲清楚，不要让商家以为随便删。
+ */
+async function handleRemove(row: MeasurementTemplateDto): Promise<void> {
+  try {
+    await templateApi.remove(row.id);
+    MessagePlugin.success('已删除');
+    await load();
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '删除失败'));
+  }
+}
+
 onMounted(async () => {
   try {
     categories.value = await categoryApi.list();
@@ -551,5 +682,15 @@ onMounted(async () => {
 .qy-field-table td {
   padding: 4px 6px;
   vertical-align: middle;
+}
+
+/* 字段说明区：提示 / 示意图 / 字段说明 */
+.qy-field-extra {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 4px 0;
+  color: var(--qy-text-2);
+  font-size: var(--qy-font-sm);
 }
 </style>

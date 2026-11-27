@@ -328,7 +328,8 @@ export interface ProductUpsertRequest {
 export interface ProductMediaUpsertRequest {
   role: MediaRole;
   storageKey: string;
-  url?: string;
+  /** 图片访问地址（必填：空地址会让顾客端图片裂开） */
+  url: string;
   width?: number;
   height?: number;
   bytes?: number;
@@ -695,6 +696,71 @@ export interface QuoteRejectRequest {
   expectedVersion: number;
   /** 拒绝理由（可选），会随审计留存，便于店员了解顾客诉求 */
   reason?: string | null;
+}
+
+// ─────────────────────── 图文说明页（指南） ───────────────────────
+
+/**
+ * 图文说明页引用的一个量体字段（示意图元数据）。
+ *
+ * 由服务端按分节的 `fieldCodes` 从**已发布量体模板**解析而来，
+ * 只读：商家在后台只维护 `fieldCodes`，示意图名称 / 说明 / 要点 / 配图
+ * 始终以量体模板为准，避免两处各写一份、顾客端看到不一致的说法。
+ */
+export interface GuideFieldDto {
+  fieldCode: string;
+  fieldName: string;
+  measurementType: MeasurementType;
+  instruction?: string;
+  tips?: string[];
+  illustration?: string | null;
+}
+
+/**
+ * 图文说明页的一个分节。
+ *
+ * 顾客端会把它渲染成「标题 + 说明 + 要点列表 + 示意图」，
+ * 其中 `illustration` 指向分节级示意图，`fieldCodes` 关联内置的量体示意图，
+ * `fields` 是服务端按 `fieldCodes` 解析出来的示意图元数据（只读）。
+ */
+export interface GuideSectionDto {
+  id: string;
+  title: string;
+  description?: string;
+  items: string[];
+  illustration?: string | null;
+  fieldCodes: string[];
+  /** 服务端解析结果，商家不可编辑；缺省表示没有可展示的示意图 */
+  fields?: GuideFieldDto[];
+}
+
+/** 图文说明页（量体指南 / 洗护指南 / 材质说明） */
+export interface GuidePageDto {
+  slug: string;
+  title: string;
+  summary: string | null;
+  sections: GuideSectionDto[];
+  /** 后台列表用：排序与启停状态 */
+  sortOrder: number;
+  status: 'ACTIVE' | 'DISABLED';
+  updatedAt: string;
+}
+
+/** 后台更新图文说明页时提交的分节（`fields` 是服务端解析结果，不可提交） */
+export interface GuideSectionUpsertPayload {
+  id: string;
+  title: string;
+  description?: string;
+  items: string[];
+  illustration?: string | null;
+  fieldCodes: string[];
+}
+
+/** 后台更新图文说明页的请求体 */
+export interface GuidePageUpsertRequest {
+  title?: string;
+  summary?: string | null;
+  sections?: GuideSectionUpsertPayload[];
 }
 
 // ──────────────────────────── 订单 ────────────────────────────

@@ -17,6 +17,7 @@ import { ProductsAdminController } from './products-admin.controller';
 import { CategoriesAdminController } from './categories-admin.controller';
 import { BannersAdminController } from './banners-admin.controller';
 import { MediaAdminController } from './media-admin.controller';
+import { GuidesAdminController } from './guides-admin.controller';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MediaAdminController } from './media-admin.controller';
     CategoriesAdminController,
     BannersAdminController,
     MediaAdminController,
+    GuidesAdminController,
   ],
   providers: [
     ProductsService,

@@ -27,7 +27,7 @@
 | GET | `/products` | `keyword` `categoryId` `group` `page` `pageSize` |
 | GET | `/products/:id` | 商品详情（含图集、量体模板指引） |
 | GET | `/measurement-templates/resolve?productId=` | 按商品分类解析可用量体模板（ACTIVE 版本） |
-| GET | `/guides/:slug` | 图文指南：`measure-top` `measure-bottom` `care` `material` |
+| GET | `/guides/:slug` | 图文指南：`measure-top` `measure-bottom` `care` `material`（分节含服务端解析出的 `fields` 示意图元数据，见 §3.6） |
 | POST | `/customization-requests` | 提交定制申请（含量体资料），需登录 |
 | GET | `/customization-requests` | 我的定制申请列表（仅本人），需登录 |
 | GET | `/customization-requests/:id` | 申请详情（含当前有效报价），需登录 |
@@ -59,6 +59,7 @@
 | POST | `/admin/products/:id/media` | STAFF | 追加图集 `{ role, storageKey, url, width, height, bytes, sortOrder }` |
 | PUT | `/admin/products/:id/media/:mediaId` | STAFF | 调整图集条目（`sortOrder` / `role` / `alt`） |
 | DELETE | `/admin/products/:id/media/:mediaId` | STAFF | 移除图集条目 |
+| DELETE | `/admin/products/:id` | OWNER | 删除商品：**已发布**须先下架；**已被定制申请引用**的拒绝删除（409 并说明引用笔数） |
 | GET | `/admin/categories` | 登录 | 分类树 |
 | POST | `/admin/categories` | OWNER | 新增分类 |
 | PUT | `/admin/categories/:id` | OWNER | 修改分类 |
@@ -67,11 +68,14 @@
 | POST | `/admin/banners` | STAFF | 新增轮播 |
 | PUT | `/admin/banners/:id` | STAFF | 修改轮播 |
 | DELETE | `/admin/banners/:id` | OWNER | 删除轮播 |
+| GET | `/admin/guides` | 登录 | 图文说明页列表（量体指南 / 洗护 / 材质，含停用） |
+| PUT | `/admin/guides/:slug` | STAFF | 更新图文说明页（标题 / 摘要 / 分节内容），顾客端立即生效 |
 | GET | `/admin/measurement-templates` | 登录 | 量体模板（含历史版本） |
 | GET | `/admin/measurement-templates/:id` | 登录 | 模板详情 |
 | POST | `/admin/measurement-templates` | OWNER | 新建模板（可 `publish` 直接发布 v1） |
 | PUT | `/admin/measurement-templates/:id` | OWNER | 修改草稿；已发布模板需新建版本 |
 | POST | `/admin/measurement-templates/:id/publish` | OWNER | 发布（草稿→ACTIVE，已 ACTIVE 则生成新版本） |
+| DELETE | `/admin/measurement-templates/:id` | OWNER | 删除模板（**被商品引用时拒绝**，409） |
 | GET | `/admin/customization-requests` | 登录 | 申请列表 `status` `keyword` `productId`（keyword 同时匹配顾客姓名/手机号/商品名） |
 | GET | `/admin/customization-requests/export` | 登录 | 导出当前筛选的申请为 CSV（`text/csv`，手机号脱敏、不含量体明细） |
 | GET | `/admin/customization-requests/:id` | 登录 | 申请详情（含量体资料、报价历史） |
@@ -80,7 +84,7 @@
 | POST | `/admin/customization-requests/:id/quotes` | OWNER | 创建报价（生成新版本，旧版本转 SUPERSEDED） |
 | GET | `/admin/customization-requests/:id/quotes` | 登录 | 报价历史版本 |
 | POST | `/admin/quotes/:id/withdraw` | OWNER | 撤回报价 |
-| GET | `/admin/orders` | 登录 | 订单列表 `status` `keyword` |
+| GET | `/admin/orders` | 登录 | 订单列表 `status` `keyword`（**keyword 同时匹配订单号 / 申请号 / 申请 ID**） |
 | GET | `/admin/orders/export` | 登录 | 导出当前筛选的订单为 CSV（`text/csv`，手机号脱敏、不含量体明细） |
 | POST | `/admin/orders` | OWNER | 由已确认申请生成订单 `{ requestId, quoteId }` |
 | GET | `/admin/orders/:id` | 登录 | 订单详情 |
@@ -156,3 +160,38 @@ CONFIRMED ──▶ IN_PRODUCTION ──▶ SHIPPED ──▶ COMPLETED
   固定价必须填正数价格（单位元，按整数分存储），仅按量体报价却填了价格 → 该行失败（不静默丢弃数据）。
 - **不代填经营数据** —— 缺名称、缺分类、缺价格一律报错，系统不补默认值。
 - 单次上限 500 行；导入写入审计（`product.import` / `product.import.preview`）。
+
+### 3.6 图文说明页（量体指南 / 洗护 / 材质）
+
+后台维护入口：`GET /admin/guides`（列表）、`PUT /admin/guides/:slug`（更新）。
+顾客端只读：`GET /guides/:slug`。
+
+- **可改字段** —— 页面标题、摘要、分节（标题 / 说明 / 要点 / 分节级示意图 / 量体字段引用）。
+  `slug` 是路由标识（不可改，改了顾客端链接失效）；`status` 属启停性质，本接口不开放。
+- **权限** —— OWNER 与 STAFF 均可维护图文内容（与「编辑商品文案」同属内容维护）。
+- **整体覆盖** —— `sections` 是**整段替换**，不是逐节合并；保存后顾客端立即生效。
+- **只新增不覆盖的例外** —— 无：`sections` 全量覆盖是本接口的既定语义，前端编辑时以服务端返回值为准。
+
+#### 3.6.1 量体示意图字段（`fieldCodes` → `fields`）
+
+分节用 `fieldCodes` 引用量体字段；**服务端**按 `fieldCodes` 从**已发布（ACTIVE）量体模板**
+解析出字段元数据，放在分节的 `fields` 里返回（只读）。
+
+| 字段 | 说明 |
+| --- | --- |
+| `fieldCode` | 量体字段编码（如 `chest_bust`） |
+| `fieldName` | 字段名称（如「胸围」） |
+| `measurementType` | `body` / `garment_flat` |
+| `instruction` | 测量说明 |
+| `tips` | 测量提示（每行一条） |
+| `illustration` | 示意图标识（小程序按 `*.svg` 映射到本地 PNG 素材） |
+
+口径：
+
+- **示意图的名称 / 说明 / 提示 / 配图一律以量体模板为准**，图文说明页只做引用 ——
+  商家在「量体模板」里改一次，量体表单与图文指南两处说法一致，不会各写一份而互相矛盾。
+- **解析顺序确定** —— 同一 `fieldCode` 出现在多个模板时，取模板列表顺序（`code` 升序 / `version` 降序）中的第一个，
+  后台可选字段清单与此处同一口径，不会出现「后台显示 A、顾客端显示 B」。
+- **引用了不存在的 `fieldCode`** → 该字段解析不出（`fields` 里没有它），不报错、不影响其余字段。
+- **`fields` 不可提交** —— 它是服务端解析结果，`PUT` 请求体里带 `fields` 会被参数校验拒绝（400）。
+- **后台没有 ACTIVE 量体模板时** → 退回使用全部模板解析，保证新建页面也能出图。

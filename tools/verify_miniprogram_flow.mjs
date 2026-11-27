@@ -31,6 +31,7 @@ import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ensurePublishedProducts } from './lib/verify-shared.mjs';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API_BASE = (process.argv[2] ?? 'http://127.0.0.1:18110/api/v1').replace(/\/$/, '');
@@ -218,6 +219,9 @@ async function main() {
 
   const outDir = compileMiniprogram();
   const require = createRequire(join(outDir, 'noop.js'));
+
+  // 先把「有已发布商品」这个前置准备好（不依赖上一轮的残留数据）
+  const published = await ensurePublishedProducts(API_BASE);
 
   try {
     // 小程序自己的 API 层
@@ -410,6 +414,7 @@ async function main() {
     const myRequests = await api.listCustomizationRequests({ pageSize: 20 });
     check('顾客可查到自己的定制申请列表', (myRequests.items ?? []).length > 0, `${(myRequests.items ?? []).length} 条`);
   } finally {
+    await published.restore();
     rmSync(outDir, { recursive: true, force: true });
   }
 

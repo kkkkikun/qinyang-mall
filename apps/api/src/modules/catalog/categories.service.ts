@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CategoryDto, CategoryUpsertRequest } from '@qinyang/contracts';
+import { CategoryDto, CategoryUpsertRequest, ERROR_CODES } from '@qinyang/contracts';
 import { In, Repository } from 'typeorm';
 import { Category } from '../../database/entities/category.entity';
 import { Product } from '../../database/entities/product.entity';
 import { BusinessException } from '../../common/errors/business.exception';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { AuditService } from '../audit/audit.service';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 
@@ -146,7 +147,7 @@ export class CategoriesService {
       sortOrder: dto.sortOrder ?? 0,
       status: dto.status ?? 'ACTIVE',
     });
-    const saved = await this.categories.save(entity);
+    const saved = await this.insertCategory(entity, dto.code);
 
     await this.audit.record({
       actorId: admin.id,
@@ -178,11 +179,30 @@ export class CategoriesService {
     const category = await this.categories.findOne({ where: { id } });
     if (!category) throw BusinessException.notFound('分类不存在');
 
+    /*
+     * 分类编码创建后不可改。
+     *
+     * 编码不是「显示名」，它是**引用键**：量体模板的 applicableCategories
+     * 里存的就是分类 code，商品也按 categoryId 挂靠。
+     * 此前改 code 只改了分类自己，模板里那份引用还在原地 ——
+     * 结果该分类下的商品再也匹配不到量体模板，
+     * 顾客提交定制申请时被 409「该商品尚未配置量体模板」拦下，
+     * 而后台没有任何提示说「因为你改了分类编码」。
+     *
+     * 与其去改一堆引用（模板 JSON 里的历史数据无法可靠回溯），
+     * 不如让编码一开始就不可变：真要改，只能新建分类再迁移商品。
+     */
+    if (dto.code !== category.code) {
+      throw BusinessException.conflict(
+        '分类编码创建后不可修改（如需更名请直接改分类名称）',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
     // 父分类校验：不能挂到自己或自己的子孙下面（会形成环，分类树会渲染成死循环）
     await this.assertParent(dto.parentId, category.id);
 
     const before = { code: category.code, name: category.name, parentId: category.parentId };
-    category.code = dto.code;
     category.name = dto.name;
     category.parentId = dto.parentId ?? null;
     category.level = dto.parentId ? 2 : 1;
@@ -211,6 +231,28 @@ export class CategoriesService {
       sortOrder: saved.sortOrder,
       status: saved.status,
     };
+  }
+
+  /**
+   * 新增分类。
+   *
+   * 「先查后写」在并发下会双双落空，最终由唯一索引 UQ_categories_code 兜底 ——
+   * 后到者撞 ER_DUP_ENTRY。这里把它翻译成 409，
+   * 而不是让它冒泡成 500（商家看到的是「服务器内部错误」，
+   * 完全不知道是自己手滑重复提交了同一个编码）。
+   */
+  private async insertCategory(entity: Category, code: string): Promise<Category> {
+    try {
+      return await this.categories.save(entity);
+    } catch (error) {
+      if (isDuplicateKey(error)) {
+        throw BusinessException.conflict(
+          `分类编码 ${code} 已存在`,
+          ERROR_CODES.DUPLICATED_SUBMIT,
+        );
+      }
+      throw error;
+    }
   }
 
   async remove(id: string, admin: AdminPrincipal): Promise<void> {

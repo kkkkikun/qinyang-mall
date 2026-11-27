@@ -105,13 +105,27 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && export PATH=~/tools/node-v
 #   quotes(requestId, version)    唯一索引      同一申请同一版本只能有一条报价
 #   quotes.activeRequestId        唯一索引      同一申请同时只能有一条 ACTIVE 报价
 #                                 （生成列：ACTIVE 时等于 requestId，否则 NULL）
-#   quotes.activeRequestId        唯一索引      同一申请同时只能有一条 ACTIVE 报价
-#                                 （生成列：ACTIVE 时等于 requestId，否则 NULL）
 #   measurement_templates(code,version) 唯一索引 并发发布不会算出同一个版本号
 #   measurement_templates.activeCode     唯一索引 同一模板 code 同时只有一个 ACTIVE
 #                                 （生成列：ACTIVE 时等于 code，否则 NULL）
 #   audit_logs.createdAt          普通索引     审计列表按时间倒序，避免全表扫描
+#   product_media(productId,storageKey) 唯一索引 同一商品的同一张图不会重复入库
+#   measurement_templates.rowVersion      乐观锁  并发编辑模板不会互相覆盖
+#   banners.rowVersion                   乐观锁  并发编辑轮播不会互相覆盖
+#   guide_pages.version                  乐观锁  并发编辑图文说明不会互相覆盖
 # 应用层遇到重复键会被翻译成 409；状态流转用条件更新（乐观锁）避免并发覆盖。
+#
+# 注意：TypeORM 的 save() **不做**乐观锁校验（只在 SET 里把 version 加 1），
+# 想拿到「期间被人改过」必须用 update({ id, version }, {...}) 的条件更新，
+# 并检查 affected.affected !== 1。
+
+# 清理开发库的验证数据（只删机器生成的 VERIFY- / 「（虚构）」记录）
+#   node tools/cleanup-verify-data.mjs            # 预演，只打印将要删除的行
+#   node tools/cleanup-verify-data.mjs --apply    # 真删
+# 说明：写路径页面级验证必须真的写库，会在开发库留下 VERIFY-* 商品、
+# 「（虚构）」顾客的申请 / 报价 / 订单与审计条目。商家在工作台里会看到这些垃圾，
+# 用本工具清干净即可。工具**只匹配** VERIFY- 前缀与「（虚构）」标记，
+# 且拒绝在测试库（库名含 _test）上执行。
 
 # 回滚一步
 pnpm --filter @qinyang/api db:revert
@@ -360,6 +374,34 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && CPU_LIST=112,81,14 bash in
 6. 导入的商品状态一律是「**草稿**」—— 需要店主在列表里逐件（或批量）提交审核并上架。
 
 接口口径见 `docs/api/REST-CONTRACT.md` §3.5，决策见 `docs/agent/DECISIONS.md` D-029。
+
+### 7quater. 商家日常操作：维护量体指南 / 洗护说明
+
+后台「图文说明」。顾客在「我的 → 量体指南 / 洗护说明 / 材质说明」里看到的就是这几页，
+**改完立即生效**，不需要重新发版。
+
+- **页面标题 / 摘要**：直接改。
+- **分节**：可增删、可上下移动。分节会渲染成「标题 + 说明 + 要点列表 + 示意图」。
+- **要点**：每行一条，回车换行即可。
+- **量体示意图（可多选）**：勾选该分节要展示的量体字段（如「胸围」「身高」）。
+  示意图的名称、测量说明、提示与配图**统一取自已发布的量体模板** ——
+  也就是说量体表单和图文指南永远不会出现两套说法。
+  想改这些文字，请去「量体模板」里改那里定义的内容。
+- **分节示意图**：填 `chest.svg` 这类标识，或一个完整 URL，可留空。
+
+> 接口口径见 `docs/api/REST-CONTRACT.md` §3.6，决策见 `docs/agent/DECISIONS.md` D-034。
+
+### 7quinquies. 商家日常操作：删除建错的量体模板
+
+后台「量体模板」列表。
+
+- 只有**店主**能删（`DELETE /admin/measurement-templates/:id`）。
+- **被商品引用的模板不能删** —— 删了商品就解析不到量体模板，顾客提交定制申请会被拦下，
+  系统会明确提示「该模板已被 N 件商品引用，不能删除」。
+- 草稿、已归档、当前生效的模板都可以删。
+- 删除会写审计（`template.delete`）。
+
+> 决策见 `docs/agent/DECISIONS.md` D-036。
 
 ### 7bis. 小程序发布前必须注入正式服务地址
 

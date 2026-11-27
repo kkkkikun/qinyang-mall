@@ -142,11 +142,17 @@
               </t-form-item>
             </div>
 
+            <div v-if="detailError" class="text-red form-tip">
+              商品详情加载失败，当前表单为空且不能保存。请关闭抽屉后重新打开该商品。
+            </div>
+
             <div class="muted form-tip">
               报价模式为「仅按量体报价」时不保存价格，前台显示「待报价」，需在定制申请中报价。
             </div>
 
-            <t-button theme="primary" :loading="saving" @click="handleSave">保存</t-button>
+            <t-button theme="primary" :loading="saving" :disabled="detailError" @click="handleSave">
+              保存
+            </t-button>
             <t-button theme="default" class="ml-8" @click="drawerVisible = false">取消</t-button>
           </t-form>
         </t-tab-panel>
@@ -183,7 +189,7 @@ import { categoryApi, productApi, templateApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
 import { useAuthStore } from '../stores/auth';
 import { hasPermission, type PermissionKey } from '../utils/permissions';
-import { formatDateTime, formatYuan, flattenCategories } from '../utils/format';
+import { formatDateTime, formatYuan, flattenCategories, toNonNegativeInt } from '../utils/format';
 import { productStatusTheme } from '../utils/status';
 import { cell, emptyHint, toTableData } from '../utils/table';
 import ProductMediaPanel from '../components/ProductMediaPanel.vue';
@@ -383,6 +389,27 @@ const columns = [
           }
         });
       }
+      /*
+       * 删除入口只对店主开放（服务端同样限制为 OWNER）。
+       *
+       * 服务端的删除口径：已发布商品要先下架；被定制申请引用过的商品不能删
+       * （申请、报价、订单都指向它，删掉后历史单据就断了线）。
+       * 这两条限制会在点击时以 409 的原文告诉商家。
+       */
+      if (can('product.delete') && row.status !== ProductStatus.PUBLISHED) {
+        actions.push(
+          h(
+            Popconfirm,
+            {
+              content:
+                '删除后不可恢复。若该商品已被定制申请引用，系统会拒绝删除并说明原因。确认删除？',
+              theme: 'danger',
+              onConfirm: () => handleRemove(row),
+            },
+            { default: () => h(Button, { theme: 'danger', size: 'small' }, () => '删除') },
+          ),
+        );
+      }
       return h('div', { style: 'display:flex; gap:6px; flex-wrap:wrap;' }, actions);
     }),
   },
@@ -478,6 +505,22 @@ async function handleStatusChange(row: ProductListItem, next: ProductStatus): Pr
   }
 }
 
+/**
+ * 删除商品。
+ *
+ * 服务端会拒绝删除「已发布」与「已被定制申请引用」的商品（409），
+ * 并在消息里说清楚原因 —— 这里直接把服务端的话透给商家。
+ */
+async function handleRemove(row: ProductListItem): Promise<void> {
+  try {
+    await productApi.remove(row.id);
+    MessagePlugin.success('已删除');
+    await load();
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '删除失败'));
+  }
+}
+
 /* ------------------------------ 编辑抽屉 ------------------------------ */
 
 interface ProductFormModel {
@@ -546,12 +589,17 @@ function openCreate(): void {
 }
 
 async function openEdit(row: ProductListItem): Promise<void> {
+  // 先回到「新建态」：否则上一件商品的表单内容会留在抽屉里，
+  // 一旦本次详情加载失败，商家看到的就是「A 的编号 + B 的标题」。
+  resetForm();
+  resetDetailState();
   drawerTab.value = 'base';
   drawerVisible.value = true;
   editingId.value = row.id;
   await reloadDetail();
   const detail = detailCache.value;
   if (!detail) {
+    // 详情加载失败：表单保持空白且保存被禁用，绝不让旧数据留在抽屉里
     return;
   }
   form.code = detail.code;
@@ -565,9 +613,38 @@ async function openEdit(row: ProductListItem): Promise<void> {
   form.careGuide = detail.careGuide ?? '';
   form.measurementTemplateId = detail.measurementTemplateId ?? '';
   form.sortOrder = String(detail.sortOrder ?? 0);
+  // 记录「这份表单是从哪条详情填出来的」，保存前据此校验（见 handleSave）
+  formSource.value = { id: detail.id, code: detail.code, name: detail.name };
 }
 
 const detailCache = ref<ProductDetail | null>(null);
+
+/** 详情加载失败标记：为 true 时禁止保存（抽屉里可能残留旧数据） */
+const detailError = ref(false);
+
+/**
+ * 表单来源快照。
+ *
+ * 记录当前表单是从哪一条详情的哪份数据填出来的。
+ * 保存前用它比对「快照 vs 当前详情」：
+ * 两者不一致说明详情在表单填好之后被改过（并发修改或陈旧数据），
+ * 此时保存会把别人的改动覆盖掉，必须拒绝。
+ */
+const formSource = ref<{ id: string; code: string; name: string } | null>(null);
+
+/**
+ * 清空抽屉里的详情相关状态。
+ *
+ * 单独抽成函数而不是在调用处直接赋值：
+ * 直接给 `detailCache.value = null` 会让 TS 把该属性在整个函数里收窄成 null，
+ * 后面读到的详情就变成了 never 类型。
+ */
+function resetDetailState(): void {
+  detailCache.value = null;
+  detailMedia.value = [];
+  formSource.value = null;
+  detailError.value = false;
+}
 
 async function reloadDetail(): Promise<void> {
   if (!editingId.value) {
@@ -578,20 +655,42 @@ async function reloadDetail(): Promise<void> {
     const detail = await productApi.detail(editingId.value);
     detailCache.value = detail;
     detailMedia.value = detail.media;
+    detailError.value = false;
   } catch (error) {
+    // 清空详情缓存：留着旧数据会让商家在失败后仍然能保存（写到错误的商品上）
+    detailCache.value = null;
+    detailMedia.value = [];
+    detailError.value = true;
     MessagePlugin.error(toErrorMessage(error, '商品详情加载失败'));
   }
 }
 
 function handleDrawerClose(): void {
   editingId.value = '';
-  detailCache.value = null;
-  detailMedia.value = [];
+  resetDetailState();
 }
 
 async function handleSave(): Promise<void> {
   if (saving.value) {
     return;
+  }
+  if (editingId.value) {
+    // 编辑态：必须有一份属于当前商品的详情，否则表单里可能是上一件商品的数据
+    const detail = detailCache.value;
+    const source = formSource.value;
+    if (!detail || !source) {
+      MessagePlugin.error('商品详情未加载成功，请关闭抽屉后重新打开该商品再保存');
+      return;
+    }
+    if (detail.id !== editingId.value || source.id !== editingId.value) {
+      MessagePlugin.error('当前表单与商品详情不一致，请关闭抽屉后重新打开该商品再保存');
+      return;
+    }
+    if (source.code !== detail.code || source.name !== detail.name) {
+      // 详情在表单填好之后被改过（他人修改或陈旧数据），保存会覆盖掉新值
+      MessagePlugin.error('该商品已被修改，请关闭抽屉后重新打开再保存，以免覆盖他人改动');
+      return;
+    }
   }
   if (!form.code.trim() || !form.name.trim() || !form.categoryId) {
     MessagePlugin.error('请填写商品编号、名称并选择分类');
@@ -617,7 +716,7 @@ async function handleSave(): Promise<void> {
     description: form.description.trim() || null,
     careGuide: form.careGuide.trim() || null,
     measurementTemplateId: form.measurementTemplateId || null,
-    sortOrder: Number(form.sortOrder) || 0,
+    sortOrder: toNonNegativeInt(form.sortOrder),
   };
 
   saving.value = true;
@@ -626,11 +725,20 @@ async function handleSave(): Promise<void> {
       await productApi.update(editingId.value, payload);
       MessagePlugin.success('商品已更新');
       await reloadDetail();
+      // 保存成功后表单与最新详情对齐，重置快照（避免下一次保存被误判为陈旧）
+      const refreshed = detailCache.value;
+      formSource.value = refreshed
+        ? { id: refreshed.id, code: refreshed.code, name: refreshed.name }
+        : null;
     } else {
       const created = await productApi.create(payload);
       MessagePlugin.success('商品已创建（初始为草稿）');
       editingId.value = created.id;
       await reloadDetail();
+      const refreshed = detailCache.value;
+      formSource.value = refreshed
+        ? { id: refreshed.id, code: refreshed.code, name: refreshed.name }
+        : null;
     }
     await load();
   } catch (error) {

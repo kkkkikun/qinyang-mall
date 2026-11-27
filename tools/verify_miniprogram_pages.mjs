@@ -31,6 +31,7 @@ import {
   sleep,
   waitUntil
 } from './lib/miniprogram-runtime.mjs';
+import { ensurePublishedProducts } from './lib/verify-shared.mjs';
 
 const API_BASE = (process.argv[2] ?? 'http://127.0.0.1:18110/api/v1').replace(/\/$/, '');
 const ADMIN_USER = process.env.SEED_OWNER_USERNAME ?? 'owner';
@@ -38,6 +39,14 @@ const ADMIN_PASS = process.env.SEED_ADMIN_PASSWORD ?? 'Qinyang@2026';
 
 const results = [];
 let failed = 0;
+
+/** 指南页 → 接口 slug（页目录名与接口 slug 不是一一对应的推导关系） */
+const GUIDE_SLUGS = {
+  'guide-top': 'measure-top',
+  'guide-bottom': 'measure-bottom',
+  'guide-care': 'care',
+  'guide-material': 'material'
+};
 
 function check(name, ok, detail = '') {
   results.push({ name, ok, detail });
@@ -96,6 +105,9 @@ async function main() {
     return page;
   }
 
+  // 前置：确保有一件已发布商品（不依赖上一轮的残留数据，跑完复原）
+  const published = await ensurePublishedProducts(API_BASE);
+
   try {
     // 顾客登录（走小程序自己的 auth 模块）
     const token = await auth.ensureToken();
@@ -105,8 +117,10 @@ async function main() {
     const list = await api.products({ pageSize: 50 });
     const items = list.items ?? [];
     check('顾客端商品列表有数据', items.length > 0, `${items.length} 件`);
-    const productId = items[0]?.id;
-    const productCode = items[0]?.code ?? items[0]?.productCode ?? '-';
+    // 优先挑有图集的商品：库里可能混着页面级验证留下的探针商品（无图集、无量体模板）
+    const picked = items.find((item) => Boolean(item.coverUrl)) ?? items[0];
+    const productId = picked?.id;
+    const productCode = picked?.code ?? picked?.productCode ?? '-';
 
     // ── 1. 首页：品牌轮播 + 精选 ─────────────────────────────
     {
@@ -171,6 +185,42 @@ async function main() {
       check(`指南页 ${guide}：内容有数据`, Boolean(vm && vm.title), vm ? vm.title : '');
       check(`指南页 ${guide}：分区有内容`, Boolean(vm && (vm.sections ?? []).length > 0),
         vm ? `${(vm.sections ?? []).length} 个分区（来源 ${vm.source}）` : '');
+
+      /*
+       * 量体示意图的回归护栏（第十一轮）。
+       *
+       * 此前小程序 `fromApi` 把 `fields` 写死成空数组，且 `normalizeGuide`
+       * 又把服务端的 fields 整个丢掉 —— 结果是**接口一有内容，量体示意图
+       * 就整体消失**，顾客看到的量体指南反而不如接口没内容时的本地模板版本。
+       *
+       * 这里直接与真实接口对账：接口下发了多少个示意图字段，页面就必须渲染出
+       * 多少个 —— 任何一环把数据吞掉，这条断言都会红。
+       */
+      const slug = GUIDE_SLUGS[guide];
+      const apiRes = await fetch(`${API_BASE}/guides/${slug}`).catch(() => null);
+      if (apiRes && apiRes.ok) {
+        const apiBody = await apiRes.json();
+        const apiSections = apiBody?.data?.sections ?? [];
+        const apiFieldCount = apiSections.reduce(
+          (sum, s) => sum + (Array.isArray(s?.fields) ? s.fields.length : 0),
+          0
+        );
+        const vmFieldCount = (vm?.sections ?? []).reduce(
+          (sum, s) => sum + (Array.isArray(s?.fields) ? s.fields.length : 0),
+          0
+        );
+        check(`指南页 ${guide}：接口下发的示意图字段全部渲染出来`,
+          vmFieldCount === apiFieldCount,
+          `接口 ${apiFieldCount} 个 / 页面 ${vmFieldCount} 个`);
+
+        if (apiFieldCount > 0) {
+          const images = (vm?.sections ?? [])
+            .flatMap((s) => (s?.fields ?? []).map((f) => f?.image ?? ''));
+          check(`指南页 ${guide}：示意图已解析为小程序本地素材`,
+            images.length === apiFieldCount && images.every((img) => img.startsWith('/assets/measure/')),
+            images.slice(0, 3).join(' | ') || '（无）');
+        }
+      }
     }
 
     // ── 6. 个人中心 ───────────────────────────────────────────
@@ -448,6 +498,7 @@ async function main() {
         page.data.quote?.id ?? '无');
     }
   } finally {
+    await published.restore();
     // 清理临时编译目录
     const { rmSync } = await import('node:fs');
     rmSync(outDir, { recursive: true, force: true });

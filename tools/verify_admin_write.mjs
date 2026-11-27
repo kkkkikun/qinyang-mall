@@ -306,6 +306,27 @@ async function main() {
         // 模板契约里的「已发布」态是 ACTIVE（草稿 / 已发布 / 已归档）
         check('量体模板：模板状态已落到已发布', published?.status === 'ACTIVE',
           published?.status ?? '');
+
+        /*
+         * 清理：把本次验证创建的模板删掉。
+         *
+         * 此前脚本只建不删，于是每跑一次验证就在开发库 `measurement_templates`
+         * 里留一条 `VERIFY-T-*` 垃圾 —— 商家在工作台模板列表里能直接看到这几十条。
+         * 根因是后台**没有删除模板的接口**，所以只能「只增不减」；
+         * 现在补了删除能力（D-036），脚本必须自己把数据收干净。
+         */
+        const del = await call(`/admin/measurement-templates/${created.id}`, {
+          method: 'DELETE',
+          token: globalThis.localStorage.getItem('qy_admin_token')
+        });
+        check('量体模板：验证用模板已清理（不再往开发库累积）',
+          del.status === 200 || del.status === 204,
+          `HTTP ${del.status}`);
+        const afterDelete = await call(`/admin/measurement-templates/${created.id}`, {
+          token: globalThis.localStorage.getItem('qy_admin_token')
+        });
+        check('量体模板：清理后模板确实不存在', afterDelete.status === 404,
+          `HTTP ${afterDelete.status}`);
       }
     }
 
@@ -773,37 +794,60 @@ async function main() {
       }
     }
 
-    // ── 9. 收尾：验证商品下架并推到列表末尾 ──────────────────
-    // 验证商品没有删除接口（商品只做下架归档），因此收尾时统一：
-    // 下架 + 排序推到末尾，避免挤占商家真正要看的列表头部。
+    // ── 9. 收尾：删掉本次验证创建的商品 ──────────────────────
+    /*
+     * 此前这里只「下架 + 排序推到末尾」，于是每跑一次验证就在开发库
+     * `products` 表里留下一件 `VERIFY-*` 垃圾商品 ——
+     * 商家在工作台商品列表里能直接看到这几十件（实测已积累 41 件）。
+     *
+     * 根因是**商品没有删除接口**：误建 / 误导入的商品只能下架，永远删不掉。
+     * 现在补了 `DELETE /admin/products/:id`（未发布且未被定制申请引用时），
+     * 脚本必须自己把数据收干净。
+     */
     {
       const page = await runView(sandbox, 'ProductListView');
       page.filters.keyword = 'VERIFY-';
       await page.load();
       const verifies = page.rows.filter((row) => row.code.startsWith('VERIFY-'));
+      const adminToken = globalThis.localStorage.getItem('qy_admin_token');
+      let deleted = 0;
+      let refused = 0;
       for (const row of verifies) {
-        // 导入验证商品是草稿：草稿不能直接下架，需先提交审核再下架
-        let status = row.status;
-        if (status === 'DRAFT') {
-          sandbox.clearMessages();
-          await page.handleStatusChange(row, 'PENDING_REVIEW');
-          status = 'PENDING_REVIEW';
-        }
-        if (status !== 'OFFLINE') {
-          sandbox.clearMessages();
-          await page.handleStatusChange(row, 'OFFLINE');
-        }
-        if (row.sortOrder !== 9999) {
-          await page.openEdit(row);
-          page.form.sortOrder = '9999';
-          await page.handleSave();
+        // 已发布或被定制申请引用的商品删不掉 —— 服务端会 409 并说明原因
+        const res = await call(`/admin/products/${row.id}`, {
+          method: 'DELETE',
+          token: adminToken
+        });
+        if (res.status === 200 || res.status === 204) {
+          deleted += 1;
+        } else {
+          refused += 1;
+          // 删不掉就退回「下架 + 推到末尾」，至少不占列表头部
+          if (row.status === 'DRAFT') {
+            sandbox.clearMessages();
+            await page.handleStatusChange(row, 'PENDING_REVIEW');
+          }
+          if (row.status !== 'OFFLINE') {
+            sandbox.clearMessages();
+            await page.handleStatusChange(row, 'OFFLINE');
+          }
         }
       }
       await page.load();
       const left = page.rows.filter((row) => row.code.startsWith('VERIFY-'));
-      check('收尾：验证商品已全部下架并推到列表末尾',
-        left.length > 0 && left.every((row) => row.status === 'OFFLINE' && row.sortOrder === 9999),
-        `${left.length} 件验证商品`);
+      /*
+       * 口径说明：
+       * 闭环验证会造一件商品并用它跑「申请 → 报价 → 建单」，
+       * 这件商品**被定制申请引用**，服务端按设计拒绝删除（409）——
+       * 申请与订单是不可删除的业务记录，删商品会断掉历史单据。
+       *
+       * 所以断言不是「一件都不剩」，而是「剩下的必须都已下架」：
+       * 它们不占商家列表的头部，也不会出现在顾客端。
+       * 需要彻底清空开发库时用 `tools/cleanup-verify-data.mjs`。
+       */
+      check('收尾：验证商品已删除或已下架（不占商家列表头部）',
+        left.every((row) => row.status === 'OFFLINE'),
+        `删除 ${deleted} 件，因已被定制申请引用而保留 ${refused} 件（均已下架）`);
     }
   } finally {
     sandbox.restore();

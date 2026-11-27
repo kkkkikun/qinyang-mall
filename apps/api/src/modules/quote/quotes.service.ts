@@ -187,11 +187,15 @@ export class QuoteService {
     const productSnapshot = await this.products.buildSnapshot(request.productId);
     const measurementSnapshot = request.measurementSnapshot as MeasurementSnapshot;
 
-    const existing = await this.quotes.find({
-      where: { requestId },
-      order: { version: 'DESC' },
-    });
-    const version = existing.length === 0 ? 1 : existing[0].version + 1;
+    /*
+     * 期望旧状态。
+     *
+     * 这里读到的申请状态是「即将被替换成 QUOTED 的那个状态」。
+     * 事务内必须以它为条件做更新 —— **绝不能整行 save 回写**：
+     * 整行回写会把店员刚做的动作（把申请取消、写审核备注）用陈旧值覆盖掉，
+     * 店员刚取消的申请会被这次报价静默改回「已报价」，随后顾客还能确认并建单。
+     */
+    const expectedStatus = request.status;
 
     /*
      * 「旧版本转 SUPERSEDED + 插入新版本」必须在同一事务里。
@@ -206,48 +210,88 @@ export class QuoteService {
      * - UQ_quotes_activeRequestId（生成列）：同申请同时只能有一条 ACTIVE。
      * 并发时后者必然撞唯一索引，这里翻译成 409 而不是 500。
      */
-    const entity = this.quotes.create({
-      requestId,
-      version,
-      status: QuoteStatus.ACTIVE,
-      amountCents: dto.amountCents,
-      freightCents: dto.freightCents,
-      currency: dto.currency ?? 'CNY',
-      productionDays: dto.productionDays,
-      validUntil: dto.validUntil ? new Date(dto.validUntil) : null,
-      note: dto.note ?? null,
-      productSnapshot,
-      measurementSnapshot,
-      createdById: admin.id,
-      createdByName: admin.displayName,
-    });
     let saved: Quote;
     try {
       saved = await this.dataSource.transaction(async (manager) => {
         const quoteRepo = manager.getRepository(Quote);
         const requestRepo = manager.getRepository(CustomizationRequest);
 
+        /*
+         * 版本号必须在**事务内**算。
+         *
+         * 事务外算出来的是陈旧快照：并发下两个店员会算出同一个版本号，
+         * 结果是「本可以错开的两份报价」被唯一索引撞掉、变成 409。
+         * 事务内读到的 existing 才是此刻真实的版本序列。
+         */
+        const existing = await quoteRepo.find({
+          where: { requestId },
+          order: { version: 'DESC' },
+        });
+        const version = existing.length === 0 ? 1 : existing[0].version + 1;
+
         // 旧版本转 SUPERSEDED，同一申请同时只有一个 ACTIVE
         for (const oldQuote of existing) {
           if (oldQuote.status === QuoteStatus.ACTIVE) {
-            oldQuote.status = QuoteStatus.SUPERSEDED;
-            await quoteRepo.save(oldQuote);
+            await quoteRepo.update(
+              { id: oldQuote.id, status: QuoteStatus.ACTIVE },
+              { status: QuoteStatus.SUPERSEDED },
+            );
           }
         }
 
+        const entity = quoteRepo.create({
+          requestId,
+          version,
+          status: QuoteStatus.ACTIVE,
+          amountCents: dto.amountCents,
+          freightCents: dto.freightCents,
+          currency: dto.currency ?? 'CNY',
+          productionDays: dto.productionDays,
+          validUntil: dto.validUntil ? new Date(dto.validUntil) : null,
+          note: dto.note ?? null,
+          productSnapshot,
+          measurementSnapshot,
+          createdById: admin.id,
+          createdByName: admin.displayName,
+        });
         const created = await quoteRepo.save(entity);
 
-        // 申请进入「待顾客确认报价」
-        request.status = RequestStatus.QUOTED;
-        await requestRepo.save(request);
+        /*
+         * 申请进入「待顾客确认报价」：只写 status 列。
+         *
+         * 先在事务内把申请行锁住读一次：这一读拿到的是**最新已提交**状态，
+         * 于是能分辨两种情况 ——
+         * - 与事务外读到的期望旧状态一致 → 说明没人抢在前面改过，可以推进；
+         * - 不一致 → 说明店员刚把申请取消/退回过了，409，绝不覆盖别人的动作。
+         */
+        const current = await requestRepo.findOne({
+          where: { id: requestId },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!current) throw BusinessException.notFound('定制申请不存在');
+        if (current.status !== expectedStatus) {
+          throw BusinessException.conflict(
+            '该申请的状态已被其他操作修改，请刷新后重试',
+            ERROR_CODES.INVALID_STATUS_TRANSITION,
+          );
+        }
+        if (current.status !== RequestStatus.QUOTED) {
+          const affected = await requestRepo.update(
+            { id: requestId, status: current.status },
+            { status: RequestStatus.QUOTED },
+          );
+          if (affected.affected !== 1) {
+            throw BusinessException.conflict(
+              '该申请的状态已被其他操作修改，请刷新后重试',
+              ERROR_CODES.INVALID_STATUS_TRANSITION,
+            );
+          }
+        }
         return created;
       });
     } catch (error) {
       if (isDuplicateKey(error)) {
-        throw BusinessException.conflict(
-          '该申请刚刚已有新的报价版本，请刷新后重试',
-          ERROR_CODES.QUOTE_VERSION_CONFLICT,
-        );
+        throw this.quoteWriteConflict(error);
       }
       throw error;
     }
@@ -270,6 +314,31 @@ export class QuoteService {
     });
 
     return await this.dtoOf(saved);
+  }
+
+  /**
+   * 报价写入撞唯一索引时的 409 文案。
+   *
+   * 两种情况对商家的含义不同：
+   * - 「重复提交」：同一份报价被点了两次，该申请此刻已经有一条有效报价；
+   * - 「版本冲突」：另一个店员刚建了新版本，版本号撞了车。
+   *
+   * 唯一索引只告诉我们「重复了」，具体是哪一种要看撞的是哪个索引：
+   * UQ_quotes_activeRequestId = 同一申请同时只能有一条有效报价（重复提交）；
+   * UQ_quotes_requestId_version = 同一申请同版本只能有一条（版本撞车）。
+   */
+  private quoteWriteConflict(error: unknown): BusinessException {
+    const text = error instanceof Error ? error.message : '';
+    if (text.includes('UQ_quotes_activeRequestId')) {
+      return BusinessException.conflict(
+        '该申请已有有效报价，请勿重复提交',
+        ERROR_CODES.QUOTE_VERSION_CONFLICT,
+      );
+    }
+    return BusinessException.conflict(
+      '该申请刚刚已有新的报价版本，请刷新后重试',
+      ERROR_CODES.QUOTE_VERSION_CONFLICT,
+    );
   }
 
   /**
@@ -313,8 +382,11 @@ export class QuoteService {
 
       const request = await requestRepo.findOne({ where: { id: quote.requestId } });
       if (request && request.status === RequestStatus.QUOTED) {
-        request.status = RequestStatus.PENDING_QUOTE;
-        await requestRepo.save(request);
+        // 只写 status 列的条件更新：整行 save 会把并发写入的审核备注覆盖成旧值
+        await requestRepo.update(
+          { id: quote.requestId, status: RequestStatus.QUOTED },
+          { status: RequestStatus.PENDING_QUOTE },
+        );
       }
       const updated = await quoteRepo.findOne({ where: { id: quote.id } });
       if (!updated) throw BusinessException.notFound('报价不存在');
@@ -398,9 +470,19 @@ export class QuoteService {
         );
       }
 
-      // 回到待报价：量体资料与顾客信息都保留，店员可基于反馈重新报价
-      request.status = RequestStatus.PENDING_QUOTE;
-      await requestRepo.save(request);
+      // 回到待报价：量体资料与顾客信息都保留，店员可基于反馈重新报价。
+      // 只写 status 列的条件更新 —— 整行 save 会把店员刚做的动作
+      // （取消申请 / 写审核备注）用事务外的陈旧值覆盖回去。
+      const affectedRequest = await requestRepo.update(
+        { id: request.id, status: RequestStatus.QUOTED },
+        { status: RequestStatus.PENDING_QUOTE },
+      );
+      if (affectedRequest.affected !== 1) {
+        throw BusinessException.conflict(
+          '该申请的状态已被其他操作修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
       const updated = await quoteRepo.findOne({ where: { id: quote.id } });
       if (!updated) throw BusinessException.notFound('报价不存在');
       return updated;
@@ -481,8 +563,25 @@ export class QuoteService {
         );
       }
 
-      request.status = RequestStatus.CONFIRMED;
-      await requestRepo.save(request);
+      /*
+       * 申请转「已确认」：只写 status 列的条件更新。
+       *
+       * 此前是整行 save：若店员在顾客点确认的同时把申请取消了（QUOTED → CANCELLED），
+       * 这次 save 会把状态**回滚成 CONFIRMED**、把店员写的审核备注覆盖成旧值 ——
+       * 店员刚做的取消动作被静默撤销，顾客随后还能建单。
+       *
+       * 条件更新让数据库裁决：申请已经不是「已报价」→ 409。
+       */
+      const affectedRequest = await requestRepo.update(
+        { id: request.id, status: RequestStatus.QUOTED },
+        { status: RequestStatus.CONFIRMED },
+      );
+      if (affectedRequest.affected !== 1) {
+        throw BusinessException.conflict(
+          '该申请的状态已被其他操作修改，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
       const updated = await quoteRepo.findOne({ where: { id: quote.id } });
       if (!updated) throw BusinessException.notFound('报价不存在');
       return updated;

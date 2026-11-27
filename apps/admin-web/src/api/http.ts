@@ -134,16 +134,56 @@ export function parseContentDisposition(disposition: string, fallback: string): 
  *
  * CSV 导出走的是 `@RawResponse()` 接口（真正的 text/csv），
  * 不能用 `request()` —— 那会把 CSV 当成 JSON 解析并抛「返回格式异常」。
+ *
+ * 401 处理与 `request()` 保持一致：导出走到的是同一个受保护接口，
+ * token 过期时也要清登录态并跳登录页，否则用户只会反复看到
+ * 「导出失败：Request failed with status code 401」。
  */
 export async function requestDownload(
   config: AxiosRequestConfig,
   fallbackFilename = 'export.csv',
 ): Promise<DownloadPayload> {
-  const response = await http.request<string>({
-    ...config,
-    responseType: 'text',
-  });
-  const text = typeof response.data === 'string' ? response.data : String(response.data ?? '');
-  const disposition = String(response.headers?.['content-disposition'] ?? '');
-  return { text, filename: parseContentDisposition(disposition, fallbackFilename) };
+  try {
+    const response = await http.request<string>({
+      ...config,
+      responseType: 'text',
+    });
+    const text = typeof response.data === 'string' ? response.data : String(response.data ?? '');
+    const disposition = String(response.headers?.['content-disposition'] ?? '');
+    return { text, filename: parseContentDisposition(disposition, fallbackFilename) };
+  } catch (error) {
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+    const status = error.response?.status ?? 0;
+    const payload = parseErrorPayload(error.response?.data);
+    const code: number | string =
+      typeof payload?.code === 'number' ? payload.code : status;
+    const message = payload?.message || error.message || '导出失败，请稍后重试';
+    if (status === 401) {
+      unauthorizedHandler?.();
+    }
+    throw new ApiError(code, message, status);
+  }
+}
+
+/**
+ * 解析错误响应体。
+ *
+ * 下载请求的 responseType 是 text，错误体同样是文本；
+ * 这里再尝试解析一次 JSON，好把服务端的中文错误信息透出给商家。
+ */
+function parseErrorPayload(data: unknown): Partial<ApiResponse<unknown>> | undefined {
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data) as Partial<ApiResponse<unknown>>;
+      return parsed && typeof parsed === 'object' ? parsed : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+  if (data && typeof data === 'object') {
+    return data as Partial<ApiResponse<unknown>>;
+  }
+  return undefined;
 }

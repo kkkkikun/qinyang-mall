@@ -4,7 +4,7 @@
       <div class="page-toolbar">
         <t-input
           v-model="filters.keyword"
-          placeholder="按订单号 / 申请号搜索"
+          placeholder="按订单号 / 申请 ID 搜索"
           style="width: 240px"
           clearable
           @enter="handleSearch"
@@ -21,6 +21,11 @@
         <t-button theme="default" :loading="exporting" @click="handleExport">导出 CSV</t-button>
         <span class="page-toolbar-spacer"></span>
         <span class="muted">V1 未启用线上收款，订单状态仅由后台推进。</span>
+      </div>
+
+      <div class="muted form-tip">
+        搜索按「订单号」与「申请 ID」匹配（服务端 LIKE 匹配 requestId）；
+        申请编号（如 RQ-2026-0001）暂不支持搜索。
       </div>
 
       <t-table
@@ -43,12 +48,16 @@
       @close="handleDetailClose"
     >
       <div v-if="detailLoading" class="empty-text">加载中…</div>
+      <div v-else-if="detailError" class="empty-text">
+        订单详情加载失败，无法查看与操作。请关闭抽屉后重新打开该订单。
+      </div>
       <div v-else-if="detail" class="detail-drawer-body">
         <div class="page-toolbar">
           <t-button
-            v-if="can('order.status') && nextStatuses.length"
+            v-if="can('order.status') && nextStatusOptions.length > 0"
             theme="primary"
             size="small"
+            :disabled="submitting"
             @click="openStatusDialog"
           >
             更新制作状态
@@ -57,17 +66,20 @@
             v-if="can('order.status') && detail.status === OrderStatus.IN_PRODUCTION"
             theme="default"
             size="small"
+            :disabled="submitting"
             @click="openShipDialog"
           >
             填写物流
           </t-button>
           <t-popconfirm
             v-if="can('order.cancel') && canCancel"
-            content="确认取消该订单？取消原因会记录在订单中。"
+            content="确认取消该订单？下一步需要填写取消原因，原因会记录在订单中。"
             theme="danger"
-            @confirm="handleCancel"
+            @confirm="openCancelDialog"
           >
-            <t-button theme="danger" variant="outline" size="small">取消订单</t-button>
+            <t-button theme="danger" variant="outline" size="small" :disabled="submitting">
+              取消订单
+            </t-button>
           </t-popconfirm>
         </div>
 
@@ -187,8 +199,25 @@
           <t-textarea v-model="statusForm.note" :rows="3" placeholder="选填" />
         </t-form-item>
       </t-form>
+      <div class="muted form-tip">取消订单请使用「取消订单」按钮（带二次确认），不在此处推进。</div>
       <t-button theme="primary" :loading="submitting" @click="handleSubmitStatus">确认</t-button>
       <t-button theme="default" class="ml-8" @click="statusVisible = false">取消</t-button>
+    </t-dialog>
+
+    <!-- 取消订单（原因必填） -->
+    <t-dialog v-model:visible="cancelVisible" header="取消订单" :footer="false">
+      <t-form label-align="top">
+        <t-form-item label="取消原因">
+          <t-textarea
+            v-model="cancelForm.reason"
+            :rows="3"
+            placeholder="必填，如：顾客改主意不做了 / 面料缺货无法制作"
+          />
+        </t-form-item>
+      </t-form>
+      <div class="muted form-tip">取消原因会写入订单状态时间线，是后续对账的依据，请如实填写。</div>
+      <t-button theme="danger" :loading="submitting" @click="handleCancel">确认取消</t-button>
+      <t-button theme="default" class="ml-8" @click="cancelVisible = false">返回</t-button>
     </t-dialog>
 
     <!-- 填写物流 -->
@@ -258,16 +287,21 @@ const statusOptions = Object.values(OrderStatus).map((value) => ({
 
 const detailVisible = ref(false);
 const detailLoading = ref(false);
+/** 详情加载失败标记：为 true 时抽屉里没有任何可操作的数据 */
+const detailError = ref(false);
 const detail = ref<OrderDto | null>(null);
 
 const statusVisible = ref(false);
 const shipVisible = ref(false);
+const cancelVisible = ref(false);
 const submitting = ref(false);
 
 const statusForm = reactive<{ status: OrderStatus; note: string }>({
   status: OrderStatus.IN_PRODUCTION,
   note: '',
 });
+
+const cancelForm = reactive<{ reason: string }>({ reason: '' });
 
 const shipForm = reactive<{ carrier: string; trackingNo: string; note: string }>({
   carrier: '',
@@ -280,7 +314,12 @@ const shipRules = {
   trackingNo: [{ required: true, message: '请输入物流单号' }],
 };
 
-/** 依据状态机表计算当前可流转到的状态 */
+/**
+ * 依据状态机表计算当前可流转到的状态。
+ *
+ * 这里保留「已取消」：取消订单是合法流转，但**只能走「取消订单」按钮**
+ * （那条路径有二次确认 + 必填原因），见 nextStatusOptions 的说明。
+ */
 const nextStatuses = computed<OrderStatus[]>(() => {
   if (!detail.value) {
     return [];
@@ -292,6 +331,20 @@ const nextStatuses = computed<OrderStatus[]>(() => {
   );
 });
 
+/**
+ * 「更新制作状态」下拉的候选项。
+ *
+ * 排除「已取消」：制作状态 ≠ 取消订单。
+ * 若把「已取消」放进这个下拉，制作中订单的下拉会是空的（唯一的候选被过滤掉），
+ * 按钮却仍然显示；点「确认」等于**未经二次确认地取消了订单**。
+ * 因此取消只保留「取消订单」按钮一条路径。
+ *
+ * 覆盖全部订单状态：
+ * - 待制作 → 制作中
+ * - 制作中 → 无（发货走「填写物流」，取消走「取消订单」）→ 按钮隐藏
+ * - 已发货 → 已完成
+ * - 已完成 / 已取消 → 无 → 按钮隐藏
+ */
 const nextStatusOptions = computed(() =>
   nextStatuses.value
     .filter((value) => value !== OrderStatus.CANCELLED)
@@ -412,11 +465,17 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }): void
 }
 
 async function openDetail(row: OrderDto): Promise<void> {
+  // 先清空上一条订单的数据：加载失败时若还留着旧数据，
+  // 抽屉里的写操作（推进状态 / 填写物流 / 取消）会作用在错误的订单上。
+  detail.value = null;
+  detailError.value = false;
   detailVisible.value = true;
   detailLoading.value = true;
   try {
     detail.value = await orderApi.detail(row.id);
   } catch (error) {
+    detail.value = null;
+    detailError.value = true;
     MessagePlugin.error(toErrorMessage(error, '订单详情加载失败'));
   } finally {
     detailLoading.value = false;
@@ -425,14 +484,18 @@ async function openDetail(row: OrderDto): Promise<void> {
 
 function handleDetailClose(): void {
   detail.value = null;
+  detailError.value = false;
 }
 
 function openStatusDialog(): void {
-  const first = nextStatuses.value[0];
+  // 预选值只能取自下拉候选项：取 nextStatuses 会把「已取消」预设进去，
+  // 商家点「确认」就等于直接取消了订单。
+  const first = nextStatusOptions.value[0];
   if (!first) {
+    MessagePlugin.info('当前状态没有可推进的制作状态');
     return;
   }
-  statusForm.status = first;
+  statusForm.status = first.value;
   statusForm.note = '';
   statusVisible.value = true;
 }
@@ -493,18 +556,34 @@ async function handleSubmitShip(): Promise<void> {
   }
 }
 
+/** 打开取消订单弹窗：取消原因由商家填写（服务端要求必填） */
+function openCancelDialog(): void {
+  cancelForm.reason = '';
+  cancelVisible.value = true;
+}
+
 async function handleCancel(): Promise<void> {
   const current = detail.value;
   if (!current) {
     return;
   }
+  const reason = cancelForm.reason.trim();
+  if (!reason) {
+    MessagePlugin.error('请填写取消原因');
+    return;
+  }
+  submitting.value = true;
   try {
-    await orderApi.cancel(current.id, '店主在后台取消订单');
+    await orderApi.cancel(current.id, reason);
     MessagePlugin.success('订单已取消');
+    cancelVisible.value = false;
+    cancelForm.reason = '';
     await openDetail(current);
     await load();
   } catch (error) {
     MessagePlugin.error(toErrorMessage(error, '取消订单失败'));
+  } finally {
+    submitting.value = false;
   }
 }
 

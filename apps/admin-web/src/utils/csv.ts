@@ -10,14 +10,65 @@
 
 import { PRODUCT_IMPORT_CSV_HEADERS } from '@qinyang/contracts';
 
-/** 统计 CSV 数据行数（不含表头）；空内容返回 0 */
+/**
+ * 统计 CSV 数据行数（不含表头）；空内容返回 0。
+ *
+ * 按 **CSV 记录** 计数，而不是按物理行数：导出的列里有商家备注等自由文本，
+ * 里面可能有换行；这类字段在 CSV 里是带引号的跨行字段，
+ * 按 `\n` 切分会把一条记录算成多条，导出提示的条数就会虚高。
+ */
 export function countCsvRows(text: string): number {
   if (!text) return 0;
-  const lines = text
-    .replace(/^\uFEFF/, '')
-    .split(/\r\n|\n|\r/)
-    .filter((line) => line.trim().length > 0);
-  return Math.max(0, lines.length - 1);
+  const body = text.replace(/^\uFEFF/, '');
+
+  let records = 0;
+  let inQuotes = false;
+  /** 当前记录里是否已有内容（区分「空行」与「一行只有一个空字段」） */
+  let hasContent = false;
+
+  for (let i = 0; i < body.length; i += 1) {
+    const char = body[i];
+
+    if (inQuotes) {
+      if (char === '"') {
+        // "" 是引号转义，仍在引号内
+        if (body[i + 1] === '"') {
+          i += 1;
+          continue;
+        }
+        inQuotes = false;
+      }
+      // 引号内的换行属于字段内容，不能当作记录边界
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = true;
+      hasContent = true;
+      continue;
+    }
+    if (char === '\r') {
+      continue;
+    }
+    if (char === '\n') {
+      if (hasContent) {
+        records += 1;
+      }
+      hasContent = false;
+      continue;
+    }
+    if (char.trim().length > 0) {
+      hasContent = true;
+    }
+  }
+
+  // 末尾没有换行时，最后一条记录还没被计数
+  if (hasContent) {
+    records += 1;
+  }
+
+  // 减去表头
+  return Math.max(0, records - 1);
 }
 
 /**

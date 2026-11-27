@@ -17,18 +17,32 @@ export interface CustomerLoginResponse {
   };
 }
 
+/** 图文指南里引用到的量体字段（服务端按 fieldCodes 从量体模板解析，只读） */
+export interface GuideField {
+  fieldCode: string;
+  fieldName: string;
+  measurementType: string;
+  instruction?: string;
+  tips?: string[];
+  illustration?: string | null;
+}
+
 /** 图文指南分节（GET /guides/:slug） */
 export interface GuideSection {
+  /** 分节标识，例如「body」「garment_flat」 */
+  id?: string;
   /** 分节标题，例如「净体测量」「成衣平量」 */
   title: string;
   /** 分节说明 */
   description?: string;
   /** 条目列表（说明 / 要点） */
   items?: string[];
-  /** 示意图资源标识，可为相对路径或完整 URL；为空时使用小程序内置线稿 */
+  /** 分节级示意图资源标识，可为相对路径或完整 URL */
   illustration?: string | null;
   /** 量体字段编码列表，用于关联内置量体示意图 */
   fieldCodes?: string[];
+  /** 服务端解析出的示意图元数据（只读） */
+  fields?: GuideField[];
 }
 
 /** 图文指南（GET /guides/:slug） */
