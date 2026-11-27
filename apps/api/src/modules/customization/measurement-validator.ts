@@ -77,6 +77,19 @@ export function validateMeasurements(
           `${field.fieldName} 不能大于 ${field.max}${field.unit}`,
         );
       }
+      /*
+       * 模板没定义区间时的兜底：身体测量与成衣尺寸**不可能是负数**。
+       *
+       * 此前模板字段的 min/max 是可选的，没定义区间时任何值都收 ——
+       * 于是「胸围 = -50cm」会被照单全收并写进量体快照，
+       * 商家按它制作会得到一件尺寸荒谬的衣服。
+       */
+      const hasMin = field.min !== null && field.min !== undefined;
+      if (!hasMin && item.value < 0) {
+        throw new MeasurementValidationException(
+          `${field.fieldName} 不能是负数`,
+        );
+      }
     }
     submitted.set(item.fieldCode, {
       fieldCode: item.fieldCode,

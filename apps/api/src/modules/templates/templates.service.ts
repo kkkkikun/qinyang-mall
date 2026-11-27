@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import {
+  ERROR_CODES,
   MeasurementTemplateDto,
   MeasurementTemplateUpsertRequest,
   TemplateStatus,
@@ -10,6 +11,7 @@ import {
 import { MeasurementTemplate } from '../../database/entities/measurement-template.entity';
 import { Category } from '../../database/entities/category.entity';
 import { BusinessException } from '../../common/errors/business.exception';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { AuditService } from '../audit/audit.service';
 import { toMeasurementSections } from './measurement-shape';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
@@ -22,6 +24,7 @@ export class TemplatesService {
     @InjectRepository(Category)
     private readonly categories: Repository<Category>,
     private readonly audit: AuditService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async list(): Promise<MeasurementTemplateDto[]> {
@@ -115,11 +118,28 @@ export class TemplatesService {
       measurementSections: dto.measurementSections ?? [],
     });
 
-    if (dto.publish) {
-      await this.archiveActive(dto.code);
+    /*
+     * 「归档旧 ACTIVE + 建新版本」必须同生共死：
+     * 此前是两步，中间失败就会**一个 ACTIVE 都不剩** ——
+     * 顾客端立刻无法提交定制申请（按 code 找不到可用模板）。
+     */
+    let saved: MeasurementTemplate;
+    try {
+      saved = await this.dataSource.transaction(async (manager) => {
+        if (dto.publish) {
+          await this.archiveActive(dto.code, manager);
+        }
+        return manager.getRepository(MeasurementTemplate).save(entity);
+      });
+    } catch (error) {
+      if (isDuplicateKey(error)) {
+        throw BusinessException.conflict(
+          `模板 ${dto.code} 的该版本已存在（可能有人同时发布了同一模板），请刷新后重试`,
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      throw error;
     }
-
-    const saved = await this.repo.save(entity);
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -180,8 +200,6 @@ export class TemplatesService {
       });
       if (!sibling) throw BusinessException.notFound('量体模板不存在');
 
-      await this.archiveActive(template.code);
-
       const next = this.repo.create({
         code: template.code,
         name: template.name,
@@ -191,7 +209,26 @@ export class TemplatesService {
         summary: template.summary,
         measurementSections: template.measurementSections,
       });
-      const created = await this.repo.save(next);
+      /*
+       * 归档旧版本 + 建新版本放在一个事务里：
+       * 中途失败不能留下「一个 ACTIVE 都没有」的空档。
+       * 并发发布由唯一索引 (code, version) 兜底 → 翻译成 409。
+       */
+      let created: MeasurementTemplate;
+      try {
+        created = await this.dataSource.transaction(async (manager) => {
+          await this.archiveActive(template.code, manager);
+          return manager.getRepository(MeasurementTemplate).save(next);
+        });
+      } catch (error) {
+        if (isDuplicateKey(error)) {
+          throw BusinessException.conflict(
+            '该模板已被并发发布，请刷新后重试',
+            ERROR_CODES.INVALID_STATUS_TRANSITION,
+          );
+        }
+        throw error;
+      }
       await this.audit.record({
         actorId: admin.id,
         actorName: admin.displayName,
@@ -205,9 +242,22 @@ export class TemplatesService {
       return this.toDto(created);
     }
 
-    await this.archiveActive(template.code);
-    template.status = TemplateStatus.ACTIVE;
-    const saved = await this.repo.save(template);
+    let saved: MeasurementTemplate;
+    try {
+      saved = await this.dataSource.transaction(async (manager) => {
+        await this.archiveActive(template.code, manager);
+        template.status = TemplateStatus.ACTIVE;
+        return manager.getRepository(MeasurementTemplate).save(template);
+      });
+    } catch (error) {
+      if (isDuplicateKey(error)) {
+        throw BusinessException.conflict(
+          '该模板已被并发发布，请刷新后重试',
+          ERROR_CODES.INVALID_STATUS_TRANSITION,
+        );
+      }
+      throw error;
+    }
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -221,11 +271,12 @@ export class TemplatesService {
     return this.toDto(saved);
   }
 
-  private async archiveActive(code: string): Promise<void> {
-    const actives = await this.repo.find({ where: { code, status: TemplateStatus.ACTIVE } });
+  private async archiveActive(code: string, manager?: EntityManager): Promise<void> {
+    const repo = manager ? manager.getRepository(MeasurementTemplate) : this.repo;
+    const actives = await repo.find({ where: { code, status: TemplateStatus.ACTIVE } });
     for (const item of actives) {
       item.status = TemplateStatus.ARCHIVED;
-      await this.repo.save(item);
+      await repo.save(item);
     }
   }
 

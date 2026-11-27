@@ -105,6 +105,12 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && export PATH=~/tools/node-v
 #   quotes(requestId, version)    唯一索引      同一申请同一版本只能有一条报价
 #   quotes.activeRequestId        唯一索引      同一申请同时只能有一条 ACTIVE 报价
 #                                 （生成列：ACTIVE 时等于 requestId，否则 NULL）
+#   quotes.activeRequestId        唯一索引      同一申请同时只能有一条 ACTIVE 报价
+#                                 （生成列：ACTIVE 时等于 requestId，否则 NULL）
+#   measurement_templates(code,version) 唯一索引 并发发布不会算出同一个版本号
+#   measurement_templates.activeCode     唯一索引 同一模板 code 同时只有一个 ACTIVE
+#                                 （生成列：ACTIVE 时等于 code，否则 NULL）
+#   audit_logs.createdAt          普通索引     审计列表按时间倒序，避免全表扫描
 # 应用层遇到重复键会被翻译成 409；状态流转用条件更新（乐观锁）避免并发覆盖。
 
 # 回滚一步

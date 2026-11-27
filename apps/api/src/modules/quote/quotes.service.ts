@@ -115,7 +115,29 @@ export class QuoteService {
       where: { requestId },
       order: { version: 'DESC' },
     });
-    return rows.map((row) => this.toDto(row));
+    const request = await this.requests.findOne({ where: { id: requestId } });
+    const requestNo = request?.requestNo ?? '';
+    return rows.map((row) => this.toDto(row, requestNo));
+  }
+
+  /** 单条报价 → DTO（带上申请编号） */
+  private async dtoOf(quote: Quote): Promise<QuoteDto> {
+    const request = await this.requests.findOne({
+      where: { id: quote.requestId },
+      select: { id: true, requestNo: true },
+    });
+    return this.toDto(quote, request?.requestNo ?? '');
+  }
+
+  /** 批量取申请编号（按 requestId 去重，一次查询） */
+  private async requestNosOf(requestIds: string[]): Promise<Map<string, string>> {
+    const unique = [...new Set(requestIds.filter(Boolean))];
+    if (unique.length === 0) return new Map();
+    const rows = await this.requests.find({
+      where: { id: In(unique) },
+      select: { id: true, requestNo: true },
+    });
+    return new Map(rows.map((row) => [row.id, row.requestNo]));
   }
 
   async findById(id: string): Promise<Quote | null> {
@@ -247,7 +269,7 @@ export class QuoteService {
       ip: null,
     });
 
-    return this.toDto(saved);
+    return await this.dtoOf(saved);
   }
 
   /**
@@ -310,7 +332,7 @@ export class QuoteService {
       after: { status: saved.status },
       ip: null,
     });
-    return this.toDto(saved);
+    return await this.dtoOf(saved);
   }
 
   /**
@@ -396,7 +418,7 @@ export class QuoteService {
       ip: null,
     });
 
-    return this.toDto(saved);
+    return await this.dtoOf(saved);
   }
 
   /**
@@ -477,15 +499,21 @@ export class QuoteService {
       ip: null,
     });
 
-    return this.toDto(saved);
+    return await this.dtoOf(saved);
   }
 
-  private toDto(quote: Quote): QuoteDto {
+  /**
+   * 报价 DTO。
+   *
+   * `requestNo` 此前恒为 `''`（契约里有该字段，后台报价列表却永远显示空申请号）。
+   * 为了不引入 N+1，调用方把申请编号批量查好后按 requestId 传进来。
+   */
+  private toDto(quote: Quote, requestNo?: string): QuoteDto {
     const productSnapshot = quote.productSnapshot as ProductSnapshot;
     return {
       id: quote.id,
       requestId: quote.requestId,
-      requestNo: '',
+      requestNo: requestNo ?? '',
       version: quote.version,
       status: quote.status,
       amountCents: quote.amountCents,

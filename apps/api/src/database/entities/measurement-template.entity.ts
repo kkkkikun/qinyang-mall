@@ -28,6 +28,15 @@ export class MeasurementTemplate {
   @Column({ type: 'int', default: 1 })
   version: number;
 
+  /*
+   * 数据库另有两个**未映射**的列（见迁移 AddTemplateConstraints）：
+   * - `activeCode` 生成列：ACTIVE 时等于 code，否则 NULL；
+   *   配合唯一索引保证「同一模板 code 同时只有一个 ACTIVE」。
+   * - 唯一索引 `(code, version)`：并发发布不会算出同一个版本号。
+   *
+   * 与报价的 `activeRequestId` 同一套做法：唯一性由数据库裁决。
+   */
+
   @Index()
   @Column({ type: 'varchar', length: 16, default: TemplateStatus.DRAFT })
   status: TemplateStatus;
