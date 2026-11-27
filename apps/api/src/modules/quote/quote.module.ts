@@ -6,6 +6,7 @@ import { Quote } from '../../database/entities/quote.entity';
 import { AuditModule } from '../audit/audit.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { QuoteService } from './quotes.service';
+import { QuotesAdminController } from './quotes-admin.controller';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { QuoteService } from './quotes.service';
     AuditModule,
     CatalogModule,
   ],
+  controllers: [QuotesAdminController],
   providers: [QuoteService],
   exports: [QuoteService],
 })

@@ -7,7 +7,7 @@
  * 禁止手工修改：请改 `packages/contracts/src/index.ts` 后运行
  * `python3 tools/sync_contracts_to_miniprogram.py` 重新生成。
  *
- * 生成时间：2026-11-27 22:32:46
+ * 生成时间：2026-11-27 22:42:03
  */
 
 /**
@@ -66,6 +66,8 @@ export enum QuoteStatus {
   ACTIVE = 'ACTIVE',
   SUPERSEDED = 'SUPERSEDED',
   WITHDRAWN = 'WITHDRAWN',
+  /** 顾客明确表示不接受该版本报价（申请回到待报价，等待店员重新报价） */
+  REJECTED = 'REJECTED',
 }
 
 /** 管理员角色：店主可做全部关键操作；店员仅限日常操作 */
@@ -574,6 +576,19 @@ export interface QuoteConfirmRequest {
   quoteId: string;
   /** 顾客必须确认当前有效版本；版本不符返回 QUOTE_VERSION_CONFLICT */
   expectedVersion: number;
+}
+
+/**
+ * 顾客拒绝报价的请求体。
+ *
+ * 需求明确要求「顾客确认或拒绝报价」：
+ * 此前只有确认，顾客嫌贵就走进死路（只能另行联系客服）。
+ */
+export interface QuoteRejectRequest {
+  quoteId: string;
+  expectedVersion: number;
+  /** 拒绝理由（可选），会随审计留存，便于店员了解顾客诉求 */
+  reason?: string | null;
 }
 
 // ──────────────────────────── 订单 ────────────────────────────

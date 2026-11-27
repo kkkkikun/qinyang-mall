@@ -61,6 +61,18 @@ function formatTime(date: Date): string {
   return pad(date.getHours()) + ':' + pad(date.getMinutes());
 }
 
+/** 报价是否已过有效期（用于禁用确认按钮，而不是点了再被后端拒绝） */
+export function isQuoteExpired(iso?: string | null): boolean {
+  if (!iso) {
+    return false;
+  }
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) {
+    return false;
+  }
+  return date.getTime() <= Date.now();
+}
+
 /** 倒计时文案：报价有效期 */
 export function validUntilText(iso?: string | null): string {
   if (!iso) {

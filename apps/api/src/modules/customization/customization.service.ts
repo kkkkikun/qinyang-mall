@@ -192,8 +192,23 @@ export class CustomizationService {
         ERROR_CODES.INVALID_STATUS_TRANSITION,
       );
     }
+    const before = { status: request.status };
     request.status = RequestStatus.CANCELLED;
     const saved = await this.requests.save(request);
+
+    // 取消是顾客侧的关键操作，必须留痕（此前完全没有审计记录）
+    await this.audit.record({
+      actorId: customerId,
+      actorName: '顾客',
+      actorRole: null,
+      action: 'request.cancel',
+      targetType: 'customization_request',
+      targetId: saved.id,
+      before,
+      after: { status: saved.status },
+      ip: null,
+    });
+
     return this.toDto(saved);
   }
 

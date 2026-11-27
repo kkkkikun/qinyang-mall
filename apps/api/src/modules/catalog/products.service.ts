@@ -192,17 +192,30 @@ export class ProductsService {
     const product = await this.findOne(id);
     if (!product) throw BusinessException.notFound('商品不存在');
 
-    const entity = this.media.create({
-      productId: product.id,
-      role: dto.role,
-      storageKey: dto.storageKey,
-      url: dto.url ?? '',
-      width: dto.width ?? 0,
-      height: dto.height ?? 0,
-      bytes: dto.bytes ?? 0,
-      alt: dto.alt ?? null,
-      sortOrder: dto.sortOrder ?? 0,
+    // 同一张图片（storageKey 相同）重复添加时改为更新角色与排序，
+    // 而不是再插一条 —— 此前「设为封面」会新增一条重复记录，
+    // 顾客端图集里同一张图出现两次。
+    const existing = await this.media.findOne({
+      where: { productId: product.id, storageKey: dto.storageKey },
     });
+    const entity = existing
+      ? this.media.create({
+          ...existing,
+          role: dto.role,
+          alt: dto.alt ?? existing.alt,
+          sortOrder: dto.sortOrder ?? existing.sortOrder,
+        })
+      : this.media.create({
+          productId: product.id,
+          role: dto.role,
+          storageKey: dto.storageKey,
+          url: dto.url ?? '',
+          width: dto.width ?? 0,
+          height: dto.height ?? 0,
+          bytes: dto.bytes ?? 0,
+          alt: dto.alt ?? null,
+          sortOrder: dto.sortOrder ?? 0,
+        });
     await this.media.save(entity);
 
     await this.audit.record({

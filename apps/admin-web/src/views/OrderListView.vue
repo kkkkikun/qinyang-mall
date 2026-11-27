@@ -52,7 +52,7 @@
             更新制作状态
           </t-button>
           <t-button
-            v-if="can('order.status') && detail.status !== OrderStatus.SHIPPED && detail.status !== OrderStatus.COMPLETED"
+            v-if="can('order.status') && detail.status === OrderStatus.IN_PRODUCTION"
             theme="default"
             size="small"
             @click="openShipDialog"
@@ -280,7 +280,11 @@ const nextStatuses = computed<OrderStatus[]>(() => {
   if (!detail.value) {
     return [];
   }
-  return ORDER_STATUS_TRANSITIONS[detail.value.status] ?? [];
+  // 「已发货」不在普通状态流转里：发货必须走「填写物流」，
+  // 否则订单会变成已发货却没有承运商与运单号，顾客侧看不到物流信息。
+  return (ORDER_STATUS_TRANSITIONS[detail.value.status] ?? []).filter(
+    (status) => status !== OrderStatus.SHIPPED,
+  );
 });
 
 const nextStatusOptions = computed(() =>

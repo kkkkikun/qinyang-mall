@@ -10,6 +10,7 @@ import type {
   CustomizationRequestDto,
   CustomizationRequestListItemDto,
   CustomizationRequestListQuery,
+  RequestStatus,
   LoginRequest,
   LoginResponse,
   MeasurementTemplateDto,
@@ -156,6 +157,16 @@ export const customizationRequestApi = {
       method: 'post',
       url: `/admin/customization-requests/${id}/review`,
       data: { action, note: note ?? null },
+    }),
+  /**
+   * PUT /admin/customization-requests/:id/status
+   * 变更申请状态（如「退回重新报价」把申请打回待报价）。
+   */
+  changeStatus: (id: string, status: RequestStatus, note?: string | null) =>
+    request<CustomizationRequestDto>({
+      method: 'put',
+      url: `/admin/customization-requests/${id}/status`,
+      data: { status, note: note ?? null },
     }),
   /** POST /admin/customization-requests/:id/quotes（OWNER，生成新报价版本） */
   createQuote: (id: string, body: QuoteCreateRequest) =>

@@ -341,6 +341,57 @@ async function main() {
       check('取消前弹出了二次确认', runtime.modals.length > 0,
         runtime.modals.length ? runtime.modals[0].title : '');
     }
+    // ── 16. 顾客拒绝报价（走报价页的 reject）────────────────
+    // 此前顾客只能「确认」报价，嫌贵即死路；现在补了「拒绝」，
+    // 必须验证按钮真的能把申请打回待报价，而不是点了没反应。
+    {
+      const third = await api.createCustomizationRequest({
+        productId,
+        measurements,
+        contact: {
+          name: '页面验证顾客（虚构）',
+          phone: '13800000011',
+          region: '内蒙古自治区 呼和浩特市',
+          detail: '页面验证虚构地址'
+        },
+        remark: '拒绝报价流程验证（虚构数据）',
+        submitId: `page-verify-reject-${Date.now()}`
+      });
+      await adminCall(adminToken, `/admin/customization-requests/${third.id}/review`, 'POST', {
+        action: 'APPROVE',
+        note: '页面验证（虚构数据）'
+      });
+      const rejectQuoteRes = await adminCall(
+        adminToken,
+        `/admin/customization-requests/${third.id}/quotes`,
+        'POST',
+        { amountCents: 399000, freightCents: 2000, productionDays: 25 }
+      );
+      check('拒绝报价前置：店员创建报价成功',
+        rejectQuoteRes.status === 201 || rejectQuoteRes.status === 200,
+        `status=${rejectQuoteRes.status}`);
+
+      const page = await openPage('quote', { id: third.id });
+      await runtime.settle(page, { dto: true, quote: true });
+      check('拒绝报价：报价页加载到有效报价', Boolean(page.data.quote), page.data.quote?.id ?? '');
+
+      runtime.setModalAnswer(true);
+      page.reject();
+      // 不用 rejecting 标志判断完成（它初值就是 false，会立刻返回），
+      // 直接轮询后端状态，等到申请真的回到待报价。
+      let after = null;
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline) {
+        after = await api.getCustomizationRequest(third.id);
+        if (after?.status === 'PENDING_QUOTE') break;
+        await sleep(200);
+      }
+      await sleep(1500);
+      check('顾客在报价页拒绝报价 → 申请回到待报价', after?.status === 'PENDING_QUOTE',
+        after?.status ?? '');
+      check('拒绝报价：页面刷新后不再有有效报价', !page.data.quote,
+        page.data.quote?.id ?? '无');
+    }
   } finally {
     // 清理临时编译目录
     const { rmSync } = await import('node:fs');

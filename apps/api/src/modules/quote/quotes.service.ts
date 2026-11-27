@@ -21,6 +21,13 @@ import { AuditService } from '../audit/audit.service';
 import { ProductsService } from '../catalog/products.service';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 
+/** 允许店员撤回报价的申请状态：顾客尚未确认，才可以收回重新报价 */
+const WITHDRAWABLE_REQUEST_STATUS: RequestStatus[] = [
+  RequestStatus.PENDING_REVIEW,
+  RequestStatus.PENDING_QUOTE,
+  RequestStatus.QUOTED,
+];
+
 @Injectable()
 export class QuoteService {
   constructor(
@@ -211,11 +218,27 @@ export class QuoteService {
     return this.toDto(saved);
   }
 
+  /**
+   * 撤回报价。
+   *
+   * 顾客确认报价后申请即为 CONFIRMED，此时再撤回会造成「状态是已确认、
+   * 但顾客侧显示商家尚未报价」的自相矛盾（审计 P0-7）。
+   * 因此已确认及之后的申请不允许撤回，只能走取消/改单流程。
+   */
   async withdraw(id: string, admin: AdminPrincipal): Promise<QuoteDto> {
     const quote = await this.quotes.findOne({ where: { id } });
     if (!quote) throw BusinessException.notFound('报价不存在');
     if (quote.status !== QuoteStatus.ACTIVE) {
       throw BusinessException.conflict('只能撤回当前有效报价', ERROR_CODES.QUOTE_NOT_ACTIVE);
+    }
+    // 顾客已确认的申请不能再撤回报价：
+    // 撤回后申请仍是「已确认」，顾客侧却显示「商家尚未报价」，前后自相矛盾。
+    const owner = await this.requests.findOne({ where: { id: quote.requestId } });
+    if (owner && !WITHDRAWABLE_REQUEST_STATUS.includes(owner.status)) {
+      throw BusinessException.conflict(
+        `申请当前为「${REQUEST_STATUS_LABELS[owner.status]}」，报价不可撤回，请走取消或改单流程`,
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
     }
     quote.status = QuoteStatus.WITHDRAWN;
     const saved = await this.quotes.save(quote);
@@ -237,6 +260,69 @@ export class QuoteService {
       after: { status: saved.status },
       ip: null,
     });
+    return this.toDto(saved);
+  }
+
+  /**
+   * 顾客拒绝报价：报价置 REJECTED，申请回到待报价，等待店员重新报价。
+   *
+   * 需求要求「顾客确认或拒绝报价」，此前只有确认 —— 顾客嫌贵就走进死路，
+   * 只能另行联系客服，而后台又没有「退回重新报价」的入口。
+   */
+  async rejectByCustomer(
+    requestId: string,
+    quoteId: string,
+    expectedVersion: number,
+    customerId: string,
+    reason?: string | null,
+  ): Promise<QuoteDto> {
+    const request = await this.requests.findOne({ where: { id: requestId } });
+    if (!request || request.customerId !== customerId) {
+      throw BusinessException.notFound('定制申请不存在');
+    }
+    if (request.status !== RequestStatus.QUOTED) {
+      throw BusinessException.conflict(
+        `当前状态 ${REQUEST_STATUS_LABELS[request.status]} 不能拒绝报价`,
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
+    const quote = await this.quotes.findOne({ where: { id: quoteId } });
+    if (!quote || quote.requestId !== requestId) {
+      throw BusinessException.notFound('报价不存在');
+    }
+    if (quote.status !== QuoteStatus.ACTIVE) {
+      throw BusinessException.conflict(
+        '该报价已不是当前有效版本，请刷新后重试',
+        ERROR_CODES.QUOTE_NOT_ACTIVE,
+      );
+    }
+    if (quote.version !== expectedVersion) {
+      throw BusinessException.conflict(
+        '报价已更新，请刷新后重试',
+        ERROR_CODES.QUOTE_VERSION_CONFLICT,
+      );
+    }
+
+    quote.status = QuoteStatus.REJECTED;
+    const saved = await this.quotes.save(quote);
+
+    // 回到待报价：量体资料与顾客信息都保留，店员可基于反馈重新报价
+    request.status = RequestStatus.PENDING_QUOTE;
+    await this.requests.save(request);
+
+    await this.audit.record({
+      actorId: customerId,
+      actorName: '顾客',
+      actorRole: null,
+      action: 'quote.reject',
+      targetType: 'quote',
+      targetId: saved.id,
+      before: { status: QuoteStatus.ACTIVE, requestStatus: RequestStatus.QUOTED },
+      after: { status: QuoteStatus.REJECTED, requestStatus: RequestStatus.PENDING_QUOTE },
+      ip: null,
+    });
+
     return this.toDto(saved);
   }
 

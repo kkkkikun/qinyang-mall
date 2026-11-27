@@ -15,12 +15,25 @@ export function formatYuan(cents: number): string {
   return `¥${(cents / 100).toFixed(2)}`;
 }
 
-/** ISO 时间 → 2025-01-01 12:00:00 */
+/**
+ * ISO 时间 → 2025-01-01 12:00:00（按浏览器本地时区）。
+ *
+ * 此前是直接截断 ISO 串：库里存的是 UTC，后台显示的就是 UTC，
+ * 与顾客端（设备本地时间）**差 8 小时** —— 商家看到的时间全是错的。
+ */
 export function formatDateTime(value?: string | null): string {
   if (!value) {
     return '—';
   }
-  return value.replace('T', ' ').slice(0, 19);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value.replace('T', ' ').slice(0, 19);
+  }
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
 }
 
 /** ISO 时间 → 2025-01-01 */

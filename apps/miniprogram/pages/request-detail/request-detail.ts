@@ -24,13 +24,16 @@ interface SectionVM {
   rows: MeasurementRowVM[];
 }
 
-/** 允许顾客取消的申请状态（对齐契约 REQUEST_STATUS_TRANSITIONS） */
+/**
+ * 允许顾客自行取消的申请状态。
+ *
+ * 与服务端 `cancelByCustomer` 的白名单保持一致：
+ * 已报价、已确认、已建单的申请不再允许顾客单方面取消（需联系客服），
+ * 否则页面上会出现「点了必然报错」的死按钮。
+ */
 const CANCELLABLE: RequestStatus[] = [
   RequestStatus.PENDING_REVIEW,
-  RequestStatus.PENDING_QUOTE,
-  RequestStatus.QUOTED,
-  RequestStatus.CONFIRMED,
-  RequestStatus.IN_PRODUCTION
+  RequestStatus.PENDING_QUOTE
 ];
 
 function buildSections(dto: CustomizationRequestDto): SectionVM[] {
@@ -69,6 +72,8 @@ Page({
     canCancel: false,
     cancelling: false,
     quoteAmount: '',
+    quoteFreight: '',
+    quoteEmptyText: '商家尚未报价，请耐心等待审核结果。',
     quoteTotal: '',
     quoteValid: '',
     quoteVersion: 0,
@@ -103,9 +108,17 @@ Page({
           createdAtText: formatDateTime(dto.createdAt),
           canCancel: CANCELLABLE.indexOf(dto.status) >= 0,
           quoteAmount: quote ? priceText(quote.amountCents) : '',
+          quoteFreight: quote ? priceText(quote.freightCents) : '',
           quoteTotal: quote ? priceText(quote.totalCents) : '',
           quoteValid: quote ? validUntilText(quote.validUntil) : '',
-          quoteVersion: quote ? quote.version : 0
+          quoteVersion: quote ? quote.version : 0,
+          /** 报价区空态文案要区分「还没报价」和「报价已被撤回/拒绝」 */
+          quoteEmptyText:
+            dto.status === RequestStatus.PENDING_QUOTE
+              ? '商家尚未报价，请耐心等待审核结果。'
+              : dto.status === RequestStatus.PENDING_REVIEW
+                ? '申请已提交，等待店员审核。'
+                : '当前没有可展示的报价，如有疑问请联系客服。'
         });
       })
       .catch(() => {

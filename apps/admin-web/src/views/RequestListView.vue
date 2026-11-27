@@ -61,6 +61,15 @@
           >
             创建报价
           </t-button>
+          <!-- 已报价/已确认的申请，店员此前无法退回，只能找开发改库 -->
+          <t-popconfirm
+            v-if="can('request.quote') && canReQuote"
+            content="退回后申请回到「待报价」，可重新创建报价版本（顾客会看到状态变化）。确认退回？"
+            theme="warning"
+            @confirm="handleReQuote"
+          >
+            <t-button theme="default" size="small">退回重新报价</t-button>
+          </t-popconfirm>
           <!-- 建单后顾客立刻能看到订单，误建会多出一条业务记录 -->
           <t-popconfirm
             v-if="can('request.order') && canCreateOrder"
@@ -117,7 +126,7 @@
         <div class="section-title" style="margin-top: 20px">报价历史</div>
         <QuoteVersionList
           :quotes="quotes"
-          :show-withdraw="can('request.quote')"
+          :show-withdraw="can('request.quote') && canWithdrawQuote"
           @withdraw="handleWithdrawQuote"
         />
 
@@ -506,6 +515,43 @@ async function handleWithdrawQuote(quote: QuoteDto): Promise<void> {
     await load();
   } catch (error) {
     MessagePlugin.error(toErrorMessage(error, '撤回报价失败'));
+  }
+}
+
+/** 能否撤回报价：顾客尚未确认时才允许收回重报（与服务端守卫一致） */
+const canWithdrawQuote = computed(
+  () =>
+    detail.value !== null &&
+    (detail.value.status === RequestStatus.PENDING_REVIEW ||
+      detail.value.status === RequestStatus.PENDING_QUOTE ||
+      detail.value.status === RequestStatus.QUOTED),
+);
+
+/** 是否可以「退回重新报价」：已报价或已确认的申请 */
+const canReQuote = computed(
+  () =>
+    detail.value !== null &&
+    (detail.value.status === RequestStatus.QUOTED ||
+      detail.value.status === RequestStatus.CONFIRMED),
+);
+
+/** 退回重新报价：把申请打回待报价，店员可再创建一个报价版本 */
+async function handleReQuote(): Promise<void> {
+  const current = detail.value;
+  if (!current) {
+    return;
+  }
+  try {
+    await customizationRequestApi.changeStatus(
+      current.id,
+      RequestStatus.PENDING_QUOTE,
+      '退回重新报价',
+    );
+    MessagePlugin.success('已退回待报价，可重新创建报价');
+    await openDetail(current);
+    await load();
+  } catch (error) {
+    MessagePlugin.error(toErrorMessage(error, '退回失败'));
   }
 }
 

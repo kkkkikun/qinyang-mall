@@ -15,6 +15,7 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   [QuoteStatus.ACTIVE]: '当前有效',
   [QuoteStatus.SUPERSEDED]: '已被新版本取代',
   [QuoteStatus.WITHDRAWN]: '已撤回',
+  [QuoteStatus.REJECTED]: '顾客已拒绝',
 };
 
 export const TEMPLATE_STATUS_LABELS: Record<TemplateStatus, string> = {

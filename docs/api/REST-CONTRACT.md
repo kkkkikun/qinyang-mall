@@ -32,6 +32,7 @@
 | GET | `/customization-requests` | 我的定制申请列表（仅本人），需登录 |
 | GET | `/customization-requests/:id` | 申请详情（含当前有效报价），需登录 |
 | POST | `/customization-requests/:id/confirm-quote` | `{ quoteId, expectedVersion }` 确认报价，需登录 |
+| POST | `/customization-requests/:id/reject-quote` | `{ quoteId, expectedVersion, reason? }` 拒绝报价，需登录 |
 | POST | `/customization-requests/:id/cancel` | 取消申请，需登录 |
 | GET | `/orders` | 我的订单列表，需登录 |
 | GET | `/orders/:id` | 订单详情与进度时间线，需登录 |
@@ -114,6 +115,9 @@ CONFIRMED ──▶ IN_PRODUCTION ──▶ SHIPPED ──▶ COMPLETED
 - 每次创建报价生成新 `version`，同一申请同时只有一个 `ACTIVE` 版本，旧版本置 `SUPERSEDED`。
 - 顾客确认时后端必须校验 `quoteId` 属于该申请、`quote.status === ACTIVE`、`quote.version === expectedVersion`；
   不符返回 `409 / QUOTE_VERSION_CONFLICT` 或 `409 / QUOTE_NOT_ACTIVE`。
+- 顾客可**拒绝**报价：报价置 `REJECTED`，申请回到 `PENDING_QUOTE` 等待店员重新报价，并写入审计（`quote.reject`）。
+- 申请处于 `CONFIRMED` 及之后的状态时，店员**不可撤回**报价（`409 / INVALID_STATUS_TRANSITION`）——
+  否则顾客侧会出现「已确认 + 商家尚未报价」的自相矛盾。
 
 ### 3.3 支付
 

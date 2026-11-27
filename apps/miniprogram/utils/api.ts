@@ -211,6 +211,25 @@ export function getCustomizationRequest(id: string): Promise<CustomizationReques
   );
 }
 
+/**
+ * POST /customization-requests/:id/reject-quote
+ * 顾客拒绝报价：申请回到待报价，等待店员重新报价。
+ */
+export function rejectQuote(
+  requestId: string,
+  quoteId: string,
+  expectedVersion: number,
+  reason?: string
+): Promise<CustomizationRequestDto> {
+  return ensureToken().then(() =>
+    request<CustomizationRequestDto>({
+      url: '/customization-requests/' + encodeURIComponent(requestId) + '/reject-quote',
+      method: 'POST',
+      data: { quoteId, expectedVersion, reason: reason ?? null }
+    })
+  );
+}
+
 /** POST /customization-requests/:id/confirm-quote */
 export function confirmQuote(
   requestId: string,

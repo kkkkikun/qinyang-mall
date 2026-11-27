@@ -65,6 +65,14 @@ log "类型检查（小程序原生 TS）"
 log "单元测试"
 "${RUN_BUILD[@]}" pnpm --filter @qinyang/api test:unit
 
+# 集成测试同样进流水线。
+# 此前只跑单元测试，于是「路由覆盖守卫」「报价生命周期」这类只有集成层能发现的缺陷
+# （例如控制器写了却没注册进模块，接口线上永远 404）根本不会在流水线里报警。
+# 测试使用独立测试库 qinyang_mall_test（见 apps/api/test/setup-env.ts），
+# 与开发库 qinyang_mall 完全隔离，流水线不会污染开发数据。
+log "集成测试"
+"${RUN_BUILD[@]}" pnpm --filter @qinyang/api test:integration
+
 log "构建 API"
 "${RUN_BUILD[@]}" pnpm --filter @qinyang/api build
 

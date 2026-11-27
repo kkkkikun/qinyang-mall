@@ -45,10 +45,11 @@
     <view class="sec sec-pad">
       <view class="row row-b" style="margin-bottom:8px">
         <text style="font-size:15px;font-weight:600">当前报价</text>
-        <text class="fs12 muted" wx:if="{{dto.activeQuote}}">第 {{quoteVersion}} 版</text>
+        <text class="fs12 muted" wx:if="{{dto.activeQuote}}">本次报价</text>
       </view>
       <block wx:if="{{dto.activeQuote}}">
-        <view class="kv"><text class="kv__k">金额</text><text class="kv__v">{{quoteAmount}}</text></view>
+        <view class="kv"><text class="kv__k">商品金额</text><text class="kv__v">{{quoteAmount}}</text></view>
+        <view class="kv"><text class="kv__k">运费</text><text class="kv__v">{{quoteFreight}}</text></view>
         <view class="kv"><text class="kv__k">合计</text><text class="kv__v">{{quoteTotal}}</text></view>
         <view class="kv"><text class="kv__k">有效期</text><text class="kv__v">{{quoteValid}}</text></view>
         <view class="kv"><text class="kv__k">制作周期</text><text class="kv__v">{{dto.activeQuote.productionDays}} 天</text></view>
@@ -57,7 +58,7 @@
         </view>
         <button class="btn btn--tan btn--block" style="margin-top:12px" bindtap="goQuote">查看报价并确认</button>
       </block>
-      <view wx:else class="fs13 muted-2">商家尚未报价，请耐心等待审核结果。</view>
+      <view wx:else class="fs13 muted-2">{{quoteEmptyText}}</view>
     </view>
 
     <!-- 量体资料 -->

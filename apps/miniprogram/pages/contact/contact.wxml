@@ -33,13 +33,11 @@
       <text>量体怎么测？在哪里看指南</text>
       <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
     </view>
-    <view class="list-row">
+    <view class="list-row list-row--static">
       <text>价格多久能确定</text>
-      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
     </view>
-    <view class="list-row">
+    <view class="list-row list-row--static">
       <text>制作周期与发货</text>
-      <view class="list-row__go"><image src="/assets/icons/right_gray.png" mode="aspectFit" /></view>
     </view>
   </view>
 

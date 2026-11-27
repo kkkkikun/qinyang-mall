@@ -19,3 +19,8 @@
 .mb8 {
   margin-bottom: 8px;
 }
+
+/* 静态说明行：没有跳转入口，不显示右侧箭头 */
+.list-row--static {
+  color: var(--text-2);
+}

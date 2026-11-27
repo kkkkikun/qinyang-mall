@@ -48,8 +48,9 @@ export function validateMeasurements(
   for (const item of input ?? []) {
     const field = templateFields.get(item.fieldCode);
     if (!field) {
+      // 面向顾客的文案用中文字段名，不要把英文 fieldCode 抛给顾客
       throw new MeasurementValidationException(
-        `量体字段 ${item.fieldCode} 不属于该商品的量体模板`,
+        `量体项「${item.fieldName || item.fieldCode}」不属于该商品的量体模板，请刷新后重新填写`,
       );
     }
     if (!ALLOWED_MEASUREMENT_UNITS.has(field.unit)) {

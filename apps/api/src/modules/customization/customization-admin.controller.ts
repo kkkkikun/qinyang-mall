@@ -154,19 +154,3 @@ export class CustomizationAdminController {
     return this.quotes.create(id, dto, admin);
   }
 }
-
-@ApiTags('管理端 · 报价')
-@ApiBearerAuth('admin')
-@UseGuards(AdminAuthGuard, RolesGuard)
-@Controller('admin/quotes')
-export class QuotesAdminController {
-  constructor(private readonly quotes: QuoteService) {}
-
-  @Post(':id/withdraw')
-  @Roles(AdminRole.OWNER)
-  @HttpCode(200)
-  @ApiOperation({ summary: '撤回当前有效报价（店主专属）' })
-  withdraw(@Param('id') id: string, @CurrentAdmin() admin: AdminPrincipal) {
-    return this.quotes.withdraw(id, admin);
-  }
-}

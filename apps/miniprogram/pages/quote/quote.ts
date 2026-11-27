@@ -1,7 +1,7 @@
 // 报价查看与确认
 import { getNavMetrics } from '../../utils/nav';
-import { confirmQuote, getCustomizationRequest } from '../../utils/api';
-import { formatDateTime, formatCents, validUntilText } from '../../utils/format';
+import { confirmQuote, getCustomizationRequest, rejectQuote } from '../../utils/api';
+import { formatDateTime, formatCents, isQuoteExpired, validUntilText } from '../../utils/format';
 import { CustomizationRequestDto, QuoteDto } from '../../types/contracts';
 
 Page({
@@ -16,7 +16,12 @@ Page({
     total: '',
     valid: '',
     version: 0,
-    confirming: false
+    confirming: false,
+    rejecting: false,
+    /** 报价是否已过有效期：过期后按钮要禁用，而不是点了再被后端拒绝 */
+    expired: false,
+    /** 报价时间的本地化文案（此前直接输出 ISO 串） */
+    createdAtText: ''
   },
 
   onLoad(query: Record<string, string | undefined>) {
@@ -47,7 +52,9 @@ Page({
           freight: quote ? '¥' + formatCents(quote.freightCents) : '',
           total: quote ? '¥' + formatCents(quote.totalCents) : '',
           valid: quote ? validUntilText(quote.validUntil) : '',
-          version: quote ? quote.version : 0
+          version: quote ? quote.version : 0,
+          expired: quote ? isQuoteExpired(quote.validUntil) : false,
+          createdAtText: quote ? formatDateTime(quote.createdAt) : ''
         });
       })
       .catch(() => {
@@ -67,7 +74,7 @@ Page({
   },
 
   confirm() {
-    if (this.data.confirming) {
+    if (this.data.confirming || this.data.expired) {
       return;
     }
     const dto = this.data.dto as CustomizationRequestDto | null;
@@ -89,6 +96,45 @@ Page({
         // 版本冲突或报价失效时，刷新为最新报价
         this.load(dto.id);
       });
+  },
+
+  /**
+   * 拒绝报价：申请回到待报价，等待店员重新报价。
+   * 量体资料与联系方式都会保留，顾客不需要重新填一遍。
+   */
+  reject() {
+    if (this.data.rejecting || this.data.expired) {
+      return;
+    }
+    const dto = this.data.dto as CustomizationRequestDto | null;
+    const quote = this.data.quote as QuoteDto | null;
+    if (!dto || !quote) {
+      return;
+    }
+    wx.showModal({
+      title: '不接受这份报价？',
+      content: '我们会把你本次的量体资料一并转给商家重新报价，你不需要重新填写。',
+      confirmText: '请商家重新报价',
+      cancelText: '再想想',
+      success: (res) => {
+        if (!res.confirm) {
+          return;
+        }
+        this.setData({ rejecting: true });
+        rejectQuote(dto.id, quote.id, quote.version)
+          .then(() => {
+            this.setData({ rejecting: false });
+            wx.showToast({ title: '已告知商家重新报价', icon: 'none', duration: 1600 });
+            setTimeout(() => {
+              this.load(dto.id);
+            }, 900);
+          })
+          .catch(() => {
+            this.setData({ rejecting: false });
+            this.load(dto.id);
+          });
+      }
+    });
   },
 
   goContact() {

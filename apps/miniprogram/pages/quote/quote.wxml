@@ -20,7 +20,7 @@
     <view class="sec sec-pad" style="margin-top:8px">
       <view class="row row-b">
         <text class="serif q-title">商家报价</text>
-        <text class="tag">第 {{version}} 版</text>
+        <text class="tag">本次报价</text>
       </view>
       <view class="q-total">{{total}}</view>
       <view class="fs12 muted-2">含运费合计金额，确认后进入制作流程</view>
@@ -31,8 +31,7 @@
       <view class="kv"><text class="kv__k">运费</text><text class="kv__v">{{freight}}</text></view>
       <view class="kv"><text class="kv__k">制作周期</text><text class="kv__v">{{quote.productionDays}} 天</text></view>
       <view class="kv"><text class="kv__k">有效期</text><text class="kv__v">{{valid}}</text></view>
-      <view class="kv"><text class="kv__k">币种</text><text class="kv__v">{{quote.currency}}</text></view>
-      <view class="kv"><text class="kv__k">报价时间</text><text class="kv__v">{{quote.createdAt}}</text></view>
+      <view class="kv"><text class="kv__k">报价时间</text><text class="kv__v">{{createdAtText}}</text></view>
       <view class="kv" wx:if="{{quote.createdByName}}">
         <text class="kv__k">报价人</text><text class="kv__v">{{quote.createdByName}}</text>
       </view>
@@ -82,9 +81,25 @@
 
     <!-- 底部确认 -->
     <view class="pd-bar">
-      <button class="btn btn--tan btn--block" bindtap="confirm" disabled="{{confirming}}">
-        {{confirming ? '确认中…' : '确认报价（第 ' + version + ' 版）'}}
-      </button>
+      <block wx:if="{{expired}}">
+        <view class="notice notice--gold" style="margin-bottom:10px">
+          该报价已过有效期，请联系商家重新报价。
+        </view>
+        <view class="row gap10">
+          <button class="btn btn--ghost" style="flex:1" bindtap="goContact">联系客服</button>
+          <button class="btn btn--tan" style="flex:1" bindtap="reject" disabled="{{rejecting}}">
+            {{rejecting ? '提交中…' : '请商家重新报价'}}
+          </button>
+        </view>
+      </block>
+      <block wx:else>
+        <button class="btn btn--tan btn--block" bindtap="confirm" disabled="{{confirming}}">
+          {{confirming ? '确认中…' : '确认报价'}}
+        </button>
+        <button class="btn btn--link btn--block" style="margin-top:8px" bindtap="reject" disabled="{{rejecting}}">
+          {{rejecting ? '提交中…' : '不接受，请商家重新报价'}}
+        </button>
+      </block>
     </view>
     <view class="pd-bar-holder"></view>
   </block>

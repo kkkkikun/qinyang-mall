@@ -515,7 +515,143 @@ async function main() {
         page.detail?.status ?? '');
     }
 
-    // ── 6. 收尾：验证商品下架并推到列表末尾 ──────────────────
+    // ── 6. 撤回报价 / 退回重新报价（两个此前从未被测过的按钮）──
+    // 背景：`QuotesAdminController` 写好了却没注册进任何模块，
+    // `POST /admin/quotes/:id/withdraw` 线上永远 404 —— 后台「撤回报价」按钮是纯装饰。
+    // 这类缺陷不会被「接口 200 + 类型全绿」发现，必须用页面自己的方法实测。
+    {
+      const adminToken = globalThis.localStorage.getItem('qy_admin_token');
+      const custLogin = await call('/auth/login', {
+        method: 'POST',
+        body: { code: `dev:verify-admin-${STAMP}` }
+      });
+      const customerToken = custLogin.body?.data?.token;
+
+      const products = await call('/admin/products?status=PUBLISHED&pageSize=20', {
+        token: adminToken
+      });
+      const target = (products.body?.data?.items ?? [])[0];
+      const resolved = await call(`/measurement-templates/resolve?productId=${target.id}`);
+      const fields = (resolved.body?.data?.measurementSections ?? []).flatMap(
+        (section) => section.measurementFields ?? []
+      );
+      const measurements = fields.map((field) => {
+        let value = 100;
+        if (field.min !== null && field.min !== undefined) value = Math.max(value, field.min);
+        if (field.max !== null && field.max !== undefined) value = Math.min(value, field.max);
+        if (field.step) value = Math.round(value / field.step) * field.step;
+        return {
+          fieldCode: field.fieldCode,
+          fieldName: field.fieldName,
+          measurementType: field.measurementType,
+          unit: field.unit,
+          value
+        };
+      });
+
+      const created = await call('/customization-requests', {
+        method: 'POST',
+        customerToken,
+        body: {
+          productId: target.id,
+          measurements,
+          contact: {
+            name: '验证顾客（虚构）',
+            phone: '13800000009',
+            region: '内蒙古自治区 呼和浩特市',
+            detail: '自动化验证用虚构地址'
+          },
+          remark: '撤回报价验证（虚构数据）',
+          submitId: `verify-withdraw-${STAMP}`
+        }
+      });
+      const withdrawRequestId = created.body?.data?.id ?? '';
+      check('撤回验证前置：申请已创建', Boolean(withdrawRequestId), withdrawRequestId);
+
+      await call(`/admin/customization-requests/${withdrawRequestId}/review`, {
+        method: 'POST',
+        token: adminToken,
+        body: { action: 'APPROVE', note: '自动化验证审核通过' }
+      });
+      const quoteRes = await call(`/admin/customization-requests/${withdrawRequestId}/quotes`, {
+        method: 'POST',
+        token: adminToken,
+        body: { amountCents: 158000, freightCents: 1500, productionDays: 20 }
+      });
+      check('撤回验证前置：报价已创建', quoteRes.status === 201 || quoteRes.status === 200,
+        `HTTP ${quoteRes.status}`);
+
+      // 用页面自己的方法撤回（而不是直接调接口）—— 按钮才是商家真正会点的东西
+      const page = await runView(sandbox, 'RequestListView');
+      await page.load();
+      const row = page.rows.find((item) => item.id === withdrawRequestId);
+      await page.openDetail(row);
+      const activeQuote = (page.quotes ?? []).find((quote) => quote.status === 'ACTIVE');
+      check('撤回验证：页面拿到当前有效报价', Boolean(activeQuote), activeQuote?.id ?? '无');
+      check('撤回验证：页面判定允许撤回', page.canWithdrawQuote === true,
+        `canWithdrawQuote=${page.canWithdrawQuote}`);
+
+      sandbox.clearMessages();
+      await page.handleWithdrawQuote(activeQuote);
+      check('撤回验证：页面撤回报价成功', sandbox.lastMessage('success') === '报价已撤回',
+        sandbox.lastMessage('success') || sandbox.lastMessage('error') || '');
+      check('撤回验证：申请状态回到待报价', page.detail?.status === 'PENDING_QUOTE',
+        page.detail?.status ?? '');
+
+      // 顾客已确认的申请不允许撤回（服务端守卫 + 页面按钮同步隐藏）
+      const custLogin2 = await call('/auth/login', {
+        method: 'POST',
+        body: { code: `dev:verify-admin-${STAMP}` }
+      });
+      const customerToken2 = custLogin2.body?.data?.token;
+      const created2 = await call('/customization-requests', {
+        method: 'POST',
+        customerToken: customerToken2,
+        body: {
+          productId: target.id,
+          measurements,
+          contact: {
+            name: '验证顾客（虚构）',
+            phone: '13800000010',
+            region: '内蒙古自治区 呼和浩特市',
+            detail: '自动化验证用虚构地址'
+          },
+          remark: '撤回守卫验证（虚构数据）',
+          submitId: `verify-withdraw-guard-${STAMP}`
+        }
+      });
+      const guardRequestId = created2.body?.data?.id ?? '';
+      await call(`/admin/customization-requests/${guardRequestId}/review`, {
+        method: 'POST',
+        token: adminToken,
+        body: { action: 'APPROVE', note: '自动化验证审核通过' }
+      });
+      const quote2 = await call(`/admin/customization-requests/${guardRequestId}/quotes`, {
+        method: 'POST',
+        token: adminToken,
+        body: { amountCents: 158000, freightCents: 1500, productionDays: 20 }
+      });
+      await call(`/customization-requests/${guardRequestId}/confirm-quote`, {
+        method: 'POST',
+        customerToken: customerToken2,
+        body: { quoteId: quote2.body?.data?.id, expectedVersion: quote2.body?.data?.version }
+      });
+
+      const guardPage = await runView(sandbox, 'RequestListView');
+      await guardPage.load();
+      const guardRow = guardPage.rows.find((item) => item.id === guardRequestId);
+      await guardPage.openDetail(guardRow);
+      check('撤回验证：已确认的申请页面不允许撤回', guardPage.canWithdrawQuote === false,
+        `canWithdrawQuote=${guardPage.canWithdrawQuote}`);
+      const withdrawAfterConfirm = await call(
+        `/admin/quotes/${quote2.body?.data?.id}/withdraw`,
+        { method: 'POST', token: adminToken }
+      );
+      check('撤回验证：已确认的报价服务端拒绝撤回', withdrawAfterConfirm.status === 409,
+        `HTTP ${withdrawAfterConfirm.status}`);
+    }
+
+    // ── 7. 收尾：验证商品下架并推到列表末尾 ──────────────────
     // 验证商品没有删除接口（商品只做下架归档），因此收尾时统一：
     // 下架 + 排序推到末尾，避免挤占商家真正要看的列表头部。
     {

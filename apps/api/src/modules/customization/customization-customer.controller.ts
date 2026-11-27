@@ -12,6 +12,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CustomizationRequestListQuery,
   QuoteConfirmRequest,
+  QuoteRejectRequest,
 } from '@qinyang/contracts';
 import { CustomerAuthGuard } from '../../common/guards/customer-auth.guard';
 import { CurrentCustomer } from '../../common/decorators/customer.decorator';
@@ -64,6 +65,17 @@ export class CustomizationCustomerController {
     @CurrentCustomer('id') customerId: string,
   ) {
     return this.quotes.confirmByCustomer(id, dto.quoteId, dto.expectedVersion, customerId);
+  }
+
+  @Post(':id/reject-quote')
+  @HttpCode(200)
+  @ApiOperation({ summary: '拒绝报价（申请回到待报价，等待重新报价）' })
+  rejectQuote(
+    @Param('id') id: string,
+    @Body() dto: QuoteRejectRequest,
+    @CurrentCustomer('id') customerId: string,
+  ) {
+    return this.quotes.rejectByCustomer(id, dto.quoteId, dto.expectedVersion, customerId, dto.reason);
   }
 
   @Post(':id/cancel')

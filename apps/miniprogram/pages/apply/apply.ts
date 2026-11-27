@@ -149,9 +149,11 @@ Page({
     const detail = this.data.detail as ProductDetail | null;
     if (detail) {
       this.load(detail.id);
-    } else {
-      this.setData({ error: '' });
+      return;
     }
+    // 没有商品上下文时不要把错误清空 —— 那会渲染出一张空白表单，
+    // 顾客点「提交定制申请」毫无反应。
+    this.setData({ error: '缺少商品信息，无法提交定制申请，请返回商品页重新进入' });
   },
 
   goBack() {
