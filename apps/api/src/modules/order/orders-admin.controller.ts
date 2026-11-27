@@ -31,6 +31,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { OrdersService } from './orders.service';
+import { OrderListQueryDto } from './dto/order-list-query.dto';
 
 export class OrderCreateDto implements OrderCreateRequest {
   @ApiProperty()
@@ -93,7 +94,7 @@ export class OrdersAdminController {
 
   @Get()
   @ApiOperation({ summary: '订单列表' })
-  list(@Query() query: OrderListQuery) {
+  list(@Query() query: OrderListQueryDto) {
     return this.orders.listAdmin(query);
   }
 

@@ -2,7 +2,7 @@
 import { getNavMetrics } from '../../utils/nav';
 import { listOrders } from '../../utils/api';
 import { formatDateTime, priceText } from '../../utils/format';
-import { OrderDto, ORDER_STATUS_LABELS, OrderStatus } from '../../types/contracts';
+import { ORDER_STATUS_LABELS, OrderListItemDto, OrderStatus } from '../../types/contracts';
 
 interface TabVM {
   key: string;
@@ -32,7 +32,7 @@ function buildTabs(): TabVM[] {
   return tabs;
 }
 
-function toVM(dto: OrderDto): OrderVM {
+function toVM(dto: OrderListItemDto): OrderVM {
   const snapshot = dto.productSnapshot;
   return {
     id: dto.id,

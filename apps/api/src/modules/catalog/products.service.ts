@@ -18,6 +18,7 @@ import { Product } from '../../database/entities/product.entity';
 import { ProductMedia } from '../../database/entities/product-media.entity';
 import { MeasurementTemplate } from '../../database/entities/measurement-template.entity';
 import { BusinessException } from '../../common/errors/business.exception';
+import { deriveThumbUrl } from '../../common/media-url';
 import { AuditService } from '../audit/audit.service';
 import { normalizePrice } from './pricing';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
@@ -84,9 +85,11 @@ export class ProductsService {
       careGuide: dto.careGuide ?? null,
       measurementTemplateId: dto.measurementTemplateId ?? null,
       sortOrder: dto.sortOrder ?? 0,
-      status: dto.status ?? ProductStatus.DRAFT,
+      // 新增商品一律为草稿：上下架是店主专属动作（OWNER 守卫在 status 接口上）。
+      // 此前这里采纳 dto.status，STAFF 传 status=PUBLISHED 就能绕过店主审核直接上架。
+      status: ProductStatus.DRAFT,
       createdById: admin.id,
-      publishedAt: dto.status === ProductStatus.PUBLISHED ? new Date() : null,
+      publishedAt: null,
     });
 
     const saved = await this.products.save(entity);
@@ -263,6 +266,7 @@ export class ProductsService {
         id: m.id,
         storageKey: m.storageKey,
         url: m.url,
+        thumbUrl: deriveThumbUrl(m.url),
         role: m.role,
         width: m.width,
         height: m.height,
@@ -337,8 +341,14 @@ export class ProductsService {
     });
     const categoryNames = new Map(categoryRows.map((c) => [c.id, c.name]));
 
+    // 列表只需要封面：只取 COVER（无封面时退回 FRONT），
+    // 此前把该页商品的**全部**图集行都拉回来（20 商品 × 约 9 张 ≈ 180 行），
+    // 而列表只用到 1 张。
     const mediaRows = await this.media.find({
-      where: { productId: In(items.map((item) => item.id)) },
+      where: {
+        productId: In(items.map((item) => item.id)),
+        role: In([MediaRole.COVER, MediaRole.FRONT]),
+      },
       order: { sortOrder: 'ASC' },
     });
     const coverMap = new Map<string, string | null>();
@@ -354,13 +364,15 @@ export class ProductsService {
     }
 
     return {
-      items: items.map((item) =>
-        this.toListItem(
+      items: items.map((item) => {
+        const coverUrl = coverMap.get(item.id) ?? null;
+        return this.toListItem(
           item,
           categoryNames.get(item.categoryId) ?? '',
-          coverMap.get(item.id) ?? null,
-        ),
-      ),
+          coverUrl,
+          deriveThumbUrl(coverUrl),
+        );
+      }),
       total,
       page,
       pageSize,
@@ -424,6 +436,7 @@ export class ProductsService {
     product: Product,
     categoryName: string,
     coverUrl: string | null,
+    coverThumbUrl: string | null = null,
   ): ProductListItem {
     return {
       id: product.id,
@@ -437,6 +450,7 @@ export class ProductsService {
       priceCents:
         product.pricingMode === PricingMode.QUOTE_ONLY ? null : product.priceCents,
       coverUrl,
+      coverThumbUrl,
       sortOrder: product.sortOrder,
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),
@@ -449,7 +463,12 @@ export class ProductsService {
       where: { productId: product.id },
       order: { sortOrder: 'ASC', createdAt: 'ASC' },
     });
-    const base = this.toListItem(product, category?.name ?? '', this.pickCover(media));
+    const base = this.toListItem(
+      product,
+      category?.name ?? '',
+      this.pickCover(media),
+      deriveThumbUrl(this.pickCover(media)),
+    );
     // 顾客需要知道「按哪套量体模板测量」——契约与小程序商品详情页都依赖这个字段，
     // 此前恒为 null，等于该信息从未送达顾客端。
     const template = product.measurementTemplateId
@@ -466,6 +485,7 @@ export class ProductsService {
         id: m.id,
         storageKey: m.storageKey,
         url: m.url,
+        thumbUrl: deriveThumbUrl(m.url),
         role: m.role,
         width: m.width,
         height: m.height,

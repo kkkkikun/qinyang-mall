@@ -50,11 +50,18 @@ const redact = (value: unknown): unknown => {
 @Injectable()
 export class AuditService {
   private readonly logger = new Logger(AuditService.name);
+  /** 审计写入失败次数：审计失败不阻断主业务，但必须可观测（由健康检查暴露） */
+  private writeFailures = 0;
 
   constructor(
     @InjectRepository(AuditLog)
     private readonly repo: Repository<AuditLog>,
   ) {}
+
+  /** 累计的审计写入失败次数 */
+  get failureCount(): number {
+    return this.writeFailures;
+  }
 
   /** 写审计记录。审计失败不得阻断主业务，仅记录错误。 */
   async record(input: AuditRecordInput): Promise<void> {
@@ -73,6 +80,7 @@ export class AuditService {
         ip: input.ip ?? null,
       });
     } catch (error) {
+      this.writeFailures += 1;
       this.logger.error(
         `审计写入失败 action=${input.action} target=${input.targetType}:${input.targetId ?? '-'}`,
         error instanceof Error ? error.stack : undefined,

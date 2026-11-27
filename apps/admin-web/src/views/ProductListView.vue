@@ -123,7 +123,7 @@
 
 <script setup lang="ts">
 import { computed, h, onMounted, reactive, ref, type VNode } from 'vue';
-import { Button, MessagePlugin, Tag } from 'tdesign-vue-next';
+import { Button, MessagePlugin, Popconfirm, Tag } from 'tdesign-vue-next';
 import {
   PricingMode,
   ProductStatus,
@@ -223,7 +223,8 @@ const columns = [
     cell: cell<ProductListItem>((row) =>
       row.coverUrl
         ? h('img', {
-            src: row.coverUrl,
+            // 列表用缩略图（600×600）：后台一屏几十行，用详情大图会白白多传几十 MB
+            src: row.coverThumbUrl || row.coverUrl,
             alt: row.name,
             style: 'width:48px;height:48px;object-fit:cover;border-radius:4px;',
           })
@@ -291,17 +292,41 @@ const columns = [
       );
       if (can('product.status')) {
         STATUS_ACTIONS[row.status].forEach((action) => {
-          actions.push(
-            h(
-              Button,
-              {
-                theme: 'default',
-                size: 'small',
-                onClick: () => handleStatusChange(row, action.to),
-              },
-              () => action.label,
-            ),
+          const button = h(
+            Button,
+            {
+              theme: 'default',
+              size: 'small',
+            },
+            () => action.label,
           );
+          // 下架与退回草稿会让顾客立刻看不到这款商品，属于破坏性操作，
+          // 此前点一下就直接落库，误点无法挽回。
+          if (DESTRUCTIVE_STATUS.includes(action.to)) {
+            actions.push(
+              h(
+                Popconfirm,
+                {
+                  content: `确认将「${row.name}」${action.label}？${action.to === ProductStatus.OFFLINE ? '顾客端将不再展示该商品。' : ''}`,
+                  theme: 'warning',
+                  onConfirm: () => handleStatusChange(row, action.to),
+                },
+                { default: () => button },
+              ),
+            );
+          } else {
+            actions.push(
+              h(
+                Button,
+                {
+                  theme: 'default',
+                  size: 'small',
+                  onClick: () => handleStatusChange(row, action.to),
+                },
+                () => action.label,
+              ),
+            );
+          }
         });
       }
       return h('div', { style: 'display:flex; gap:6px; flex-wrap:wrap;' }, actions);
@@ -351,6 +376,9 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }): void
   pageSize.value = pageInfo.pageSize;
   void load();
 }
+
+/** 需要二次确认的状态变更（会让顾客端看不到这款商品） */
+const DESTRUCTIVE_STATUS: ProductStatus[] = [ProductStatus.OFFLINE, ProductStatus.DRAFT];
 
 async function handleStatusChange(row: ProductListItem, next: ProductStatus): Promise<void> {
   try {

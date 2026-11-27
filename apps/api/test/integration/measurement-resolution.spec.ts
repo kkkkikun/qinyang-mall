@@ -90,7 +90,13 @@ describe('量体模板解析一致性', () => {
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalInterceptors(new ResponseInterceptor());
     app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true, validationError: { target: false } }),
+      new ValidationPipe({
+        whitelist: true,
+        // 与生产一致：多余字段直接报错，不静默剥离
+        forbidNonWhitelisted: true,
+        transform: true,
+        validationError: { target: false },
+      }),
     );
     await app.init();
 

@@ -16,6 +16,8 @@ export interface ProductCardVM {
   subtitle: string;
   categoryName: string;
   coverUrl: string;
+  /** 列表卡片用缩略图（600×600）；没有变体时回退到 coverUrl */
+  coverThumbUrl: string;
   /** 展示用价格文案：已确认显示金额，未确认显示「待报价」 */
   priceLabel: string;
   priceCents: number | null;
@@ -32,6 +34,7 @@ export function toProductCards(items: ProductListItem[]): ProductCardVM[] {
     subtitle: item.subtitle || '',
     categoryName: item.categoryName || '',
     coverUrl: item.coverUrl || '',
+    coverThumbUrl: item.coverThumbUrl || item.coverUrl || '',
     priceLabel: priceText(item.priceCents),
     priceCents: item.priceCents,
     pricingMode: item.pricingMode,

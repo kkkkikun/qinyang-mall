@@ -75,10 +75,9 @@ export class ProductUpsertDto {
   @IsInt()
   sortOrder?: number;
 
-  @ApiPropertyOptional({ enum: ProductStatus, default: ProductStatus.DRAFT })
-  @IsOptional()
-  @IsEnum(ProductStatus)
-  status?: ProductStatus;
+  // 注意：这里刻意**不**接受 status。
+  // 新增商品一律草稿，上下架只能走 POST /admin/products/:id/status（店主专属）。
+  // 接受 status 会让店员绕过店主审核直接上架。
 }
 
 export class ProductStatusDto {

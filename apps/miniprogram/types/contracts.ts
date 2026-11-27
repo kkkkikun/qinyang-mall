@@ -7,7 +7,7 @@
  * 禁止手工修改：请改 `packages/contracts/src/index.ts` 后运行
  * `python3 tools/sync_contracts_to_miniprogram.py` 重新生成。
  *
- * 生成时间：2026-11-26 18:45:41
+ * 生成时间：2026-11-27 22:32:46
  */
 
 /**
@@ -273,6 +273,12 @@ export interface MediaDto {
   id: string;
   storageKey: string;
   url: string;
+  /**
+   * 列表用缩略图地址（600×600）。
+   * 与 `url` 同目录同 basename，由详情图地址按命名约定推导；
+   * 后台上传的素材没有变体时为 null，前端回退用 `url`。
+   */
+  thumbUrl?: string | null;
   role: MediaRole;
   width: number;
   height: number;
@@ -296,6 +302,8 @@ export interface ProductListItem {
   /** FIXED_PRICE 且已确认价格时返回整数分；否则为 null，前端显示「待报价」 */
   priceCents: number | null;
   coverUrl: string | null;
+  /** 列表卡片用缩略图地址（600×600）；没有变体时为 null，前端回退用 coverUrl */
+  coverThumbUrl?: string | null;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -470,6 +478,39 @@ export interface CustomizationRequestDto {
   updatedAt: string;
 }
 
+/**
+ * 定制申请**列表项**。
+ *
+ * 与详情 DTO 的差别是刻意的：列表页不需要量体明细与联系方式，
+ * 而这两项都是敏感数据（一页 20 条就是 20 份量体表 + 20 份手机号地址）。
+ * 量体与联系方式只在**详情接口**返回，由店员在真正处理该单时才查看。
+ */
+export type CustomizationRequestListItemDto = Omit<
+  CustomizationRequestDto,
+  'measurements' | 'contact' | 'activeQuote'
+> & {
+  activeQuote?: QuoteSummaryDto | null;
+};
+
+/**
+ * 列表项用的精简报价：不含报价时冻结的商品与量体快照。
+ */
+export interface QuoteSummaryDto {
+  id: string;
+  requestId: string;
+  version: number;
+  status: QuoteStatus;
+  amountCents: number;
+  freightCents: number;
+  totalCents: number;
+  currency: string;
+  productionDays: number;
+  validUntil: string | null;
+  createdByName: string;
+  createdAt: string;
+  confirmedAt?: string | null;
+}
+
 export interface CustomizationRequestCreateRequest {
   productId: string;
   measurements: MeasurementFieldValue[];
@@ -571,6 +612,33 @@ export interface OrderDto {
   events: OrderEventDto[];
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * 订单**列表项**。
+ *
+ * 同样刻意做减法：量体快照、联系方式、状态事件流都只在详情接口返回，
+ * 列表页只需要金额、状态、商品名与来源申请号。
+ */
+export type OrderListItemDto = Omit<
+  OrderDto,
+  'measurementSnapshot' | 'contact' | 'events' | 'productSnapshot'
+> & {
+  productSnapshot: ProductSnapshotSummary;
+};
+
+/**
+ * 列表项用的精简商品快照：图集只给张数，不给整组图片元数据。
+ */
+export interface ProductSnapshotSummary {
+  id: string;
+  code: string;
+  name: string;
+  pricingMode: PricingMode;
+  priceCents: number | null;
+  categoryName: string;
+  coverUrl: string | null;
+  mediaCount: number;
 }
 
 export interface OrderCreateRequest {

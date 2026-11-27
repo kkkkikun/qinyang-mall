@@ -8,6 +8,7 @@ import type {
   CategoryDto,
   CategoryUpsertRequest,
   CustomizationRequestDto,
+  CustomizationRequestListItemDto,
   CustomizationRequestListQuery,
   LoginRequest,
   LoginResponse,
@@ -16,6 +17,7 @@ import type {
   MediaDto,
   OrderCreateRequest,
   OrderDto,
+  OrderListItemDto,
   OrderListQuery,
   OrderShipRequest,
   OrderStatusUpdateRequest,
@@ -137,7 +139,7 @@ export const templateApi = {
 export const customizationRequestApi = {
   /** GET /admin/customization-requests */
   list: (query: CustomizationRequestListQuery) =>
-    request<Paginated<CustomizationRequestDto>>({
+    request<Paginated<CustomizationRequestListItemDto>>({
       method: 'get',
       url: '/admin/customization-requests',
       params: query,
@@ -179,7 +181,7 @@ export const quoteApi = {
 export const orderApi = {
   /** GET /admin/orders */
   list: (query: OrderListQuery) =>
-    request<Paginated<OrderDto>>({
+    request<Paginated<OrderListItemDto>>({
       method: 'get',
       url: '/admin/orders',
       params: query,

@@ -55,7 +55,8 @@ Page({
     Promise.all([
       categories().catch(() => [] as CategoryDto[]),
       banners().catch(() => [] as BannerDto[]),
-      products({ page: 1, pageSize: 20 }).catch(() => null)
+      // 首页只用 15 张（1 主视觉 + 4 推荐 + 10 更多），多取 5 张是白白的图片流量
+      products({ page: 1, pageSize: 15 }).catch(() => null)
     ])
       .then((res) => {
         const catList = (res[0] || []).filter((c) => c.status === 'ACTIVE');

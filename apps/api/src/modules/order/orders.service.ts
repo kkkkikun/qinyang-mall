@@ -6,13 +6,16 @@ import {
   OrderCreateRequest,
   OrderDto,
   OrderEventDto,
+  OrderListItemDto,
   OrderListQuery,
   OrderShipRequest,
   OrderStatus,
   OrderStatusUpdateRequest,
+  PricingMode,
   ORDER_STATUS_LABELS,
   Paginated,
   ProductSnapshot,
+  ProductSnapshotSummary,
   QuoteStatus,
   REQUEST_STATUS_LABELS,
   RequestStatus,
@@ -115,10 +118,10 @@ export class OrdersService {
       ip: null,
     });
 
-    return this.toDto(saved, []);
+    return this.toDto(saved, [], request.requestNo);
   }
 
-  async listAdmin(query: OrderListQuery): Promise<Paginated<OrderDto>> {
+  async listAdmin(query: OrderListQuery): Promise<Paginated<OrderListItemDto>> {
     const page = Math.max(1, Number(query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
 
@@ -133,7 +136,7 @@ export class OrdersService {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      items: await Promise.all(items.map((item) => this.toDto(item, []))),
+      items: await this.toListItems(items),
       total,
       page,
       pageSize,
@@ -147,7 +150,8 @@ export class OrdersService {
       where: { orderId: id },
       order: { createdAt: 'ASC' },
     });
-    return this.toDto(order, events);
+    const requestNo = await this.requestNoOf(order);
+    return this.toDto(order, events, requestNo);
   }
 
   /** 更新制作状态 */
@@ -298,7 +302,7 @@ export class OrdersService {
   async listMine(
     customerId: string,
     query: OrderListQuery,
-  ): Promise<Paginated<OrderDto>> {
+  ): Promise<Paginated<OrderListItemDto>> {
     const page = Math.max(1, Number(query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
 
@@ -315,7 +319,7 @@ export class OrdersService {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      items: await Promise.all(items.map((item) => this.toDto(item, []))),
+      items: await this.toListItems(items),
       total,
       page,
       pageSize,
@@ -334,7 +338,7 @@ export class OrdersService {
       where: { orderId: order.id },
       order: { createdAt: 'ASC' },
     });
-    return this.toDto(order, events);
+    return this.toDto(order, events, request.requestNo);
   }
 
   // ───────────────────────── 内部实现 ─────────────────────────
@@ -378,12 +382,90 @@ export class OrdersService {
     return `QO-${stamp}-${randomBytes(3).toString('hex').toUpperCase()}`;
   }
 
-  private toDto(order: Order, events: OrderEvent[]): OrderDto {
+  /** 取订单的来源申请号（订单表不冗余存申请号） */
+  private async requestNoOf(order: Order): Promise<string> {
+    const row = await this.requests.findOne({
+      where: { id: order.requestId },
+      select: { id: true, requestNo: true },
+    });
+    return row?.requestNo ?? '';
+  }
+
+  /**
+   * 批量取来源申请号（列表用）。
+   * 订单表不冗余存申请号，这里一次查完，避免逐行查询。
+   */
+  private async loadRequestNos(requestIds: string[]): Promise<Map<string, string>> {
+    const map = new Map<string, string>();
+    if (requestIds.length === 0) {
+      return map;
+    }
+    const rows = await this.requests.find({
+      where: { id: In(requestIds) },
+      select: { id: true, requestNo: true },
+    });
+    for (const row of rows) {
+      map.set(row.id, row.requestNo);
+    }
+    return map;
+  }
+
+  /** 列表项组装：批量取申请号 + 精简 DTO（不含量体快照、联系方式、事件流） */
+  private async toListItems(orders: Order[]): Promise<OrderListItemDto[]> {
+    if (orders.length === 0) {
+      return [];
+    }
+    const requestNoMap = await this.loadRequestNos(
+      orders.map((order) => order.requestId),
+    );
+    return orders.map((order) =>
+      this.toListItemDto(order, requestNoMap.get(order.requestId) ?? ''),
+    );
+  }
+
+  private toListItemDto(order: Order, requestNo: string): OrderListItemDto {
+    const snapshot = (order.productSnapshot ?? {}) as Partial<ProductSnapshot>;
+    const productSnapshot: ProductSnapshotSummary = {
+      id: snapshot.id ?? '',
+      code: snapshot.code ?? '',
+      name: snapshot.name ?? '',
+      pricingMode: snapshot.pricingMode ?? PricingMode.QUOTE_ONLY,
+      priceCents: snapshot.priceCents ?? null,
+      categoryName: snapshot.categoryName ?? '',
+      coverUrl: snapshot.coverUrl ?? null,
+      mediaCount: (snapshot.media ?? []).length,
+    };
     return {
       id: order.id,
       orderNo: order.orderNo,
       requestId: order.requestId,
-      requestNo: '',
+      requestNo,
+      quoteId: order.quoteId,
+      quoteVersion: order.quoteVersion,
+      status: order.status,
+      statusLabel: ORDER_STATUS_LABELS[order.status],
+      amountCents: order.amountCents,
+      freightCents: order.freightCents,
+      totalCents: order.totalCents,
+      currency: order.currency,
+      productionDays: order.productionDays,
+      productSnapshot,
+      remark: order.remark,
+      carrier: order.carrier,
+      trackingNo: order.trackingNo,
+      shippedAt: order.shippedAt ? order.shippedAt.toISOString() : null,
+      completedAt: order.completedAt ? order.completedAt.toISOString() : null,
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+    };
+  }
+
+  private toDto(order: Order, events: OrderEvent[], requestNo = ''): OrderDto {
+    return {
+      id: order.id,
+      orderNo: order.orderNo,
+      requestId: order.requestId,
+      requestNo,
       quoteId: order.quoteId,
       quoteVersion: order.quoteVersion,
       status: order.status,

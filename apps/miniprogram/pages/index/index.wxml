@@ -122,7 +122,7 @@
           <view class="pcard pcard--square">
             <view class="pcard__ph">
               <text class="pcard__wm">QINYANG</text>
-              <image wx:if="{{item.coverUrl && !imgErr.pick[idx]}}" src="{{item.coverUrl}}" mode="aspectFill" binderror="onImgErr" data-target="pick" data-index="{{idx}}" />
+              <image wx:if="{{item.coverThumbUrl && !imgErr.pick[idx]}}" src="{{item.coverThumbUrl}}" mode="aspectFill" binderror="onImgErr" data-target="pick" data-index="{{idx}}" />
               <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
             </view>
             <view class="pcard__body pcard--bare">
@@ -152,7 +152,7 @@
             <view class="pcard pcard--square">
               <view class="pcard__ph">
                 <text class="pcard__wm">QINYANG</text>
-                <image wx:if="{{item.coverUrl && !imgErr.more[idx]}}" src="{{item.coverUrl}}" mode="aspectFill" binderror="onImgErr" data-target="more" data-index="{{idx}}" />
+                <image wx:if="{{item.coverThumbUrl && !imgErr.more[idx]}}" src="{{item.coverThumbUrl}}" mode="aspectFill" binderror="onImgErr" data-target="more" data-index="{{idx}}" />
                 <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
               </view>
               <view class="pcard__body">

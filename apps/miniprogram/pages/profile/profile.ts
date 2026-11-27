@@ -3,7 +3,7 @@ import { getNavMetrics } from '../../utils/nav';
 import { listCustomizationRequests, listOrders, me } from '../../utils/api';
 import { formatDateTime } from '../../utils/format';
 import { getBaseUrl, setBaseUrl } from '../../utils/config';
-import { CustomizationRequestDto, CustomerProfile } from '../../types/contracts';
+import { CustomizationRequestListItemDto, CustomerProfile } from '../../types/contracts';
 
 interface RecentVM {
   id: string;
@@ -70,7 +70,7 @@ Page({
         const orderPage = res[1];
         const makingPage = res[2];
         const recent: RecentVM[] = reqPage
-          ? (reqPage.items || []).map((dto: CustomizationRequestDto) => ({
+          ? (reqPage.items || []).map((dto: CustomizationRequestListItemDto) => ({
               id: dto.id,
               requestNo: dto.requestNo,
               productName: dto.productName,

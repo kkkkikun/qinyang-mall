@@ -42,6 +42,8 @@
   position: relative;
   overflow: hidden;
   background: var(--field);
+  /* 缩略图统一圆角（原型 4px）：此前是直角，与其他卡片图不一致 */
+  border-radius: 4px;
 }
 
 .order-card__thumb image {
@@ -53,6 +55,12 @@
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--text);
+  /* 真实商品名很长（如「QINYANG｜【沉金】复古驼棕格纹四色精纺双提纯羊绒小翻领女开衫高定款」），
+     不截断会把卡片撑到三四行，列表节奏全乱 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .order-card__meta {

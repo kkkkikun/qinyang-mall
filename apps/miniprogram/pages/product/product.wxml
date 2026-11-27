@@ -24,10 +24,10 @@
     <!-- 多图轮播 -->
     <view class="pd-gallery" style="height:{{galleryHeight}}px">
       <swiper wx:if="{{media.length}}" class="pd-gallery__swiper" style="height:{{galleryHeight}}px"
-        circular indicator-dots indicator-color="rgba(0,0,0,0.2)" indicator-active-color="#D29B5E" bindchange="onGalleryChange">
+        circular bindchange="onGalleryChange">
         <swiper-item wx:for="{{media}}" wx:key="key" wx:for-index="idx">
           <view class="pd-gallery__slide" bindtap="preview" data-index="{{idx}}">
-            <image wx:if="{{!item.failed}}" src="{{item.url}}" mode="aspectFit" binderror="onMediaErr" data-index="{{idx}}" />
+            <image wx:if="{{!item.failed}}" src="{{item.url}}" mode="aspectFill" binderror="onMediaErr" data-index="{{idx}}" />
             <view wx:else class="img-fallback"><view class="img-fallback__mark"></view><text>图片加载失败</text></view>
           </view>
         </swiper-item>
@@ -116,7 +116,7 @@
       </view>
       <view class="gal4">
         <view class="gal4__cell" wx:for="{{media}}" wx:key="key" wx:for-index="idx" bindtap="preview" data-index="{{idx}}">
-          <image wx:if="{{!item.failed}}" src="{{item.url}}" mode="aspectFill" binderror="onMediaErr" data-index="{{idx}}" />
+          <image wx:if="{{!item.failed}}" src="{{item.thumbUrl}}" mode="aspectFill" binderror="onMediaErr" data-index="{{idx}}" />
           <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
         </view>
       </view>

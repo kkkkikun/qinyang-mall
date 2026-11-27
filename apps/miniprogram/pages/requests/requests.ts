@@ -2,7 +2,7 @@
 import { getNavMetrics } from '../../utils/nav';
 import { listCustomizationRequests } from '../../utils/api';
 import { formatDateTime, priceText } from '../../utils/format';
-import { CustomizationRequestDto, REQUEST_STATUS_LABELS, RequestStatus } from '../../types/contracts';
+import { CustomizationRequestListItemDto, REQUEST_STATUS_LABELS, RequestStatus } from '../../types/contracts';
 
 interface TabVM {
   key: string;
@@ -33,7 +33,7 @@ function buildTabs(): TabVM[] {
   return tabs;
 }
 
-function toVM(dto: CustomizationRequestDto): RequestVM {
+function toVM(dto: CustomizationRequestListItemDto): RequestVM {
   const quote = dto.activeQuote;
   return {
     id: dto.id,

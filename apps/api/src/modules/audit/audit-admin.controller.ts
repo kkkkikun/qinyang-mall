@@ -5,6 +5,7 @@ import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuditService } from './audit.service';
+import { AuditLogQueryDto } from './dto/audit-log-query.dto';
 
 @ApiTags('管理端 · 审计日志')
 @ApiBearerAuth('admin')
@@ -16,7 +17,7 @@ export class AuditAdminController {
 
   @Get()
   @ApiOperation({ summary: '审计日志（店主专属）' })
-  list(@Query() query: AuditLogListQuery) {
+  list(@Query() query: AuditLogQueryDto) {
     return this.audit.list(query);
   }
 }

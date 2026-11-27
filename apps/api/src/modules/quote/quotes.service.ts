@@ -8,10 +8,11 @@ import {
   QuoteCreateRequest,
   QuoteDto,
   QuoteStatus,
+  QuoteSummaryDto,
   REQUEST_STATUS_LABELS,
   RequestStatus,
 } from '@qinyang/contracts';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CustomizationRequest } from '../../database/entities/customization-request.entity';
 import { Order } from '../../database/entities/order.entity';
 import { Quote } from '../../database/entities/quote.entity';
@@ -40,6 +41,64 @@ export class QuoteService {
       order: { version: 'DESC' },
     });
     return quote ? this.toDto(quote) : null;
+  }
+
+  /**
+   * 批量取这些申请当前的有效报价（列表用）。
+   *
+   * 此前列表对每一行各查一次有效报价与一次关联订单，
+   * 一页 20 条 = 40 次额外查询（N+1）；这里压成 2 次。
+   */
+  async findActiveByRequestIds(requestIds: string[]): Promise<Map<string, Quote>> {
+    const map = new Map<string, Quote>();
+    if (requestIds.length === 0) {
+      return map;
+    }
+    const rows = await this.quotes.find({
+      where: { requestId: In(requestIds), status: QuoteStatus.ACTIVE },
+      order: { version: 'DESC' },
+    });
+    for (const row of rows) {
+      // version 倒序：同一申请只保留最新的一条有效报价
+      if (!map.has(row.requestId)) {
+        map.set(row.requestId, row);
+      }
+    }
+    return map;
+  }
+
+  /** 批量取这些申请关联的订单（列表用），避免逐行查询 */
+  async findOrdersByRequestIds(
+    requestIds: string[],
+  ): Promise<Map<string, { id: string; orderNo: string }>> {
+    const map = new Map<string, { id: string; orderNo: string }>();
+    if (requestIds.length === 0) {
+      return map;
+    }
+    const rows = await this.orders.find({ where: { requestId: In(requestIds) } });
+    for (const row of rows) {
+      map.set(row.requestId, { id: row.id, orderNo: row.orderNo });
+    }
+    return map;
+  }
+
+  /** 列表用的精简报价映射：不含报价时冻结的商品与量体快照 */
+  toSummaryDto(quote: Quote): QuoteSummaryDto {
+    return {
+      id: quote.id,
+      requestId: quote.requestId,
+      version: quote.version,
+      status: quote.status,
+      amountCents: quote.amountCents,
+      freightCents: quote.freightCents,
+      totalCents: quote.amountCents + quote.freightCents,
+      currency: quote.currency,
+      productionDays: quote.productionDays,
+      validUntil: quote.validUntil ? quote.validUntil.toISOString() : null,
+      createdByName: quote.createdByName ?? '',
+      createdAt: quote.createdAt.toISOString(),
+      confirmedAt: quote.confirmedAt ? quote.confirmedAt.toISOString() : null,
+    };
   }
 
   async listByRequest(requestId: string): Promise<QuoteDto[]> {

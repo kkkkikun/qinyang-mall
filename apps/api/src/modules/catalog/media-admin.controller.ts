@@ -11,9 +11,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MediaRole, MediaDto } from '@qinyang/contracts';
 import { randomUUID } from 'node:crypto';
-import { extname } from 'node:path';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { detectImageExt } from '../../common/image-type';
 import { StorageService } from '../storage/storage.service';
 import { UploadQueryDto } from './dto/product.dto';
 
@@ -27,6 +27,8 @@ type MulterFile = {
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/jpg']);
 const MAX_BYTES = 8 * 1024 * 1024;
+
+
 
 /**
  * 图片上传（受控文件存储）。上传只负责落盘与返回对象键，
@@ -57,9 +59,14 @@ export class MediaAdminController {
       throw new BadRequestException('图片超过 8MB 限制');
     }
 
+    // 扩展名由文件内容决定，不取自客户端文件名
+    const ext = detectImageExt(file.buffer);
+    if (!ext) {
+      throw new BadRequestException('文件内容不是受支持的图片（JPEG / PNG / WebP）');
+    }
+
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const ext = extname(file.originalname || '').toLowerCase() || '.jpg';
     const key = `uploads/${month}/${randomUUID()}${ext}`;
 
     const stored = await this.storage.put(key, file.buffer, file.mimetype);

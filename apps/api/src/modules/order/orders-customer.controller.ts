@@ -4,6 +4,7 @@ import { OrderListQuery } from '@qinyang/contracts';
 import { CustomerAuthGuard } from '../../common/guards/customer-auth.guard';
 import { CurrentCustomer } from '../../common/decorators/customer.decorator';
 import { OrdersService } from './orders.service';
+import { OrderListQueryDto } from './dto/order-list-query.dto';
 
 @ApiTags('顾客端 · 订单')
 @ApiBearerAuth('customer')
@@ -15,7 +16,7 @@ export class OrdersCustomerController {
   @Get()
   @ApiOperation({ summary: '我的订单列表' })
   list(
-    @Query() query: OrderListQuery,
+    @Query() query: OrderListQueryDto,
     @CurrentCustomer('id') customerId: string,
   ) {
     return this.orders.listMine(customerId, query);

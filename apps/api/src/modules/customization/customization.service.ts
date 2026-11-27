@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   CustomizationRequestCreateRequest,
   CustomizationRequestDto,
+  CustomizationRequestListItemDto,
   CustomizationRequestListQuery,
   ERROR_CODES,
   MeasurementField,
@@ -24,6 +25,7 @@ import { AuditService } from '../audit/audit.service';
 import { ProductsService } from '../catalog/products.service';
 import { TemplatesService } from '../templates/templates.service';
 import { QuoteService } from '../quote/quotes.service';
+import type { Quote } from '../../database/entities/quote.entity';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import {
   MeasurementValidationException,
@@ -110,14 +112,42 @@ export class CustomizationService {
       submitId: dto.submitId,
     });
 
-    const saved = await this.requests.save(entity);
+    let saved: CustomizationRequest;
+    try {
+      saved = await this.requests.save(entity);
+    } catch (error) {
+      // 并发提交同一个 submitId 时，唯一索引会让后到者撞 ER_DUP_ENTRY。
+      // 意图是「幂等：返回同一条申请」，所以这里回查既有记录而不是报 500。
+      if (this.isDuplicateKey(error)) {
+        const existingAfterRace = await this.requests.findOne({
+          where: { submitId: dto.submitId },
+        });
+        if (existingAfterRace) {
+          if (existingAfterRace.customerId !== customerId) {
+            throw BusinessException.conflict(
+              '该提交标识已被使用',
+              ERROR_CODES.DUPLICATED_SUBMIT,
+            );
+          }
+          return this.toDto(existingAfterRace);
+        }
+      }
+      throw error;
+    }
     return this.toDto(saved);
+  }
+
+  /** 判断异常是否为唯一索引冲突（MySQL ER_DUP_ENTRY = 1062） */
+  private isDuplicateKey(error: unknown): boolean {
+    const code = (error as { code?: string | number; errno?: number })?.code;
+    const errno = (error as { errno?: number })?.errno;
+    return code === 'ER_DUP_ENTRY' || code === 1062 || errno === 1062;
   }
 
   async listMine(
     customerId: string,
     query: CustomizationRequestListQuery,
-  ): Promise<Paginated<CustomizationRequestDto>> {
+  ): Promise<Paginated<CustomizationRequestListItemDto>> {
     const page = Math.max(1, Number(query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
 
@@ -131,7 +161,7 @@ export class CustomizationService {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      items: await Promise.all(items.map((item) => this.toDto(item))),
+      items: await this.toListItems(items),
       total,
       page,
       pageSize,
@@ -171,7 +201,7 @@ export class CustomizationService {
 
   async listAdmin(
     query: CustomizationRequestListQuery,
-  ): Promise<Paginated<CustomizationRequestDto>> {
+  ): Promise<Paginated<CustomizationRequestListItemDto>> {
     const page = Math.max(1, Number(query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(query.pageSize ?? 20)));
 
@@ -187,7 +217,7 @@ export class CustomizationService {
 
     const [items, total] = await qb.getManyAndCount();
     return {
-      items: await Promise.all(items.map((item) => this.toDto(item))),
+      items: await this.toListItems(items),
       total,
       page,
       pageSize,
@@ -306,6 +336,62 @@ export class CustomizationService {
         now.getDate(),
       ).padStart(2, '0')}`;
     return `QR-${stamp}-${randomBytes(3).toString('hex').toUpperCase()}`;
+  }
+
+  /**
+   * 列表项组装：批量预取有效报价与关联订单，避免逐行查询（N+1）。
+   */
+  private async toListItems(
+    items: CustomizationRequest[],
+  ): Promise<CustomizationRequestListItemDto[]> {
+    if (items.length === 0) {
+      return [];
+    }
+    const ids = items.map((item) => item.id);
+    const [quoteMap, orderMap] = await Promise.all([
+      this.quotes.findActiveByRequestIds(ids),
+      this.quotes.findOrdersByRequestIds(ids),
+    ]);
+    return items.map((item) =>
+      this.toListDto(
+        item,
+        quoteMap.get(item.id) ?? null,
+        orderMap.get(item.id) ?? null,
+      ),
+    );
+  }
+
+  /**
+   * 列表项 DTO：**不含量体明细与联系方式**。
+   * 这两项只在详情接口返回——列表页批量带出会同时放大响应体
+   * （一页 20 条 ≈ 7 KB/条）与敏感数据暴露面。
+   */
+  private toListDto(
+    request: CustomizationRequest,
+    activeQuote: Quote | null,
+    order: { id: string; orderNo: string } | null,
+  ): CustomizationRequestListItemDto {
+    const snapshot = (request.productSnapshot ?? {}) as Partial<ProductSnapshot>;
+    return {
+      id: request.id,
+      requestNo: request.requestNo,
+      customerId: request.customerId,
+      productId: request.productId,
+      productCode: snapshot.code ?? '',
+      productName: snapshot.name ?? '',
+      productCoverUrl: snapshot.coverUrl ?? null,
+      templateId: request.templateId,
+      templateName: request.templateName,
+      templateVersion: request.templateVersion,
+      status: request.status,
+      statusLabel: REQUEST_STATUS_LABELS[request.status],
+      remark: request.remark,
+      activeQuote: activeQuote ? this.quotes.toSummaryDto(activeQuote) : null,
+      orderId: order?.id ?? null,
+      orderNo: order?.orderNo ?? null,
+      createdAt: request.createdAt.toISOString(),
+      updatedAt: request.updatedAt.toISOString(),
+    };
   }
 
   private async toDto(

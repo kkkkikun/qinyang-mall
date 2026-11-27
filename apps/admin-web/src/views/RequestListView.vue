@@ -61,14 +61,15 @@
           >
             创建报价
           </t-button>
-          <t-button
+          <!-- 建单后顾客立刻能看到订单，误建会多出一条业务记录 -->
+          <t-popconfirm
             v-if="can('request.order') && canCreateOrder"
-            theme="primary"
-            size="small"
-            @click="handleCreateOrder"
+            content="将按当前已确认报价生成订单，顾客会立即看到。确认创建？"
+            theme="warning"
+            @confirm="handleCreateOrder"
           >
-            创建订单
-          </t-button>
+            <t-button theme="primary" size="small">创建订单</t-button>
+          </t-popconfirm>
         </div>
 
         <div class="section-title">申请信息</div>
@@ -200,6 +201,7 @@ import {
   RequestStatus,
   REQUEST_STATUS_LABELS,
   type CustomizationRequestDto,
+  type CustomizationRequestListItemDto,
   type QuoteDto,
 } from '@qinyang/contracts';
 import { customizationRequestApi, orderApi, quoteApi } from '../api/admin';
@@ -223,7 +225,7 @@ const filters = reactive<{ keyword: string; status: '' | RequestStatus }>({
   status: '',
 });
 
-const rows = ref<CustomizationRequestDto[]>([]);
+const rows = ref<CustomizationRequestListItemDto[]>([]);
 const loading = ref(false);
 const page = ref(1);
 const pageSize = ref(10);

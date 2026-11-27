@@ -37,7 +37,6 @@
               theme="default"
               size="small"
               :loading="busyId === item.id"
-              @click="handleSetCover(item)"
             >
               设为封面
             </t-button>

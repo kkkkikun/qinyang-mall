@@ -10,6 +10,11 @@ services:
       - --collation-server=utf8mb4_unicode_ci
       - --default-time-zone=+08:00
       - --max-connections=150
+      # 慢查询日志：没有它，索引与查询优化只能靠猜
+      - --slow-query-log=1
+      - --long-query-time=0.2
+      - --log-output=FILE
+      - --slow-query-log-file=/tmp/slow.log
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-qinyang-root}
       MYSQL_DATABASE: ${DB_DATABASE:-qinyang_mall}

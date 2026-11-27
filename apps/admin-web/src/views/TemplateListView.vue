@@ -105,9 +105,13 @@
         <div v-for="(section, sectionIndex) in form.sections" :key="sectionIndex" class="measure-section">
           <div class="measure-section-head">
             <span>第 {{ sectionIndex + 1 }} 节</span>
-            <t-button theme="danger" variant="outline" size="small" @click="removeSection(sectionIndex)">
-              删除本节
-            </t-button>
+            <t-popconfirm
+              content="删除该分节及其下所有字段，确认删除？"
+              theme="danger"
+              @confirm="removeSection(sectionIndex)"
+            >
+              <t-button theme="danger" variant="outline" size="small">删除分节</t-button>
+            </t-popconfirm>
           </div>
           <div class="measure-field-list" style="grid-template-columns: repeat(2, minmax(0, 1fr))">
             <div class="measure-field">
@@ -148,9 +152,13 @@
                     <t-switch v-model="field.required" />
                   </td>
                   <td>
-                    <t-button theme="danger" variant="outline" size="small" @click="removeField(sectionIndex, fieldIndex)">
-                      删除
-                    </t-button>
+                    <t-popconfirm
+                      content="删除该字段后，量体表单将不再采集这一项。确认删除？"
+                      theme="danger"
+                      @confirm="removeField(sectionIndex, fieldIndex)"
+                    >
+                      <t-button theme="danger" variant="outline" size="small">删除字段</t-button>
+                    </t-popconfirm>
                   </td>
                 </tr>
               </tbody>

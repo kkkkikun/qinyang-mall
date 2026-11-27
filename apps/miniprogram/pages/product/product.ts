@@ -7,6 +7,8 @@ import { MediaDto, ProductDetail, ProductStatus } from '../../types/contracts';
 interface MediaVM {
   key: string;
   url: string;
+  /** 缩略图网格用小图；没有变体时回退到 url */
+  thumbUrl: string;
   role: string;
   roleLabel: string;
   failed: boolean;
@@ -70,6 +72,7 @@ Page({
           .map((m: MediaDto, i: number) => ({
             key: m.id || 'm' + i,
             url: m.url,
+            thumbUrl: m.thumbUrl || m.url,
             role: m.role,
             roleLabel: ROLE_LABELS[m.role] || '实拍',
             failed: false
@@ -81,7 +84,10 @@ Page({
           media,
           priceLabel: priceText(detail.priceCents),
           pricePending: detail.priceCents === null || detail.priceCents === undefined,
-          galleryHeight: Math.round(nav.windowWidth),
+          // 4:5 满幅：与商品图 4x5 变体一致。
+          // 此前是 windowWidth 的正方形 + aspectFit，竖图被 contain 进方框，
+          // 左右上下各留一条灰底空带，主视觉像「小图浮在灰底上」。
+          galleryHeight: Math.round(nav.windowWidth * 1.25),
           isOffline: detail.status === ProductStatus.OFFLINE,
           descText: detail.description || '',
           materialText: detail.material || '',

@@ -1,0 +1,214 @@
+{
+  "measuredAt": "2026-11-27T14:32:59.843Z",
+  "base": "http://127.0.0.1:18110/api/v1",
+  "samples": 20,
+  "results": [
+    {
+      "name": "健康检查",
+      "path": "/health",
+      "status": 200,
+      "bytes": 157,
+      "p50": 0.95,
+      "p95": 1.27,
+      "max": 2.08
+    },
+    {
+      "name": "公开·轮播",
+      "path": "/banners",
+      "status": 200,
+      "bytes": 947,
+      "p50": 1.35,
+      "p95": 1.56,
+      "max": 1.83
+    },
+    {
+      "name": "公开·分类树",
+      "path": "/categories",
+      "status": 200,
+      "bytes": 3868,
+      "p50": 1.88,
+      "p95": 2.09,
+      "max": 2.68
+    },
+    {
+      "name": "公开·商品列表",
+      "path": "/products?pageSize=20",
+      "status": 200,
+      "bytes": 6365,
+      "p50": 3.55,
+      "p95": 4.48,
+      "max": 4.5
+    },
+    {
+      "name": "公开·商品详情",
+      "path": "/products/b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+      "status": 200,
+      "bytes": 3234,
+      "p50": 3.09,
+      "p95": 3.7,
+      "max": 3.98
+    },
+    {
+      "name": "公开·图文页",
+      "path": "/guides/measure-top",
+      "status": 200,
+      "bytes": 1443,
+      "p50": 1.39,
+      "p95": 1.5,
+      "max": 1.55
+    },
+    {
+      "name": "公开·模板解析",
+      "path": "/measurement-templates/resolve?productId=b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+      "status": 200,
+      "bytes": 3246,
+      "p50": 1.63,
+      "p95": 1.92,
+      "max": 2.47
+    },
+    {
+      "name": "顾客·我的资料",
+      "path": "/auth/me",
+      "status": 200,
+      "bytes": 194,
+      "p50": 1.25,
+      "p95": 1.44,
+      "max": 1.53
+    },
+    {
+      "name": "顾客·我的申请",
+      "path": "/customization-requests",
+      "status": 200,
+      "bytes": 129,
+      "p50": 1.25,
+      "p95": 2.07,
+      "max": 2.47
+    },
+    {
+      "name": "顾客·我的订单",
+      "path": "/orders",
+      "status": 200,
+      "bytes": 129,
+      "p50": 1.45,
+      "p95": 1.73,
+      "max": 2.99
+    },
+    {
+      "name": "后台·我的资料",
+      "path": "/admin/auth/me",
+      "status": 200,
+      "bytes": 282,
+      "p50": 1.25,
+      "p95": 1.42,
+      "max": 1.83
+    },
+    {
+      "name": "后台·商品列表",
+      "path": "/admin/products?pageSize=20",
+      "status": 200,
+      "bytes": 8711,
+      "p50": 3.91,
+      "p95": 7.57,
+      "max": 7.83
+    },
+    {
+      "name": "后台·商品详情",
+      "path": "/admin/products/b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+      "status": 200,
+      "bytes": 3234,
+      "p50": 2.8,
+      "p95": 3.66,
+      "max": 66.9
+    },
+    {
+      "name": "后台·分类树",
+      "path": "/admin/categories",
+      "status": 200,
+      "bytes": 3868,
+      "p50": 1.9,
+      "p95": 2.13,
+      "max": 2.47
+    },
+    {
+      "name": "后台·轮播列表",
+      "path": "/admin/banners",
+      "status": 200,
+      "bytes": 947,
+      "p50": 1.33,
+      "p95": 1.63,
+      "max": 1.74
+    },
+    {
+      "name": "后台·模板列表",
+      "path": "/admin/measurement-templates",
+      "status": 200,
+      "bytes": 16159,
+      "p50": 1.88,
+      "p95": 2.09,
+      "max": 2.42
+    },
+    {
+      "name": "后台·模板详情",
+      "path": "/admin/measurement-templates/b7a4846a-a9f4-4c35-bc63-836e43cb6e6f",
+      "status": 200,
+      "bytes": 3172,
+      "p50": 1.4,
+      "p95": 1.68,
+      "max": 1.82
+    },
+    {
+      "name": "后台·申请列表",
+      "path": "/admin/customization-requests?pageSize=20",
+      "status": 200,
+      "bytes": 138016,
+      "p50": 17.44,
+      "p95": 20.11,
+      "max": 20.47
+    },
+    {
+      "name": "后台·订单列表",
+      "path": "/admin/orders?pageSize=20",
+      "status": 200,
+      "bytes": 124442,
+      "p50": 4.92,
+      "p95": 6.03,
+      "max": 7.86
+    },
+    {
+      "name": "后台·审计日志",
+      "path": "/admin/audit-logs?pageSize=20",
+      "status": 200,
+      "bytes": 9450,
+      "p50": 2.24,
+      "p95": 3.45,
+      "max": 7.06
+    },
+    {
+      "name": "后台·申请详情",
+      "path": "/admin/customization-requests/c68b8db0-6ac8-4a67-aafd-7fa927629b07",
+      "status": 200,
+      "bytes": 4550,
+      "p50": 2.42,
+      "p95": 2.63,
+      "max": 7.85
+    },
+    {
+      "name": "后台·申请报价历史",
+      "path": "/admin/customization-requests/c68b8db0-6ac8-4a67-aafd-7fa927629b07/quotes",
+      "status": 200,
+      "bytes": 86,
+      "p50": 1.29,
+      "p95": 1.61,
+      "max": 2.52
+    },
+    {
+      "name": "后台·订单详情",
+      "path": "/admin/orders/ba13bc67-12ac-4057-9c75-47736cc9320c",
+      "status": 200,
+      "bytes": 5287,
+      "p50": 1.98,
+      "p95": 2.06,
+      "max": 2.17
+    }
+  ]
+}

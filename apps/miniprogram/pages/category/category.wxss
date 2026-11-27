@@ -3,7 +3,8 @@
 .cat-wrap {
   display: flex;
   background: var(--card);
-  height: calc(100vh - 44px - env(safe-area-inset-bottom));
+  /* 高度由 wxml 按真实导航栏高度（状态栏 + 胶囊区）计算：
+     写死 44px 会比可用高度少 16–51px，最后一行商品被原生 tabBar 裁掉。 */
 }
 
 .side-cat {

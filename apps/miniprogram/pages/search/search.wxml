@@ -69,7 +69,7 @@
               <view class="pcard pcard--square">
                 <view class="pcard__ph">
                   <text class="pcard__wm">QINYANG</text>
-                  <image wx:if="{{item.coverUrl && !imgErr[idx]}}" src="{{item.coverUrl}}" mode="aspectFill" binderror="onImgErr" data-index="{{idx}}" />
+                  <image wx:if="{{item.coverThumbUrl && !imgErr[idx]}}" src="{{item.coverThumbUrl}}" mode="aspectFill" binderror="onImgErr" data-index="{{idx}}" />
                   <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
                 </view>
                 <view class="pcard__body">

@@ -11,9 +11,11 @@ import {
   CategoryDto,
   CustomizationRequestCreateRequest,
   CustomizationRequestDto,
+  CustomizationRequestListItemDto,
   CustomerProfile,
   MeasurementTemplateDto,
   OrderDto,
+  OrderListItemDto,
   Paginated,
   ProductDetail,
   ProductListItem
@@ -187,7 +189,7 @@ export function createCustomizationRequest(
 }
 
 /** GET /customization-requests */
-export function listCustomizationRequests(query: RequestQuery): Promise<Paginated<CustomizationRequestDto>> {
+export function listCustomizationRequests(query: RequestQuery): Promise<Paginated<CustomizationRequestListItemDto>> {
   const qs = queryString({
     status: query.status,
     keyword: query.keyword,
@@ -197,7 +199,7 @@ export function listCustomizationRequests(query: RequestQuery): Promise<Paginate
   });
   return ensureToken().then(() =>
     request<unknown>({ url: '/customization-requests' + qs }).then((raw) =>
-      normalizePage<CustomizationRequestDto>(raw)
+      normalizePage<CustomizationRequestListItemDto>(raw)
     )
   );
 }
@@ -237,7 +239,7 @@ export function cancelRequest(requestId: string): Promise<CustomizationRequestDt
 /* ------------------------------ 订单 ------------------------------ */
 
 /** GET /orders */
-export function listOrders(query: OrderQuery): Promise<Paginated<OrderDto>> {
+export function listOrders(query: OrderQuery): Promise<Paginated<OrderListItemDto>> {
   const qs = queryString({
     status: query.status,
     keyword: query.keyword,
@@ -245,7 +247,7 @@ export function listOrders(query: OrderQuery): Promise<Paginated<OrderDto>> {
     pageSize: query.pageSize
   });
   return ensureToken().then(() =>
-    request<unknown>({ url: '/orders' + qs }).then((raw) => normalizePage<OrderDto>(raw))
+    request<unknown>({ url: '/orders' + qs }).then((raw) => normalizePage<OrderListItemDto>(raw))
   );
 }
 

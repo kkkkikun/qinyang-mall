@@ -76,8 +76,8 @@ import {
   OrderStatus,
   ProductStatus,
   RequestStatus,
-  type CustomizationRequestDto,
-  type OrderDto,
+  type CustomizationRequestListItemDto,
+  type OrderListItemDto,
 } from '@qinyang/contracts';
 import { bannerApi, customizationRequestApi, orderApi, productApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
@@ -94,9 +94,9 @@ const stats = reactive({
   activeBanners: 0,
 });
 
-const pendingReviewList = ref<CustomizationRequestDto[]>([]);
-const pendingQuoteList = ref<CustomizationRequestDto[]>([]);
-const productionOrders = ref<OrderDto[]>([]);
+const pendingReviewList = ref<CustomizationRequestListItemDto[]>([]);
+const pendingQuoteList = ref<CustomizationRequestListItemDto[]>([]);
+const productionOrders = ref<OrderListItemDto[]>([]);
 
 function goRequests(): void {
   void router.push('/requests');

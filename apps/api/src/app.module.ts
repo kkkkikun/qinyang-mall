@@ -35,7 +35,8 @@ import { HealthController } from './modules/health/health.controller';
         synchronize: false,
         migrationsRun: false,
         logging: config.get<string>('nodeEnv') === 'development' ? ['error', 'warn'] : ['error'],
-        extra: { connectionLimit: 10 },
+        // 连接池大小走配置（此前运行时写死 10，DB_POOL_SIZE 只对 CLI 生效）
+        extra: { connectionLimit: Number(config.get<number>('database.poolSize') ?? 10) },
       }),
     }),
     StorageModule,

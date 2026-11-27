@@ -18,6 +18,7 @@ import { CurrentCustomer } from '../../common/decorators/customer.decorator';
 import { CustomizationService } from './customization.service';
 import { QuoteService } from '../quote/quotes.service';
 import { CreateCustomizationRequestDto } from './dto/customization.dto';
+import { CustomizationRequestQueryDto } from './dto/customization-request-query.dto';
 
 @ApiTags('顾客端 · 定制申请')
 @ApiBearerAuth('customer')
@@ -42,7 +43,7 @@ export class CustomizationCustomerController {
   @Get()
   @ApiOperation({ summary: '我的定制申请列表' })
   list(
-    @Query() query: CustomizationRequestListQuery,
+    @Query() query: CustomizationRequestQueryDto,
     @CurrentCustomer('id') customerId: string,
   ) {
     return this.service.listMine(customerId, query);

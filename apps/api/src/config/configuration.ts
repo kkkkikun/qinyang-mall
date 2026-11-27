@@ -17,6 +17,8 @@ export interface AppConfig {
     username: string;
     password: string;
     database: string;
+    /** 连接池大小；此前运行时写死 10，CLI 读环境变量、运行时忽略 */
+    poolSize: number;
   };
   storage: {
     /** local = 受控文件存储（开发/测试）；oss = 对象存储（正式，需商家授权后接入） */
@@ -71,6 +73,7 @@ export const configuration = (): AppConfig => ({
     username: process.env.DB_USERNAME ?? 'qinyang',
     password: process.env.DB_PASSWORD ?? 'qinyang',
     database: process.env.DB_DATABASE ?? 'qinyang_mall',
+    poolSize: num(process.env.DB_POOL_SIZE, 10),
   },
   storage: {
     driver: (process.env.STORAGE_DRIVER as 'local' | 'oss') ?? 'local',
@@ -81,7 +84,14 @@ export const configuration = (): AppConfig => ({
   wechat: {
     appId: process.env.WECHAT_APP_ID ?? '',
     appSecret: process.env.WECHAT_APP_SECRET ?? '',
-    mockAuth: bool(process.env.WECHAT_MOCK_AUTH, true),
+    /**
+     * 模拟顾客登录（仅开发/测试）。
+     *
+     * 默认 **关闭**：模拟登录等价于「任意 code 都能登录」，
+     * 一旦这个默认值被带到生产环境，就等于没有认证。
+     * 开发与测试环境请显式设置 WECHAT_MOCK_AUTH=true。
+     */
+    mockAuth: bool(process.env.WECHAT_MOCK_AUTH, false),
   },
   payment: {
     enabled: bool(process.env.PAYMENT_ENABLED, false),

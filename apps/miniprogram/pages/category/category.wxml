@@ -16,7 +16,7 @@
     <view class="state__btn"><button class="btn btn--ghost btn--sm" bindtap="reload">重新加载</button></view>
   </view>
 
-  <view wx:else class="cat-wrap">
+  <view wx:else class="cat-wrap" style="height:calc(100vh - {{nav.statusBarHeight + nav.barHeight}}px)">
     <!-- 左侧：一级分类 + 二级分组 -->
     <scroll-view class="side-cat" scroll-y enable-flex>
       <view class="side-head {{curGroup ? 'side-head--drilled' : ''}}">{{curCatName}}</view>
@@ -59,7 +59,7 @@
             <view class="pcard pcard--square">
               <view class="pcard__ph pcard__ph--cat">
                 <text class="pcard__wm">QINYANG</text>
-                <image wx:if="{{item.coverUrl && !imgErr[idx]}}" src="{{item.coverUrl}}" mode="aspectFill" binderror="onImgErr" data-index="{{idx}}" />
+                <image wx:if="{{item.coverThumbUrl && !imgErr[idx]}}" src="{{item.coverThumbUrl}}" mode="aspectFill" binderror="onImgErr" data-index="{{idx}}" />
                 <view wx:else class="img-fallback"><view class="img-fallback__mark"></view></view>
               </view>
               <view class="pcard__body">

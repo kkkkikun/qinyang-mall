@@ -148,9 +148,11 @@ view, text, image, button, input, textarea, scroll-view {
 }
 
 .cat-nav__item {
-  flex: 0 0 auto;
+  /* 等分满宽：原型与参考图都是 4 项均分居中，
+     此前 flex:0 0 auto 让它们挤在左半屏、右侧大片空白 */
+  flex: 1 0 auto;
   text-align: center;
-  padding: 11px 16px;
+  padding: 11px 0;
   font-size: 14px;
   color: var(--text);
 }
@@ -295,6 +297,13 @@ view, text, image, button, input, textarea, scroll-view {
   border-radius: 6px;
   font-size: 14px;
   line-height: 1;
+  /* 交互反馈：此前全站零动效、零点击反馈，点任何东西视觉上都没反应 */
+  transition: opacity .15s ease, transform .1s ease-out, background-color .15s ease;
+}
+
+.btn:active {
+  transform: scale(.985);
+  opacity: .92;
 }
 
 .btn--tan { background: var(--tan); color: #fff; }
@@ -314,6 +323,7 @@ view, text, image, button, input, textarea, scroll-view {
 
 .btn--disabled {
   opacity: 0.45;
+  pointer-events: none;
 }
 
 .btn image {
@@ -452,6 +462,15 @@ view, text, image, button, input, textarea, scroll-view {
 .pgrid__cell {
   width: 48%;
   margin-bottom: 10px;
+}
+
+/* 可点元素的按压反馈 */
+.pcard:active,
+.list-row:active,
+.req-card:active,
+.order-card:active,
+.tabs__item:active {
+  opacity: .88;
 }
 
 .pcard {

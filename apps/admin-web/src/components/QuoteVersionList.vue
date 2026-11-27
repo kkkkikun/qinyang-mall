@@ -15,14 +15,15 @@
         </t-tag>
         <span class="text-gold">合计 {{ formatYuan(quote.totalCents) }}</span>
         <span class="page-toolbar-spacer"></span>
-        <t-button
+        <!-- 撤回报价会让顾客侧的报价失效，属于破坏性操作，需二次确认 -->
+        <t-popconfirm
           v-if="showWithdraw && quote.status === QuoteStatus.ACTIVE"
-          theme="default"
-          size="small"
-          @click="emit('withdraw', quote)"
+          content="撤回后该版本报价立即失效，顾客需等待新报价。确认撤回？"
+          theme="warning"
+          @confirm="emit('withdraw', quote)"
         >
-          撤回
-        </t-button>
+          <t-button theme="default" size="small">撤回</t-button>
+        </t-popconfirm>
       </div>
 
       <div class="quote-meta">

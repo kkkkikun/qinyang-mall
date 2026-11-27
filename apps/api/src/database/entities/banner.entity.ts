@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -33,6 +34,9 @@ export class Banner {
   @Column({ type: 'int', default: 0 })
   sortOrder: number;
 
+  // 与迁移里的 IDX_banners_status 对齐：实体与迁移的索引漂移，
+  // 一旦有人临时开 synchronize 或跑 schema:log，就会被建议删索引。
+  @Index()
   @Column({ type: 'varchar', length: 16, default: 'ACTIVE' })
   status: BannerStatus;
 

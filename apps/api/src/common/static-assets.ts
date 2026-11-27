@@ -39,9 +39,20 @@ export const mountStaticAssets = (
   options: StaticAssetsOptions,
 ): void => {
   const prefix = resolveStaticPrefix(options.publicBaseUrl);
-  app.useStaticAssets(options.storageRoot, { prefix });
+  // 静态资源的缓存策略：
+  //   图片内容按文件名不可变（改名即换 URL），因此可以长期缓存；
+  //   之前用的是 express 默认的 `max-age=0`，首屏每张图都要回源做一次
+  //   ETag 校验（304 往返），18 张图就是 18 次多余往返。
+  const cacheOptions = {
+    prefix,
+    maxAge: '7d',
+    setHeaders: (res: { setHeader: (k: string, v: string) => void }) => {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+    },
+  };
+  app.useStaticAssets(options.storageRoot, cacheOptions);
   const mediaRoot = (options.mediaRoot ?? '').trim();
   if (mediaRoot) {
-    app.useStaticAssets(mediaRoot, { prefix });
+    app.useStaticAssets(mediaRoot, cacheOptions);
   }
 };

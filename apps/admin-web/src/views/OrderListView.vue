@@ -217,6 +217,7 @@ import {
   ORDER_STATUS_TRANSITIONS,
   PricingMode,
   type OrderDto,
+  type OrderListItemDto,
 } from '@qinyang/contracts';
 import { orderApi } from '../api/admin';
 import { toErrorMessage } from '../api/http';
@@ -238,7 +239,7 @@ const filters = reactive<{ keyword: string; status: '' | OrderStatus }>({
   status: '',
 });
 
-const rows = ref<OrderDto[]>([]);
+const rows = ref<OrderListItemDto[]>([]);
 const loading = ref(false);
 const page = ref(1);
 const pageSize = ref(10);
@@ -293,7 +294,16 @@ const canCancel = computed(() => nextStatuses.value.includes(OrderStatus.CANCELL
 const columns = [
   { colKey: 'orderNo', title: '订单号', width: 160 },
   { colKey: 'requestNo', title: '来源申请', width: 160 },
-  { colKey: 'productName', title: '商品', width: 180 },
+  {
+    colKey: 'productName',
+    title: '商品',
+    width: 180,
+    // 订单列表项里的商品名在冻结快照上（productSnapshot.name），
+    // 顶层并没有 productName 字段——此前这一列恒为空。
+    cell: cell<OrderListItemDto>((row) =>
+      h('span', null, row.productSnapshot?.name || '—'),
+    ),
+  },
   {
     colKey: 'status',
     title: '状态',

@@ -32,6 +32,7 @@ import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { CustomizationService } from './customization.service';
 import { QuoteService } from '../quote/quotes.service';
+import { CustomizationRequestQueryDto } from './dto/customization-request-query.dto';
 
 export class ReviewDto {
   @ApiProperty({ enum: ['APPROVE', 'REJECT'] })
@@ -103,7 +104,7 @@ export class CustomizationAdminController {
 
   @Get()
   @ApiOperation({ summary: '申请列表' })
-  list(@Query() query: CustomizationRequestListQuery) {
+  list(@Query() query: CustomizationRequestQueryDto) {
     return this.service.listAdmin(query);
   }
 

@@ -250,8 +250,7 @@ async function main() {
       amountCents: 288000,
       freightCents: 2000,
       productionDays: 25,
-      note: '页面验证报价',
-      publish: true
+      note: '页面验证报价'
     });
     check('店员创建报价', quoteRes.status === 201 || quoteRes.status === 200,
       `status=${quoteRes.status}`);

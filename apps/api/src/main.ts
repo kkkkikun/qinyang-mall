@@ -5,10 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { mountStaticAssets } from './common/static-assets';
+import { configuration } from './config/configuration';
+import { assertProductionConfigOrThrow } from './config/production-guard';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -16,17 +19,34 @@ async function bootstrap(): Promise<void> {
   });
   const config = app.get(ConfigService);
 
+  // 生产环境启动闸门：默认密钥 / 模拟登录 / 缺 AppID 一律拒绝启动
+  assertProductionConfigOrThrow(configuration());
+
   app.setGlobalPrefix(config.get<string>('apiPrefix') ?? 'api/v1');
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      // 多余字段直接报错而不是静默剥离：
+      // 静默剥离会掩盖「前端多传了字段」这类契约漂移，排障时极难发现。
+      forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: false },
       validationError: { target: false, value: false },
     }),
   );
+
+  /**
+   * 响应压缩。
+   *
+   * 后台走 nginx（那边开了 gzip），但**小程序是直连 API 容器的**，
+   * 整条顾客侧链路不经过 nginx —— 此前顾客拿到的都是明文 JSON。
+   * 商品列表、申请列表这类 JSON 压缩比通常在 8–12 倍，
+   * 压缩后首屏流量下降一个量级。
+   * threshold=1024：小于 1KB 的响应不压（压了反而更大）。
+   */
+  app.use(compression({ threshold: 1024 }));
 
   // 请求 ID：便于把前后端日志对齐，且不记录任何请求体
   app.use((req: { headers: Record<string, unknown>; requestId?: string }, res: { setHeader: (k: string, v: string) => void }, next: () => void) => {
@@ -51,6 +71,8 @@ async function bootstrap(): Promise<void> {
     publicBaseUrl: config.get<string>('storage.publicBaseUrl') ?? '',
   });
 
+  // OpenAPI 文档只在非生产环境挂载（生产环境暴露全部接口结构没有收益）
+  if (config.get<string>('nodeEnv') !== 'production') {
   const swaggerDoc = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
@@ -66,6 +88,7 @@ async function bootstrap(): Promise<void> {
   SwaggerModule.setup('docs', app, swaggerDoc, {
     swaggerOptions: { persistAuthorization: true },
   });
+  }
 
   const port = config.get<number>('port') ?? 3000;
   await app.listen(port, '0.0.0.0');
