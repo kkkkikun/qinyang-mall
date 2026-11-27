@@ -70,6 +70,8 @@ def main() -> int:
             "utils",
             "tools",
             "data",
+            # 构建期注入的运行配置（config/env.ts），不是页面目录
+            "config",
         }:
             continue
         if directory.name.startswith("."):

@@ -7,7 +7,7 @@
  * 禁止手工修改：请改 `packages/contracts/src/index.ts` 后运行
  * `python3 tools/sync_contracts_to_miniprogram.py` 重新生成。
  *
- * 生成时间：2026-11-27 23:59:15
+ * 生成时间：2026-11-28 00:38:29
  */
 
 /**
@@ -826,6 +826,8 @@ export const ERROR_CODES = {
   FORBIDDEN: 'FORBIDDEN',
   NOT_FOUND: 'NOT_FOUND',
   VALIDATION_FAILED: 'VALIDATION_FAILED',
+  /** 服务端内部错误（500）：与参数错误区分开，便于监控告警 */
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
   DUPLICATED_SUBMIT: 'DUPLICATED_SUBMIT',
   INVALID_STATUS_TRANSITION: 'INVALID_STATUS_TRANSITION',
   QUOTE_VERSION_CONFLICT: 'QUOTE_VERSION_CONFLICT',

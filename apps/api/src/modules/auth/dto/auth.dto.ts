@@ -1,11 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { Trim } from '../../../common/decorators/trim.decorator';
 
 export class AdminLoginDto {
   @ApiProperty({ example: 'owner' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   username: string;
 
   @ApiProperty({ example: 'change-me-in-env' })
@@ -21,5 +23,6 @@ export class CustomerLoginDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(256)
+  @Trim()
   code: string;
 }

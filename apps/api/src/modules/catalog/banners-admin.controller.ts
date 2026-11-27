@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import {
   IsIn,
+  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -30,24 +31,28 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { BannersService } from './banners.service';
+import { Trim, TrimNullable } from '../../common/decorators/trim.decorator';
 
 export class BannerUpsertDto implements BannerUpsertRequest {
   @ApiProperty({ example: '琴扬精纺羊绒 · 定制服饰' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(128)
+  @Trim()
   title!: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @MaxLength(512)
+  @Trim()
   imageUrl!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(255)
+  @Trim()
   storageKey?: string;
 
   @ApiProperty({ enum: ['NONE', 'PRODUCT', 'CATEGORY', 'PAGE'] })
@@ -58,6 +63,7 @@ export class BannerUpsertDto implements BannerUpsertRequest {
   @IsOptional()
   @IsString()
   @MaxLength(255)
+  @TrimNullable()
   linkValue?: string | null;
 
   @ApiPropertyOptional({ default: 0 })
@@ -73,11 +79,15 @@ export class BannerUpsertDto implements BannerUpsertRequest {
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()
+  @IsDateString()
+  @TrimNullable()
   startAt?: string | null;
 
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()
+  @IsDateString()
+  @TrimNullable()
   endAt?: string | null;
 }
 

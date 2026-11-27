@@ -53,7 +53,7 @@
 | POST | `/admin/products` | STAFF | 新增商品（初始为 DRAFT） |
 | POST | `/admin/products/import` | STAFF | CSV 批量导入 `{ csv, dryRun? }`：**只新增不覆盖**，编号已存在则跳过；导入商品一律 DRAFT；逐行返回 CREATED/PENDING/SKIPPED/FAILED 与原因 |
 | GET | `/admin/products/:id` | 登录 | 商品详情（含图集） |
-| PUT | `/admin/products/:id` | STAFF | 修改商品（已发布商品的价格/文案修改需走重新审核） |
+| PUT | `/admin/products/:id` | STAFF | 修改商品（**已发布商品的价格/报价模式仅店主可改**，店员改价 409；文案与资料店员可改，改动进审计） |
 | POST | `/admin/products/:id/status` | OWNER | `{ status }` 上下架 / 提交审核，OWNER 专属 |
 | POST | `/admin/products/batch-status` | OWNER | `{ ids[], status }` 批量上下架，OWNER 专属；单条失败不影响其余 |
 | POST | `/admin/products/:id/media` | STAFF | 追加图集 `{ role, storageKey, url, width, height, bytes, sortOrder }` |

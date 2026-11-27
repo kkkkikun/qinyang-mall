@@ -17,6 +17,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -35,17 +36,22 @@ import type { AdminPrincipal } from '../../common/decorators/current-admin.decor
 import { OrdersService } from './orders.service';
 import { OrderListQueryDto } from './dto/order-list-query.dto';
 import { RawResponse } from '../../common/decorators/raw-response.decorator';
+import { Trim, TrimNullable } from '../../common/decorators/trim.decorator';
 import { buildContentDisposition, buildExportFilename } from '../../common/csv';
 
 export class OrderCreateDto implements OrderCreateRequest {
   @ApiProperty()
   @IsString()
-  @MaxLength(36)
+  @IsNotEmpty()
+  @IsUUID('4')
+  @Trim()
   requestId!: string;
 
   @ApiProperty()
   @IsString()
-  @MaxLength(36)
+  @IsNotEmpty()
+  @IsUUID('4')
+  @Trim()
   quoteId!: string;
 }
 
@@ -58,6 +64,7 @@ export class OrderStatusDto implements OrderStatusUpdateRequest {
   @IsOptional()
   @IsString()
   @MaxLength(512)
+  @TrimNullable()
   note?: string;
 }
 
@@ -66,18 +73,21 @@ export class OrderShipDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   carrier!: string;
 
   @ApiProperty({ example: 'SF0000000001' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   trackingNo!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(512)
+  @TrimNullable()
   note?: string;
 }
 
@@ -86,6 +96,7 @@ export class OrderCancelDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(512)
+  @Trim()
   note!: string;
 }
 

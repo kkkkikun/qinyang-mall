@@ -182,6 +182,61 @@ async function main() {
         page.data.phoneMasked || '');
     }
 
+    // ── 6bis. 顾客端不该出现的入口与死路（本轮修复的回归护栏）────
+    {
+      // (1) 「服务器地址」面板：顾客能自选主机 = 把登录态与量体资料发到任意端点。
+      //     非开发版必须拿不到切换能力。
+      check('顾客端：默认不允许切换服务器地址', config.canSwitchServer() === false,
+        `canSwitchServer=${config.canSwitchServer()}`);
+      const profile = await openPage('profile');
+      await runtime.settle(profile, { profile: true });
+      check('个人中心：服务器地址面板默认不出现', profile.data.allowServerSwitch === false,
+        `allowServerSwitch=${profile.data.allowServerSwitch}`);
+
+      // (2) 轮播 PAGE 跳转：此前在客户端猜路径，点了必然失败且无任何反馈。
+      const pageNav = runtime.loadModule(outDir, 'utils/page-nav.js');
+      const tabTarget = pageNav.resolvePageTarget('/pages/category/category');
+      const guideTarget = pageNav.resolvePageTarget('guide-care');
+      const unknownTarget = pageNav.resolvePageTarget('/pages/not-exist/not-exist');
+      check('轮播跳转：tabBar 页面走 switchTab', tabTarget.kind === 'tab', JSON.stringify(tabTarget));
+      check('轮播跳转：指南页走 navigateTo', guideTarget.kind === 'page', JSON.stringify(guideTarget));
+      check('轮播跳转：未知页面不静默失败', unknownTarget.kind === 'none', JSON.stringify(unknownTarget));
+      // 后台占位符曾写 `/pages/category/index`（真实路径是 /pages/category/category），
+      // 旧值必须落到「不静默失败」而不是跳到别处
+      const legacyTarget = pageNav.resolvePageTarget('/pages/category/index');
+      check('轮播跳转：历史占位符不会跳到错误页面', legacyTarget.kind === 'none', JSON.stringify(legacyTarget));
+
+      // (3) 申请页：商品信息没加载出来时点提交，必须给明确提示（此前是静默 return，
+      //     顾客点了没反应只能反复点）。
+      const applyPage = await openPage('apply', { productId: 'not-a-real-product' });
+      await runtime.settle(applyPage, { error: true });
+      runtime.toasts.length = 0;
+      applyPage.submit();
+      const applyToast = runtime.toasts.map((t) => t.title).join('|');
+      check('申请页：商品信息缺失时点提交有明确提示',
+        applyToast.includes('商品信息加载失败'), applyToast || '无提示');
+
+      // (4) submitId 轮换：载荷变了要换新 id（否则改过的量体值被幂等吞掉），
+      //     载荷没变要保留同一个 id（否则重试会产生重复申请）。
+      const submitPage = await openPage('apply', { productId });
+      await runtime.settle(submitPage, { sections: true });
+      const basePayload = {
+        productId,
+        measurements: [],
+        contact: { name: 'A', phone: '13800000007', region: 'x', detail: 'y' },
+        remark: '',
+        submitId: ''
+      };
+      const id1 = submitPage.syncSubmitId({ ...basePayload });
+      const id2 = submitPage.syncSubmitId({ ...basePayload });
+      const id3 = submitPage.syncSubmitId({
+        ...basePayload,
+        contact: { ...basePayload.contact, name: 'B' }
+      });
+      check('申请页：载荷未变时复用同一个 submitId（重试不产生重复申请）', id1 === id2, `${id1} vs ${id2}`);
+      check('申请页：载荷变了会换新 submitId（改过的量体值不会被丢弃）', id1 !== id3, `${id1} vs ${id3}`);
+    }
+
     // ── 7. 顾客提交申请（走小程序自己的 api 层造数据）──────────
     const tpl = await api.resolveTemplate(productId);
     const tplFields = (tpl.measurementSections ?? []).flatMap((s) => s.measurementFields ?? []);

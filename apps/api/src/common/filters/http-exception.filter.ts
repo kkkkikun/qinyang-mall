@@ -82,7 +82,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     return {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      code: ERROR_CODES.VALIDATION_FAILED,
+      // 内部错误不能挂着 VALIDATION_FAILED 的码：
+      // 监控与客户端要能把它和「参数错误」区分开，否则告警规则会误判
+      code: ERROR_CODES.INTERNAL_ERROR,
       message: '服务器内部错误',
     };
   }

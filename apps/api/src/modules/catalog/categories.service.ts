@@ -92,9 +92,50 @@ export class CategoriesService {
     }));
   }
 
+  /**
+   * 父分类合法性校验。
+   *
+   * 此前 `parentId` 完全不校验，于是：
+   * - 把分类挂到**自己**下面 → 自己成为自己的子节点，分类树渲染成死循环；
+   * - 把分类挂到**自己的子孙**下面 → 形成环，同样死循环；
+   * - 挂到**不存在的**分类 → 该分类从树上「消失」（既不是根，也找不到父节点）。
+   *
+   * 顾客端分类页直接遍历这棵树，环会让页面无限递归。
+   */
+  private async assertParent(parentId: string | null | undefined, selfId: string | null): Promise<void> {
+    if (!parentId) return;
+    if (selfId && parentId === selfId) {
+      throw BusinessException.badRequest('分类不能把自己设为父分类');
+    }
+    const parent = await this.categories.findOne({ where: { id: parentId } });
+    if (!parent) {
+      throw BusinessException.badRequest('父分类不存在');
+    }
+    if (parent.level >= 2) {
+      throw BusinessException.badRequest('分类只有两级：一级分类 → 二级分组，不能再往下挂');
+    }
+    if (!selfId) return;
+
+    // 沿父链向上走：若途中遇到自己，说明形成了环
+    let cursor: Category | null = parent;
+    const seen = new Set<string>();
+    while (cursor) {
+      if (cursor.id === selfId) {
+        throw BusinessException.badRequest('不能把分类挂到自己的下级分类下面');
+      }
+      if (seen.has(cursor.id)) break; // 已有环（历史脏数据），到此为止
+      seen.add(cursor.id);
+      cursor = cursor.parentId
+        ? await this.categories.findOne({ where: { id: cursor.parentId } })
+        : null;
+    }
+  }
+
   async create(dto: CategoryUpsertRequest, admin: AdminPrincipal): Promise<CategoryDto> {
     const existing = await this.categories.findOne({ where: { code: dto.code } });
     if (existing) throw BusinessException.badRequest(`分类编码 ${dto.code} 已存在`);
+
+    await this.assertParent(dto.parentId, null);
 
     const level = dto.parentId ? 2 : 1;
     const entity = this.categories.create({
@@ -136,6 +177,9 @@ export class CategoriesService {
   ): Promise<CategoryDto> {
     const category = await this.categories.findOne({ where: { id } });
     if (!category) throw BusinessException.notFound('分类不存在');
+
+    // 父分类校验：不能挂到自己或自己的子孙下面（会形成环，分类树会渲染成死循环）
+    await this.assertParent(dto.parentId, category.id);
 
     const before = { code: category.code, name: category.name, parentId: category.parentId };
     category.code = dto.code;

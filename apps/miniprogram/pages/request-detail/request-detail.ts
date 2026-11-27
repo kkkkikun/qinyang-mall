@@ -45,7 +45,10 @@ function buildSections(dto: CustomizationRequestDto): SectionVM[] {
       const hit = fields.filter((v) => v.fieldCode === f.fieldCode)[0];
       return {
         name: f.fieldName,
-        value: hit && hit.value !== null ? String(hit.value) : '未填写',
+        // 只判 null 不够：value 可能是 undefined（JSON 列里字段缺失），
+        // String(undefined) 会把字面量 "undefined" 显示给顾客
+        value:
+          hit && hit.value !== null && hit.value !== undefined ? String(hit.value) : '未填写',
         unit: hit ? hit.unit : f.unit,
         typeLabel: f.measurementType === 'garment_flat' ? '成衣平量' : '身体测量'
       };

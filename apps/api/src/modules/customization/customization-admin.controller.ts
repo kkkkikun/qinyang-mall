@@ -13,11 +13,13 @@ import {
 import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
 import {
+  IsDateString,
   IsEnum,
   IsIn,
   IsInt,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -34,6 +36,7 @@ import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { CustomizationService } from './customization.service';
 import { QuoteService } from '../quote/quotes.service';
+import { Trim, TrimNullable } from '../../common/decorators/trim.decorator';
 import { CustomizationRequestQueryDto } from './dto/customization-request-query.dto';
 import { RawResponse } from '../../common/decorators/raw-response.decorator';
 import { buildContentDisposition, buildExportFilename } from '../../common/csv';
@@ -47,6 +50,7 @@ export class ReviewDto {
   @IsOptional()
   @IsString()
   @MaxLength(512)
+  @TrimNullable()
   note?: string;
 }
 
@@ -54,11 +58,15 @@ export class QuoteCreateDto implements QuoteCreateRequest {
   @ApiProperty({ description: '报价金额，整数分' })
   @IsInt()
   @Min(1)
+  // 上限 1000 万元：数据库列是 int unsigned（最大约 2147 万元），
+  // 再加上「amount + freight」要写进 orders.totalCents，超限会越界落库失败 → 500
+  @Max(100_000_000)
   amountCents!: number;
 
   @ApiProperty({ description: '运费，整数分' })
   @IsInt()
   @Min(0)
+  @Max(10_000_000)
   freightCents!: number;
 
   @ApiPropertyOptional({ default: 'CNY' })
@@ -75,12 +83,17 @@ export class QuoteCreateDto implements QuoteCreateRequest {
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()
+  // 此前只校验「是字符串」：传 'not-a-date' 会 new Date() 成 Invalid Date，
+  // 落库时炸成 500。这里按 ISO 日期串校验并拒绝非法格式。
+  @IsDateString()
+  @TrimNullable()
   validUntil?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(2000)
+  @TrimNullable()
   note?: string | null;
 }
 

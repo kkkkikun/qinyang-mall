@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { OrderStatus } from '@qinyang/contracts';
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { Trim } from '../../../common/decorators/trim.decorator';
 
 /** 订单列表查询（管理端与顾客端共用） */
 export class OrderListQueryDto extends PaginationQueryDto {
@@ -14,5 +15,6 @@ export class OrderListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   @MaxLength(64)
+  @Trim()
   keyword?: string;
 }

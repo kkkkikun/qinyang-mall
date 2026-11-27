@@ -2,7 +2,7 @@
 import { getNavMetrics } from '../../utils/nav';
 import { listCustomizationRequests, listOrders, me } from '../../utils/api';
 import { formatDateTime } from '../../utils/format';
-import { getBaseUrl, setBaseUrl } from '../../utils/config';
+import { canSwitchServer, getBaseUrl, resetBaseUrl, setBaseUrl } from '../../utils/config';
 import { CustomizationRequestListItemDto, CustomerProfile } from '../../types/contracts';
 
 interface RecentVM {
@@ -27,12 +27,14 @@ Page({
     statsLoaded: false,
     recent: [] as RecentVM[],
     recentError: '',
+    /** 服务器地址面板只在开发版出现（顾客可自选主机会把登录态与量体资料发出去） */
+    allowServerSwitch: false,
     baseUrl: '',
     baseUrlSaved: false
   },
 
   onLoad() {
-    this.setData({ baseUrl: getBaseUrl() });
+    this.setData({ allowServerSwitch: canSwitchServer(), baseUrl: getBaseUrl() });
     this.load();
   },
 
@@ -130,6 +132,10 @@ Page({
   },
 
   saveBaseUrl() {
+    if (!this.data.allowServerSwitch) {
+      wx.showToast({ title: '当前版本不支持切换服务器地址', icon: 'none', duration: 2000 });
+      return;
+    }
     const url = String(this.data.baseUrl || '').trim();
     if (!/^https?:\/\/.+/i.test(url)) {
       wx.showToast({ title: '请填写以 http(s):// 开头的地址', icon: 'none', duration: 2000 });
@@ -138,5 +144,16 @@ Page({
     setBaseUrl(url);
     this.setData({ baseUrl: getBaseUrl(), baseUrlSaved: true });
     wx.showToast({ title: '服务器地址已保存', icon: 'success', duration: 1200 });
+  },
+
+  /** 恢复默认地址：此前填错地址后没有任何入口能复原，顾客只能卸载重装 */
+  resetServerUrl() {
+    if (!this.data.allowServerSwitch) {
+      wx.showToast({ title: '当前版本不支持切换服务器地址', icon: 'none', duration: 2000 });
+      return;
+    }
+    resetBaseUrl();
+    this.setData({ baseUrl: getBaseUrl(), baseUrlSaved: false });
+    wx.showToast({ title: '已恢复默认地址', icon: 'success', duration: 1200 });
   }
 });

@@ -67,7 +67,8 @@ Page({
         const snapshot = dto.measurementSnapshot;
         const measurements: MeasurementRowVM[] = ((snapshot && snapshot.fields) || []).map((f) => ({
           name: f.fieldName,
-          value: f.value === null ? '未填写' : String(f.value),
+          // 同上：undefined 也要兜住，否则顾客会看到 "undefined cm"
+          value: f.value === null || f.value === undefined ? '未填写' : String(f.value),
           unit: f.unit
         }));
         this.setData({

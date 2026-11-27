@@ -6,6 +6,7 @@ import {
   MeasurementType,
 } from '@qinyang/contracts';
 import { Type } from 'class-transformer';
+import { Trim, TrimNullable } from '../../../common/decorators/trim.decorator';
 import {
   IsArray,
   IsEnum,
@@ -13,6 +14,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
   ValidateNested,
@@ -21,7 +23,9 @@ import {
 export class MeasurementValueDto implements MeasurementFieldValue {
   @ApiProperty({ example: 'chest_bust' })
   @IsString()
+  @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   fieldCode: string;
 
   @ApiProperty({ example: '胸围' })
@@ -49,6 +53,7 @@ export class CustomerContactDto implements CustomerContact {
   @IsString()
   @IsNotEmpty()
   @MaxLength(32)
+  @Trim()
   name: string;
 
   @ApiProperty({ example: '13800000000' })
@@ -56,16 +61,19 @@ export class CustomerContactDto implements CustomerContact {
   @IsNotEmpty()
   @MinLength(6)
   @MaxLength(32)
+  @Trim()
   phone: string;
 
   @ApiProperty({ example: '内蒙古自治区 呼和浩特市' })
   @IsString()
   @MaxLength(128)
+  @TrimNullable()
   region: string;
 
   @ApiProperty({ example: '赛罕区 XX 路 XX 号 3 单元 501' })
   @IsString()
   @MaxLength(255)
+  @TrimNullable()
   detail: string;
 }
 
@@ -74,7 +82,8 @@ export class CreateCustomizationRequestDto
 {
   @ApiProperty()
   @IsString()
-  @MaxLength(36)
+  @IsUUID('4')
+  @Trim()
   productId: string;
 
   @ApiProperty({ type: [MeasurementValueDto] })
@@ -92,11 +101,13 @@ export class CreateCustomizationRequestDto
   @IsOptional()
   @IsString()
   @MaxLength(512)
+  @TrimNullable()
   remark?: string | null;
 
   @ApiProperty({ description: '幂等键：重复点击提交只产生一条申请' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   submitId: string;
 }

@@ -71,8 +71,19 @@ export function request<T>(options: RequestOptions): Promise<T> {
       header['x-customer-token'] = token;
     }
 
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) {
+      // 服务地址未配置：明确说出来，别让顾客对着「网络连接失败」猜
+      const err = new ApiError('服务地址未配置，请联系客服', 0);
+      if (options.toast !== false) {
+        toastError(err.message);
+      }
+      reject(err);
+      return;
+    }
+
     wx.request({
-      url: getBaseUrl() + options.url,
+      url: baseUrl + options.url,
       method: options.method || 'GET',
       data: options.data,
       header,

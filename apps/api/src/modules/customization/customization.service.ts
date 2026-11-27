@@ -40,6 +40,20 @@ import {
 /** 单次导出上限：防止误操作把整库拖成一份大文件 */
 const EXPORT_LIMIT = 5000;
 
+/**
+ * 允许**人工**设置的申请状态。
+ *
+ * 由流程派生的状态（报价创建 → QUOTED；顾客确认 → CONFIRMED；
+ * 订单推进 → IN_PRODUCTION / SHIPPED / COMPLETED）不允许手工设置，
+ * 否则就能绕过顾客确认直接建单。
+ */
+const MANUAL_REQUEST_STATUSES = new Set<RequestStatus>([
+  RequestStatus.PENDING_REVIEW,
+  RequestStatus.PENDING_QUOTE,
+  RequestStatus.REJECTED,
+  RequestStatus.CANCELLED,
+]);
+
 @Injectable()
 export class CustomizationService {
   constructor(
@@ -335,6 +349,8 @@ export class CustomizationService {
 
     const before = { status: request.status };
     request.status = target;
+    // 同上：审核备注必须落库，不能只接收不用
+    if (note) request.remark = note;
     const saved = await this.requests.save(request);
 
     await this.audit.record({
@@ -361,6 +377,25 @@ export class CustomizationService {
     const request = await this.requests.findOne({ where: { id } });
     if (!request) throw BusinessException.notFound('定制申请不存在');
 
+    /*
+     * 只允许人工设置「人工确实需要做」的状态。
+     *
+     * QUOTED 由报价创建产生、CONFIRMED 由**顾客确认报价**产生，
+     * IN_PRODUCTION / SHIPPED / COMPLETED 由订单流程产生。
+     * 此前这个接口没有角色限制（连店员都能调），于是店员可以：
+     *   建一个报价 → 把申请直接改成 CONFIRMED → 建单，
+     * 整套流程**完全绕过顾客确认**，顾客从未同意却有了订单。
+     *
+     * 因此这里只开放「退回 / 谢绝 / 取消」这类人工动作，
+     * 其余状态只能由报价与订单流程自己产生。
+     */
+    if (!MANUAL_REQUEST_STATUSES.has(target)) {
+      throw BusinessException.conflict(
+        `「${REQUEST_STATUS_LABELS[target]}」不能手工设置，只能由报价或订单流程产生`,
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
+
     const allowed = this.allowedTransitions(request.status, target);
     if (!allowed) {
       throw BusinessException.conflict(
@@ -371,6 +406,9 @@ export class CustomizationService {
 
     const before = { status: request.status };
     request.status = target;
+    // 备注此前**被接收却从不落库**：商家在「审核备注」里写的
+    // 「缺胸围」之类说明会静默消失，审计里也没有。现在写进申请记录。
+    if (note) request.remark = note;
     const saved = await this.requests.save(request);
 
     await this.audit.record({

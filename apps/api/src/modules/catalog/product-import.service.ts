@@ -16,6 +16,7 @@ import { MeasurementTemplate } from '../../database/entities/measurement-templat
 import { Product } from '../../database/entities/product.entity';
 import { BusinessException } from '../../common/errors/business.exception';
 import { parseCsv } from '../../common/csv';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
 import { AuditService } from '../audit/audit.service';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 
@@ -138,7 +139,11 @@ export class ProductImportService {
       templateByRef.set(template.code.toLowerCase(), template);
       templateByRef.set(template.id.toLowerCase(), template);
     }
-    const existingCodes = new Set(existingRows.map((row) => row.code));
+    // 判重必须与数据库一致：products.code 的列排序规则是 utf8mb4_unicode_ci，
+    // 即**大小写不敏感**。此前这里用原样字符串建 Set，
+    // 于是库里 ED-0032、CSV 写 ed-0032 时判不出重复，
+    // 最后由唯一索引拦下 → 该行 FAILED 且原因回显 MySQL 原始错误（泄露表名与索引名）。
+    const existingCodes = new Set(existingRows.map((row) => row.code.toLowerCase()));
 
     const rows: ProductImportRowResult[] = [];
     const valid: ParsedRow[] = [];
@@ -171,7 +176,7 @@ export class ProductImportService {
       seenCodes.set(parsed.code, rowNumber);
 
       // 与库中已有商品重复 → 跳过（不覆盖）
-      if (existingCodes.has(parsed.code)) {
+      if (existingCodes.has(parsed.code.toLowerCase())) {
         rows.push({
           row: rowNumber,
           code: parsed.code,
@@ -204,11 +209,22 @@ export class ProductImportService {
             reason: null,
           });
         } catch (error) {
+          // 不回显数据库原始错误（含表名、索引名、SQL 片段）：
+          // 并发插入同一编号时唯一索引会报 1062，这里翻译成人话；
+          // 其余错误一律归为「写入失败」，细节只留在服务端日志。
+          const reason = isDuplicateKey(error)
+            ? `商品编号 ${item.code} 已被其他操作占用（可能同时提交了同一编号）`
+            : '写入失败，请重试或联系管理员查看服务端日志';
+          if (!isDuplicateKey(error)) {
+            this.logger.error(
+              `商品导入写入失败 row=${item.row} code=${item.code}：${(error as Error).message}`,
+            );
+          }
           errors.push({
             row: item.row,
             code: item.code,
             name: item.name,
-            reason: error instanceof Error && error.message ? error.message : '写入失败',
+            reason,
           });
         }
       }

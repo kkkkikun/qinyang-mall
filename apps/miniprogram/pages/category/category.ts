@@ -117,7 +117,13 @@ Page({
       .filter((c) => c.parentId === parentId)
       .map((c) => ({ id: c.id, code: c.code, name: c.name, count: c.productCount || 0 }));
     const groups = fromChildren.length ? fromChildren : fromFlat;
-    groups.sort((a, b) => a.name.localeCompare(b.name));
+    /*
+     * 不再按名称字典序重排。
+     *
+     * 后端已经按商家的 `sortOrder` 排序返回（后台可设「数值越小越靠前」），
+     * 此处再 `localeCompare` 一次，商家在后台排好的顺序就被覆盖成拼音序 ——
+     * 运营配置完全失效。
+     */
     return groups;
   },
 

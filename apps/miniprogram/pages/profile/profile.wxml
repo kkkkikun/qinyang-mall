@@ -85,8 +85,8 @@
     </view>
   </view>
 
-  <!-- 服务器地址（后台切换） -->
-  <view class="me-card">
+  <!-- 服务器地址：仅开发版可见。顾客可自选主机 = 把登录态与量体资料发到任意端点 -->
+  <view wx:if="{{allowServerSwitch}}" class="me-card">
     <view class="me-card__hd"><text class="me-card__t">服务器地址</text></view>
     <view class="me-card__body">
       <view class="fs11 muted-2 mb-8">用于连接商家后台接口，修改后立即生效</view>
@@ -95,6 +95,9 @@
         <button class="btn btn--ghost btn--sm" bindtap="saveBaseUrl">保存</button>
       </view>
       <view class="fs11 muted-2 mt-8">{{baseUrlSaved ? '已保存' : '当前：' + baseUrl}}</view>
+      <view class="mt-8">
+        <button class="btn btn--ghost btn--sm" bindtap="resetServerUrl">恢复默认地址</button>
+      </view>
     </view>
   </view>
 

@@ -91,6 +91,16 @@ Page({
     this.load(true);
   },
 
+  /**
+   * 请求序号：只认最后一次发起的请求。
+   *
+   * 此前连续快速点两个页签时，A、B 两个请求并发，
+   * **后返回的那个直接覆盖 items** —— 页签高亮停在「已完成」，
+   * 列表里却是「已发货」的订单。顾客据此判断会出错。
+   * 同理「加载更多」与「换页签」并发时，旧页的卡片会被 concat 进新列表。
+   */
+  _seq: 0,
+
   load(reset: boolean) {
     if (reset) {
       this.setData({ loading: true, error: '', page: 1, items: [], hasMore: true, imgErr: {} });
@@ -102,8 +112,14 @@ Page({
     }
     const page = reset ? 1 : this.data.page + 1;
     const status = this.data.status;
+    this._seq += 1;
+    const seq = this._seq;
     listOrders({ status: status || undefined, page, pageSize: PAGE_SIZE })
       .then((res) => {
+        if (seq !== this._seq) {
+          // 已经有更新的请求发出，这次响应作废（不写数据、不改 loading）
+          return;
+        }
         const cards = (res.items || []).map(toVM);
         const items = reset ? cards : (this.data.items as OrderVM[]).concat(cards);
         this.setData({
@@ -116,6 +132,9 @@ Page({
         });
       })
       .catch(() => {
+        if (seq !== this._seq) {
+          return;
+        }
         this.setData({
           loading: false,
           loadingMore: false,

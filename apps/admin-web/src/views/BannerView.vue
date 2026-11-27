@@ -159,7 +159,7 @@ const linkValuePlaceholder = computed(() => {
     case 'CATEGORY':
       return '分类 ID';
     case 'PAGE':
-      return '小程序页面路径，如 /pages/category/index';
+      return '小程序页面路径，如 /pages/category/category（可用：/pages/index/index、/pages/category/category、/pages/custom/custom、/pages/profile/profile、/pages/guide-top/guide-top 等）';
     default:
       return '不跳转时可留空';
   }

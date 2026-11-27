@@ -69,6 +69,24 @@ function toSectionVM(section: MeasurementSection): SectionVM {
   };
 }
 
+/** 提交载荷指纹：只关心「内容变了没」，不看顺序 */
+function fingerprint(payload: CustomizationRequestCreateRequest): string {
+  const measurements = (payload.measurements || [])
+    .map((m) => `${m.fieldCode}=${m.value}`)
+    .sort()
+    .join('|');
+  const contact = payload.contact || ({} as CustomizationRequestCreateRequest['contact']);
+  return [
+    payload.productId,
+    measurements,
+    contact.name,
+    contact.phone,
+    contact.region,
+    contact.detail,
+    payload.remark || ''
+  ].join('#');
+}
+
 function randomId(): string {
   return 'S-' + Date.now() + '-' + Math.floor(Math.random() * 900000 + 100000);
 }
@@ -90,6 +108,8 @@ Page({
     remark: '',
     submitting: false,
     submitId: '',
+    /** 上一次提交载荷的指纹：用来判断「顾客改了内容」还是「只是重试」 */
+    submitFingerprint: '',
     imgErr: {} as Record<string, boolean>
   },
 
@@ -269,17 +289,50 @@ Page({
     return problems;
   },
 
+  /**
+   * 按载荷决定 submitId 是否需要轮换。
+   *
+   * 抽成独立方法是为了能被页面级执行验证直接调用（不必真的提交）。
+   *
+   * - 载荷变了（顾客改了量体值）→ 换新 submitId，
+   *   否则服务端幂等会把**上一次**的申请返回，改过的量体值被静默丢弃；
+   * - 载荷没变（只是重试）→ 保留同一个 submitId，
+   *   靠幂等兜住「其实已入库但响应丢了」，不产生重复申请。
+   */
+  syncSubmitId(payload: CustomizationRequestCreateRequest): string {
+    const fp = fingerprint(payload);
+    const lastFp = String(this.data.submitFingerprint || '');
+    let submitId = this.data.submitId;
+    if (lastFp && lastFp !== fp) {
+      submitId = randomId();
+    }
+    this.setData({ submitId, submitFingerprint: fp });
+    return submitId;
+  },
+
   submit() {
     if (this.data.submitting) {
+      return;
+    }
+    const detail = this.data.detail as ProductDetail | null;
+    if (!detail) {
+      /*
+       * 此前这里是**静默 return**：商品信息没加载出来时，顾客填完整张量体表单
+       * 点「提交」毫无反应，只能反复点。
+       *
+       * 注意这个判断必须排在表单校验**之前** ——
+       * 否则空表单会先弹「请填写称呼」，把真正的原因盖掉。
+       */
+      wx.showToast({
+        title: '商品信息加载失败，请下拉刷新后重试',
+        icon: 'none',
+        duration: 2400
+      });
       return;
     }
     const problems = this.validate();
     if (problems.length) {
       wx.showToast({ title: problems[0], icon: 'none', duration: 2400 });
-      return;
-    }
-    const detail = this.data.detail as ProductDetail | null;
-    if (!detail) {
       return;
     }
     const sections = this.data.sections as SectionVM[];
@@ -314,6 +367,20 @@ Page({
       submitId: this.data.submitId
     };
 
+    /*
+     * submitId 的轮换规则（本轮审计 P1）：
+     *
+     * 服务端按 submitId 幂等 —— 同一个 submitId 只会有一条申请，
+     * 再次提交直接返回**旧的那条**（量体值被静默丢弃）。
+     *
+     * 两种场景要区别对待：
+     * - **顾客改了内容**再提交 → 必须换新 submitId，否则改过的量体值被丢弃
+     *   （量体值直接决定成衣尺寸，是数据正确性事故）；
+     * - **顾客什么都没改，只是重试**（比如上次响应超时、其实已入库）
+     *   → 必须保留同一个 submitId，才能吃到幂等、避免重复申请。
+     */
+    payload.submitId = this.syncSubmitId(payload);
+
     this.setData({ submitting: true });
     createCustomizationRequest(payload)
       .then((dto) => {
@@ -324,7 +391,14 @@ Page({
         }, 800);
       })
       .catch(() => {
+        // 不换 submitId：载荷没变就重试，靠幂等兜住「其实已入库但响应丢了」。
+        // 顾客改了内容时，下一次 submit() 会因为指纹变化自动换新 id。
         this.setData({ submitting: false });
+        wx.showToast({
+          title: '提交未成功，请到「我的申请」确认是否已提交',
+          icon: 'none',
+          duration: 2600
+        });
       });
   },
 

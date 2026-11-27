@@ -30,6 +30,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentAdmin } from '../../common/decorators/current-admin.decorator';
 import type { AdminPrincipal } from '../../common/decorators/current-admin.decorator';
 import { CategoriesService } from './categories.service';
+import { Trim } from '../../common/decorators/trim.decorator';
 import { CategoryUpsertRequest } from '@qinyang/contracts';
 
 export class CategoryUpsertDto implements CategoryUpsertRequest {
@@ -37,12 +38,14 @@ export class CategoryUpsertDto implements CategoryUpsertRequest {
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   code!: string;
 
   @ApiProperty({ example: '开衫' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
+  @Trim()
   name!: string;
 
   @ApiPropertyOptional({ nullable: true })

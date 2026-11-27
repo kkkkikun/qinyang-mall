@@ -9,16 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import {
-  CustomizationRequestListQuery,
-  QuoteConfirmRequest,
-  QuoteRejectRequest,
-} from '@qinyang/contracts';
+import { CustomizationRequestListQuery } from '@qinyang/contracts';
 import { CustomerAuthGuard } from '../../common/guards/customer-auth.guard';
 import { CurrentCustomer } from '../../common/decorators/customer.decorator';
 import { CustomizationService } from './customization.service';
 import { QuoteService } from '../quote/quotes.service';
 import { CreateCustomizationRequestDto } from './dto/customization.dto';
+import { QuoteConfirmDto, QuoteRejectDto } from './dto/quote-action.dto';
 import { CustomizationRequestQueryDto } from './dto/customization-request-query.dto';
 
 @ApiTags('顾客端 · 定制申请')
@@ -61,7 +58,7 @@ export class CustomizationCustomerController {
   @ApiOperation({ summary: '确认报价（必须为当前有效版本）' })
   confirmQuote(
     @Param('id') id: string,
-    @Body() dto: QuoteConfirmRequest,
+    @Body() dto: QuoteConfirmDto,
     @CurrentCustomer('id') customerId: string,
   ) {
     return this.quotes.confirmByCustomer(id, dto.quoteId, dto.expectedVersion, customerId);
@@ -72,7 +69,7 @@ export class CustomizationCustomerController {
   @ApiOperation({ summary: '拒绝报价（申请回到待报价，等待重新报价）' })
   rejectQuote(
     @Param('id') id: string,
-    @Body() dto: QuoteRejectRequest,
+    @Body() dto: QuoteRejectDto,
     @CurrentCustomer('id') customerId: string,
   ) {
     return this.quotes.rejectByCustomer(id, dto.quoteId, dto.expectedVersion, customerId, dto.reason);

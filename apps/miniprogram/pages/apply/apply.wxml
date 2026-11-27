@@ -83,19 +83,19 @@
       <view class="form">
         <view class="form__row">
           <text class="form__label">称呼</text>
-          <input class="form__input" value="{{contact.name}}" placeholder="怎么称呼您" data-key="name" bindinput="onContactInput" />
+          <input class="form__input" value="{{contact.name}}" placeholder="怎么称呼您" data-key="name" bindinput="onContactInput" maxlength="32" />
         </view>
         <view class="form__row">
           <text class="form__label">电话</text>
-          <input class="form__input" type="number" value="{{contact.phone}}" placeholder="用于商家与您联系" data-key="phone" bindinput="onContactInput" />
+          <input class="form__input" type="number" value="{{contact.phone}}" placeholder="用于商家与您联系" data-key="phone" bindinput="onContactInput" maxlength="32" />
         </view>
         <view class="form__row">
           <text class="form__label">省/市/区</text>
-          <input class="form__input" value="{{contact.region}}" placeholder="例如：浙江省 杭州市 西湖区" data-key="region" bindinput="onContactInput" />
+          <input class="form__input" value="{{contact.region}}" placeholder="例如：浙江省 杭州市 西湖区" data-key="region" bindinput="onContactInput" maxlength="128" />
         </view>
         <view class="form__row">
           <text class="form__label">详细地址</text>
-          <input class="form__input" value="{{contact.detail}}" placeholder="街道、门牌号" data-key="detail" bindinput="onContactInput" />
+          <input class="form__input" value="{{contact.detail}}" placeholder="街道、门牌号" data-key="detail" bindinput="onContactInput" maxlength="255" />
         </view>
       </view>
       <view class="form__err" wx:if="{{contactError.name || contactError.phone || contactError.region || contactError.detail}}">
@@ -107,7 +107,7 @@
     <view class="sec">
       <view class="sec-pad sec-pad--tight"><text class="serif msec-title">留言（选填）</text></view>
       <view class="sec-pad" style="padding-top:6px">
-        <textarea class="textarea" rows="3" value="{{remark}}" placeholder="例如：袖长请按 58cm 制作" bindinput="onRemarkInput"></textarea>
+        <textarea class="textarea" rows="3" value="{{remark}}" placeholder="例如：袖长请按 58cm 制作" bindinput="onRemarkInput" maxlength="512"></textarea>
       </view>
     </view>
 

@@ -16,6 +16,7 @@ import {
 } from '@qinyang/contracts';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../../src/app.module';
+import { configureBodyParsers } from '../../src/common/http/body-parser';
 import { AdminUser } from '../../src/database/entities/admin-user.entity';
 import { Category } from '../../src/database/entities/category.entity';
 import { MeasurementTemplate } from '../../src/database/entities/measurement-template.entity';
@@ -76,6 +77,10 @@ describe('定制闭环垂直切片', () => {
         validationError: { target: false },
       }),
     );
+    // 与生产环境共用同一份请求体上限（JSON 4MB），避免测试通过、线上 413
+
+    configureBodyParsers(app);
+
     await app.init();
 
     // 清空测试库，保证每次运行都从干净状态开始
@@ -542,8 +547,9 @@ describe('定制闭环垂直切片', () => {
     expect(res.body.data.productSnapshot.code).toBe('IT-0001');
   });
 
-  it('后台改商品不影响已生成订单的历史快照', async () => {
-    await http()
+  it('已发布商品的价格只有店主能改（店员改价被拒）', async () => {
+    // 店员直接把在售商品的价格改掉 → 顾客端展示的金额会在一次「保存」里悄悄变化
+    const rejected = await http()
       .put(`/api/v1/admin/products/${productId}`)
       .set('Authorization', `Bearer ${staffToken}`)
       .send({
@@ -552,6 +558,23 @@ describe('定制闭环垂直切片', () => {
         categoryId,
         pricingMode: 'FIXED_PRICE',
         priceCents: 99900,
+        measurementTemplateId: templateId,
+      })
+      .expect(409);
+    expect(rejected.body.code).toBe('FORBIDDEN');
+  });
+
+  it('后台改商品不影响已生成订单的历史快照', async () => {
+    // 店主改文案（不改价）→ 允许
+    await http()
+      .put(`/api/v1/admin/products/${productId}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({
+        code: 'IT-0001',
+        name: '改价改名前的商品（临时命名·待确认）',
+        categoryId,
+        pricingMode: 'FIXED_PRICE',
+        priceCents: 138000,
         measurementTemplateId: templateId,
       })
       .expect(200);

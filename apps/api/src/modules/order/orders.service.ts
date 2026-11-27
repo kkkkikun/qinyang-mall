@@ -75,6 +75,20 @@ export class OrdersService {
         ERROR_CODES.QUOTE_NOT_ACTIVE,
       );
     }
+    /*
+     * 报价必须是**顾客确认过**的那一版。
+     *
+     * 此前只校验「申请状态 = 已确认」+「报价有效」，
+     * 但申请状态本身可以被管理端接口手工改成 CONFIRMED ——
+     * 于是「顾客没点头也能建单」。这里直接看报价自己的确认时间戳：
+     * confirmedAt 为空 = 顾客从未确认过这份报价。
+     */
+    if (!quote.confirmedAt) {
+      throw BusinessException.conflict(
+        '该报价尚未经顾客确认，不能生成订单',
+        ERROR_CODES.INVALID_STATUS_TRANSITION,
+      );
+    }
 
     const existing = await this.orders.findOne({ where: { requestId: request.id } });
     if (existing) {

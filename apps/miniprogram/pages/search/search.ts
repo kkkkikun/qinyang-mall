@@ -19,6 +19,8 @@ Page({
     searched: false,
     loading: false,
     error: '',
+    /** 命中总数（可能大于当前展示的 items.length） */
+    total: 0,
     imgErr: {} as Record<string, boolean>
   },
 
@@ -52,6 +54,14 @@ Page({
     this.doSearch(word);
   },
 
+  /**
+   * 请求序号：只认最后一次搜索。
+   *
+   * 连续输入「羊绒」→「羊绒衫」时，先发的请求后返回就会把
+   * 旧结果写进列表 —— 搜索框里是「羊绒衫」，列表却是「羊绒」的结果。
+   */
+  _seq: 0,
+
   doSearch(keyword: string) {
     const word = (keyword || '').trim();
     if (!word) {
@@ -59,11 +69,30 @@ Page({
       return;
     }
     this.setData({ loading: true, error: '', searched: true, items: [], keyword: word, imgErr: {} });
+    this._seq += 1;
+    const seq = this._seq;
     products({ keyword: word, page: 1, pageSize: PAGE_SIZE })
       .then((res) => {
-        this.setData({ loading: false, items: toProductCards(res.items || []) });
+        if (seq !== this._seq) {
+          return; // 已有更新的搜索发出，这次响应作废
+        }
+        const items = toProductCards(res.items || []);
+        const total = res.total || items.length;
+        this.setData({ loading: false, items, total });
+        // 命中数超过一页时明确告诉顾客「还有更多」，
+        // 否则顾客只会以为搜索结果就这么多
+        if (total > items.length) {
+          wx.showToast({
+            title: `找到 ${total} 件，已显示前 ${items.length} 件`,
+            icon: 'none',
+            duration: 1800
+          });
+        }
       })
       .catch(() => {
+        if (seq !== this._seq) {
+          return;
+        }
         this.setData({ loading: false, error: '搜索失败，请检查网络后重试' });
       });
   },

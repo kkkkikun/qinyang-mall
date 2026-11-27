@@ -71,6 +71,8 @@ declare const wx: {
   login(options: { success?: (res: WxLoginSuccessCallbackResult) => void; fail?: () => void }): void;
   getWindowInfo(): WxWindowInfo;
   getSystemInfoSync(): WxWindowInfo;
+  /** 小程序环境信息（envVersion: develop / trial / release） */
+  getAccountInfoSync(): { miniProgram: { appId: string; envVersion: string; version: string } };
   getMenuButtonBoundingClientRect(): WxMenuButtonRect;
   navigateTo(options: WxNavigateOption): void;
   redirectTo(options: WxNavigateOption): void;

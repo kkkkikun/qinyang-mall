@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  AdminRole,
   MediaRole,
   Paginated,
   PricingMode,
@@ -20,6 +21,8 @@ import { Product } from '../../database/entities/product.entity';
 import { ProductMedia } from '../../database/entities/product-media.entity';
 import { MeasurementTemplate } from '../../database/entities/measurement-template.entity';
 import { BusinessException } from '../../common/errors/business.exception';
+import { isDuplicateKey } from '../../common/errors/duplicate-key';
+import { ERROR_CODES } from '@qinyang/contracts';
 import { deriveThumbUrl } from '../../common/media-url';
 import { AuditService } from '../audit/audit.service';
 import { normalizePrice } from './pricing';
@@ -94,7 +97,24 @@ export class ProductsService {
       publishedAt: null,
     });
 
-    const saved = await this.products.save(entity);
+    /*
+     * 并发建同一个编号时，上面的「先查后写」会双双落空，
+     * 最终由唯一索引 UQ_products_code 兜底 —— 重复键翻译成 409，
+     * 而不是让它冒泡成 500（申请 / 报价 / 订单路径此前已经这么处理了，
+     * 只有商品这条路径漏了）。
+     */
+    let saved: Product;
+    try {
+      saved = await this.products.save(entity);
+    } catch (error) {
+      if (isDuplicateKey(error)) {
+        throw BusinessException.conflict(
+          `商品编号 ${dto.code} 已存在`,
+          ERROR_CODES.DUPLICATED_SUBMIT,
+        );
+      }
+      throw error;
+    }
     await this.audit.record({
       actorId: admin.id,
       actorName: admin.displayName,
@@ -120,11 +140,37 @@ export class ProductsService {
     const before = this.auditSnapshot(product);
     await this.assertCategory(dto.categoryId);
 
+    /*
+     * 已发布商品的价格口径。
+     *
+     * 此前店员可以直接把**在售商品的价格**改掉，且没有任何审核或留痕之外的约束 ——
+     * 顾客端展示的金额会在一次「保存」里悄悄变化。
+     *
+     * 规则：**已发布商品的价格 / 报价模式只能由店主修改**（店员 409）。
+     * 文案与资料（名称 / 材质 / 简介 / 洗护 / 分类 / 量体模板）店员仍可编辑，
+     * 改动照常进审计。
+     *
+     * 这里刻意**不**做成「改价自动下架 / 自动打回待审核」：
+     * 那会把商家的日常改错字也变成「商品消失」，运营成本远大于收益；
+     * 而权限口径与既有的「上下架/报价是店主专属」保持一致，不引入新的流程。
+     */
+    const nextPriceCents = this.applyPricing(dto.pricingMode, dto.priceCents ?? null);
+    if (product.status === ProductStatus.PUBLISHED) {
+      const priceChanged =
+        product.pricingMode !== dto.pricingMode || product.priceCents !== nextPriceCents;
+      if (priceChanged && admin.role !== AdminRole.OWNER) {
+        throw BusinessException.conflict(
+          '已发布商品的价格只能由店主修改',
+          ERROR_CODES.FORBIDDEN,
+        );
+      }
+    }
+
     product.name = dto.name;
     product.subtitle = dto.subtitle ?? null;
     product.categoryId = dto.categoryId;
     product.pricingMode = dto.pricingMode;
-    product.priceCents = this.applyPricing(dto.pricingMode, dto.priceCents ?? null);
+    product.priceCents = nextPriceCents;
     product.material = dto.material ?? null;
     product.description = dto.description ?? null;
     product.careGuide = dto.careGuide ?? null;

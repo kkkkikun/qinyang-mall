@@ -355,6 +355,35 @@ ssh sqserver 'cd ~/MyProject/clothing-mall-miniapp && CPU_LIST=112,81,14 bash in
 
 接口口径见 `docs/api/REST-CONTRACT.md` §3.5，决策见 `docs/agent/DECISIONS.md` D-029。
 
+### 7bis. 小程序发布前必须注入正式服务地址
+
+小程序的 API 基址是**构建期常量**，仓库里是占位值。
+发布前必须执行（否则小程序会明确提示「服务地址未配置，请联系客服」，
+不会再静默打 127.0.0.1）：
+
+```bash
+# 必须在 https 域名下，且必须以 /api/v1 结尾 —— 脚本会强制校验
+node tools/set_miniprogram_env.mjs https://<正式域名>/api/v1
+
+# 同步到仓库后再构建小程序
+git add apps/miniprogram/config/env.ts && git commit -m "chore: 注入小程序正式服务地址"
+
+# 还原为占位值（开发态）
+node tools/set_miniprogram_env.mjs
+```
+
+> 「我的 → 服务器地址」面板**只在开发版**出现（`envVersion === 'develop'`）。
+> 顾客版看不到它，也无法把小程序指向别的主机 ——
+> 顾客能改服务地址等于把登录态与量体资料交给顾客指定的端点。
+
+### 7ter. 已发布商品改价
+
+- **已发布商品的价格 / 报价模式只有店主能改**，店员改会被拒绝（409）。
+  理由：顾客是按当前价格下单的，价格在一次「保存」里悄悄变化是钱的问题。
+- 文案与资料（名称 / 材质 / 简介 / 洗护 / 分类 / 量体模板）**店员仍可编辑**，
+  改动会进审计。
+- 商品的**编号**不能改（编号是商家的唯一标识，改了会让历史订单的快照对不上）。
+
 ---
 
 ## 8. 运维注意事项

@@ -103,7 +103,18 @@ Page({
    * 量体资料与联系方式都会保留，顾客不需要重新填一遍。
    */
   reject() {
-    if (this.data.rejecting || this.data.expired) {
+    /*
+     * 注意：**过期也要允许拒绝**。
+     *
+     * 此前这里和「确认」一样用 expired 拦住了，于是过期态下
+     * 那个「请商家重新报价」按钮点了毫无反应 ——
+     * 顾客既不能确认也不能拒绝，申请永远卡在「待确认报价」，
+     * 只能自己找客服。
+     *
+     * 服务端的拒绝接口本来就不校验有效期（拒绝过期报价是合理的），
+     * 这里与它对齐。
+     */
+    if (this.data.rejecting) {
       return;
     }
     const dto = this.data.dto as CustomizationRequestDto | null;

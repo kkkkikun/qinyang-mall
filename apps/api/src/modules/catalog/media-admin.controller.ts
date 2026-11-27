@@ -17,6 +17,9 @@ import { detectImageExt } from '../../common/image-type';
 import { StorageService } from '../storage/storage.service';
 import { UploadQueryDto } from './dto/product.dto';
 
+/** 单个上传文件的体积上限（8MB） */
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
 /** multer 上传文件对象（类型来自 @types/multer） */
 type MulterFile = {
   buffer: Buffer;
@@ -42,7 +45,18 @@ export class MediaAdminController {
   constructor(private readonly storage: StorageService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    /*
+     * 上传体积上限。
+     *
+     * 此前 multer **没有任何限制**：`file.buffer` 会把整个请求体读进内存，
+     * 一个 2GB 的文件就能把 Node 进程 OOM 掉（而且是直接 crash，不是 400）。
+     * 商品图原本最大 1.4MB，8MB 足够覆盖高清原图与后续加工的大图。
+     */
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 },
+    }),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '上传图片' })
   async upload(

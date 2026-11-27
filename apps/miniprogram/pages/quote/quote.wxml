@@ -83,7 +83,7 @@
     <view class="pd-bar">
       <block wx:if="{{expired}}">
         <view class="notice notice--gold mb-10">
-          该报价已过有效期，请联系商家重新报价。
+          该报价已过有效期，你可以要求商家重新报价。
         </view>
         <view class="row gap10">
           <button class="btn btn--ghost flex-1" bindtap="goContact">联系客服</button>

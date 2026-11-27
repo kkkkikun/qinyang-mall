@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AppModule } from '../../src/app.module';
+import { configureBodyParsers } from '../../src/common/http/body-parser';
 
 /**
  * 路由覆盖守卫（Route Coverage Guard）。
@@ -40,6 +41,10 @@ describe('路由覆盖守卫', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
+    // 与生产环境共用同一份请求体上限（JSON 4MB），避免测试通过、线上 413
+
+    configureBodyParsers(app);
+
     await app.init();
 
     const server = app.getHttpAdapter().getInstance();
@@ -183,5 +188,48 @@ describe('路由覆盖守卫', () => {
       );
     }
     expect(orphans).toEqual([]);
+  });
+
+  /**
+   * 所有 `@Body()` 的运行时类型必须是 **class DTO**。
+   *
+   * 背景：顾客「确认报价 / 拒绝报价」此前直接用 contracts 里的 **interface**：
+   * interface 在运行时是 `Object`，Nest 的 ValidationPipe 对它**整体跳过校验**，
+   * `whitelist / forbidNonWhitelisted` 对它完全无效 ——
+   * 于是传 `{}` 也不报错，quoteId 是 undefined，版本冲突被报成 409 而不是 400。
+   *
+   * 这条守卫把「接口型请求体」在编译期之外再兜一层底，
+   * 避免同类问题在别的接口上复发。
+   */
+  it('所有 @Body() 的参数类型都是 class DTO（interface 会被整体跳过校验）', () => {
+    const files: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.name.endsWith('.controller.ts')) files.push(full);
+      }
+    };
+    walk(SRC_ROOT);
+
+    const offenders: string[] = [];
+    // 抓的是**类型**（冒号之后），不是参数名
+    const bodyRe = /@Body\([^)]*\)\s*(?:public\s+|private\s+|protected\s+|readonly\s+)*[A-Za-z0-9_]+\s*[!?]?\s*:\s*([A-Za-z0-9_]+)/g;
+    for (const file of files) {
+      const src = fs.readFileSync(file, 'utf8');
+      let m: RegExpExecArray | null;
+      while ((m = bodyRe.exec(src)) !== null) {
+        const type = m[1];
+        if (!type.endsWith('Dto')) {
+          offenders.push(`${path.relative(API_ROOT, file)}: @Body() ${type}`);
+        }
+      }
+    }
+    if (offenders.length > 0) {
+      throw new Error(
+        `这些 @Body() 的类型不是 class DTO，运行时会被 ValidationPipe 整体跳过校验：\n${offenders.join('\n')}`,
+      );
+    }
+    expect(offenders).toEqual([]);
   });
 });

@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { configureBodyParsers } from './common/http/body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import { AppModule } from './app.module';
@@ -16,6 +17,8 @@ import { assertProductionConfigOrThrow } from './config/production-guard';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log'],
+    // 关闭 Nest 默认的请求体解析器（上限 100KB），改用统一配置的 4MB
+    bodyParser: false,
   });
   const config = app.get(ConfigService);
 
@@ -23,6 +26,9 @@ async function bootstrap(): Promise<void> {
   assertProductionConfigOrThrow(configuration());
 
   app.setGlobalPrefix(config.get<string>('apiPrefix') ?? 'api/v1');
+
+  // 请求体体积上限（JSON 4MB / 表单 1MB）：与 DTO 的 MaxLength 对齐
+  configureBodyParsers(app);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(

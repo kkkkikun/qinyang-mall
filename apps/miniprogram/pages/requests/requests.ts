@@ -94,6 +94,15 @@ Page({
     this.load(true);
   },
 
+  /**
+   * 请求序号：只认最后一次发起的请求。
+   *
+   * 连续快速点两个状态页签时，A、B 两个请求并发，
+   * **后返回的那个直接覆盖 items** —— 页签高亮与列表内容对不上，
+   * 顾客会以为看到的还是当前筛选的结果。
+   */
+  _seq: 0,
+
   load(reset: boolean) {
     if (reset) {
       this.setData({ loading: true, error: '', page: 1, items: [], hasMore: true, imgErr: {} });
@@ -105,8 +114,13 @@ Page({
     }
     const page = reset ? 1 : this.data.page + 1;
     const status = this.data.status;
+    this._seq += 1;
+    const seq = this._seq;
     listCustomizationRequests({ status: status || undefined, page, pageSize: PAGE_SIZE })
       .then((res) => {
+        if (seq !== this._seq) {
+          return; // 已有更新的请求发出，这次响应作废
+        }
         const cards = (res.items || []).map((dto) => toVM(dto));
         const items = reset ? cards : (this.data.items as RequestVM[]).concat(cards);
         this.setData({
@@ -119,6 +133,9 @@ Page({
         });
       })
       .catch(() => {
+        if (seq !== this._seq) {
+          return;
+        }
         this.setData({
           loading: false,
           loadingMore: false,

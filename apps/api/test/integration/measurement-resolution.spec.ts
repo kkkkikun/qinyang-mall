@@ -13,6 +13,7 @@ import {
 } from '@qinyang/contracts';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../../src/app.module';
+import { configureBodyParsers } from '../../src/common/http/body-parser';
 import { AdminUser } from '../../src/database/entities/admin-user.entity';
 import { Category } from '../../src/database/entities/category.entity';
 import { MeasurementTemplate } from '../../src/database/entities/measurement-template.entity';
@@ -98,6 +99,10 @@ describe('量体模板解析一致性', () => {
         validationError: { target: false },
       }),
     );
+    // 与生产环境共用同一份请求体上限（JSON 4MB），避免测试通过、线上 413
+
+    configureBodyParsers(app);
+
     await app.init();
 
     const dataSource = moduleRef.get(DataSource);
