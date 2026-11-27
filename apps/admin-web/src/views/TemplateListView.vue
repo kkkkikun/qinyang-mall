@@ -297,7 +297,12 @@ const columns = [
     width: 220,
     cell: cell<MeasurementTemplateDto>((row) => h('span', null, categoryNames(row.applicableCategories))),
   },
-  { colKey: 'updatedAt', title: '更新时间', width: 170 },
+  {
+    colKey: 'updatedAt',
+    title: '更新时间',
+    width: 170,
+    cell: cell<MeasurementTemplateDto>((row) => h('span', null, formatDateTime(row.updatedAt))),
+  },
   {
     colKey: 'operation',
     title: '操作',

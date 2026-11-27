@@ -335,7 +335,12 @@ const columns = [
     width: 100,
     cell: cell<OrderDto>((row) => h('span', null, `v${row.quoteVersion}`)),
   },
-  { colKey: 'createdAt', title: '创建时间', width: 170 },
+  {
+    colKey: 'createdAt',
+    title: '创建时间',
+    width: 170,
+    cell: cell<OrderDto>((row) => h('span', null, formatDateTime(row.createdAt))),
+  },
   {
     colKey: 'operation',
     title: '操作',

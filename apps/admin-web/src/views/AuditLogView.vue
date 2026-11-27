@@ -141,7 +141,12 @@ function roleLabel(role: AdminRole | null): string {
 }
 
 const columns = [
-  { colKey: 'createdAt', title: '时间', width: 170 },
+  {
+    colKey: 'createdAt',
+    title: '时间',
+    width: 170,
+    cell: cell<AuditLogDto>((row) => h('span', null, formatDateTime(row.createdAt))),
+  },
   { colKey: 'actorName', title: '操作人', width: 120 },
   {
     colKey: 'actorRole',

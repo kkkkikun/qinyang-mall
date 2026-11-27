@@ -383,7 +383,16 @@ const columns = [
       return h('span', { class: 'text-gold' }, formatYuan(row.activeQuote.totalCents));
     }),
   },
-  { colKey: 'createdAt', title: '提交时间', width: 170 },
+  {
+    colKey: 'createdAt',
+    title: '提交时间',
+    width: 170,
+    // 此前直接渲染 ISO 串（2026-11-27T15:23:55.884Z），
+    // 商家看到的是一串机器时间而不是本地日期
+    cell: cell<AdminCustomizationRequestListItemDto>((row) =>
+      h('span', null, formatDateTime(row.createdAt)),
+    ),
+  },
   {
     colKey: 'operation',
     title: '操作',
