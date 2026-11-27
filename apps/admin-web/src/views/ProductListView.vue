@@ -32,47 +32,48 @@
         />
         <t-button theme="primary" @click="handleSearch">查询</t-button>
         <t-button theme="default" @click="handleReset">重置</t-button>
-        <span class="page-toolbar-spacer"></span>
-        <template v-if="can('product.status')">
-          <span v-if="selectedIds.length > 0" class="muted">已选 {{ selectedIds.length }} 件</span>
-          <t-popconfirm
-            content="确认将所选商品批量提交审核？草稿商品需先提交审核才能上架。"
-            theme="warning"
-            @confirm="handleBatchStatus(ProductStatus.PENDING_REVIEW)"
+        <div class="page-toolbar-actions">
+          <template v-if="can('product.status')">
+            <span v-if="selectedIds.length > 0" class="muted">已选 {{ selectedIds.length }} 件</span>
+            <t-popconfirm
+              content="确认将所选商品批量提交审核？草稿商品需先提交审核才能上架。"
+              theme="warning"
+              @confirm="handleBatchStatus(ProductStatus.PENDING_REVIEW)"
+            >
+              <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
+                批量提交审核
+              </t-button>
+            </t-popconfirm>
+            <t-popconfirm
+              content="确认将所选商品批量下架？下架后顾客端立即看不到这些商品。"
+              theme="warning"
+              @confirm="handleBatchStatus(ProductStatus.OFFLINE)"
+            >
+              <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
+                批量下架
+              </t-button>
+            </t-popconfirm>
+            <t-popconfirm
+              content="确认将所选商品批量上架？上架后顾客端立即可见。"
+              theme="warning"
+              @confirm="handleBatchStatus(ProductStatus.PUBLISHED)"
+            >
+              <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
+                批量上架
+              </t-button>
+            </t-popconfirm>
+          </template>
+          <t-button v-if="can('product.create')" theme="primary" @click="openCreate">
+            新增商品
+          </t-button>
+          <t-button
+            v-if="can('product.import')"
+            theme="default"
+            @click="importVisible = true"
           >
-            <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
-              批量提交审核
-            </t-button>
-          </t-popconfirm>
-          <t-popconfirm
-            content="确认将所选商品批量下架？下架后顾客端立即看不到这些商品。"
-            theme="warning"
-            @confirm="handleBatchStatus(ProductStatus.OFFLINE)"
-          >
-            <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
-              批量下架
-            </t-button>
-          </t-popconfirm>
-          <t-popconfirm
-            content="确认将所选商品批量上架？上架后顾客端立即可见。"
-            theme="warning"
-            @confirm="handleBatchStatus(ProductStatus.PUBLISHED)"
-          >
-            <t-button theme="default" size="small" :disabled="selectedIds.length === 0">
-              批量上架
-            </t-button>
-          </t-popconfirm>
-        </template>
-        <t-button v-if="can('product.create')" theme="primary" @click="openCreate">
-          新增商品
-        </t-button>
-        <t-button
-          v-if="can('product.import')"
-          theme="default"
-          @click="importVisible = true"
-        >
-          批量导入
-        </t-button>
+            批量导入
+          </t-button>
+        </div>
       </div>
 
       <t-table

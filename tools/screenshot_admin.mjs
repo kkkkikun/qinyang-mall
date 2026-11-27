@@ -198,6 +198,32 @@ async function main() {
     console.log(`📸 ${file}`);
   }
 
+  // 额外一张：商品页的「批量导入」抽屉（第六轮新增能力）。
+  // 抽屉是浮层，不截这一张就看不到导入面板长什么样。
+  {
+    await cdp.send('Page.navigate', { url: `${adminBase}/products` });
+    await sleep(1800);
+    const clicked = await cdp.send('Runtime.evaluate', {
+      expression: `(() => {
+        const btn = [...document.querySelectorAll('button')]
+          .find((b) => (b.textContent || '').trim() === '批量导入');
+        if (!btn) return 'not-found';
+        btn.click();
+        return 'clicked';
+      })()`,
+    });
+    await sleep(1200);
+    if (clicked?.result?.value === 'clicked') {
+      const result = await cdp.send('Page.captureScreenshot', { format: 'png' });
+      const file = join(outDir, `${label}-product-import.png`);
+      writeFileSync(file, Buffer.from(result.data, 'base64'));
+      shots.push(file);
+      console.log(`📸 ${file}`);
+    } else {
+      console.log('⚠️  未找到「批量导入」按钮，跳过抽屉截图');
+    }
+  }
+
   cleanup();
   console.log(`\n共 ${shots.length} 张截图 → ${outDir}`);
 }

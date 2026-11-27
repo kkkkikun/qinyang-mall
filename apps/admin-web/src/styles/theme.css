@@ -161,6 +161,22 @@ body {
   flex: 1 1 auto;
 }
 
+/**
+ * 工具栏右侧的操作组。
+ *
+ * 工具栏里的筛选控件较多时会换行；若操作按钮直接跟在后面，
+ * 换行后它们会孤零零掉到下一行**左端**，看起来像掉队了。
+ * 用 `margin-left: auto` 让整组始终靠右对齐，换行后仍然成组。
+ */
+.page-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
 .section-title {
   font-family: var(--qy-serif);
   font-size: var(--qy-font-lg);
