@@ -1,0 +1,760 @@
+{
+  "measuredAt": "2026-11-27T15:19:45.552Z",
+  "base": "http://127.0.0.1:18110/api/v1",
+  "samples": 30,
+  "note": "优化前 = a69fa7c 的 API，优化后 = 当前 HEAD；两者跑在同一份数据库上（同一批验证数据），因此可直接对比。",
+  "before": {
+    "label": "a69fa7c（优化前）",
+    "totalBytes": 364398,
+    "totalWireBytes": 364398,
+    "worstP95": 14.01,
+    "endpoints": {
+      "健康检查": {
+        "name": "健康检查",
+        "path": "/health",
+        "status": 200,
+        "bytes": 157,
+        "wireBytes": 157,
+        "wireEncoding": null,
+        "p50": 0.85,
+        "p95": 1.97,
+        "max": 4.71
+      },
+      "公开·轮播": {
+        "name": "公开·轮播",
+        "path": "/banners",
+        "status": 200,
+        "bytes": 947,
+        "wireBytes": 947,
+        "wireEncoding": null,
+        "p50": 1.71,
+        "p95": 2.02,
+        "max": 2.03
+      },
+      "公开·分类树": {
+        "name": "公开·分类树",
+        "path": "/categories",
+        "status": 200,
+        "bytes": 3868,
+        "wireBytes": 3868,
+        "wireEncoding": null,
+        "p50": 2.42,
+        "p95": 2.72,
+        "max": 7.66
+      },
+      "公开·商品列表": {
+        "name": "公开·商品列表",
+        "path": "/products?pageSize=20",
+        "status": 200,
+        "bytes": 6365,
+        "wireBytes": 6365,
+        "wireEncoding": null,
+        "p50": 4.4,
+        "p95": 8.38,
+        "max": 11.3
+      },
+      "公开·商品详情": {
+        "name": "公开·商品详情",
+        "path": "/products/b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+        "status": 200,
+        "bytes": 3234,
+        "wireBytes": 3234,
+        "wireEncoding": null,
+        "p50": 3.31,
+        "p95": 3.51,
+        "max": 3.61
+      },
+      "公开·图文页": {
+        "name": "公开·图文页",
+        "path": "/guides/measure-top",
+        "status": 200,
+        "bytes": 1443,
+        "wireBytes": 1443,
+        "wireEncoding": null,
+        "p50": 1.4,
+        "p95": 2.33,
+        "max": 4.23
+      },
+      "公开·模板解析": {
+        "name": "公开·模板解析",
+        "path": "/measurement-templates/resolve?productId=b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+        "status": 200,
+        "bytes": 3246,
+        "wireBytes": 3246,
+        "wireEncoding": null,
+        "p50": 2.08,
+        "p95": 2.29,
+        "max": 2.38
+      },
+      "顾客·我的资料": {
+        "name": "顾客·我的资料",
+        "path": "/auth/me",
+        "status": 200,
+        "bytes": 194,
+        "wireBytes": 194,
+        "wireEncoding": null,
+        "p50": 1.59,
+        "p95": 1.82,
+        "max": 1.87
+      },
+      "顾客·我的申请": {
+        "name": "顾客·我的申请",
+        "path": "/customization-requests",
+        "status": 200,
+        "bytes": 129,
+        "wireBytes": 129,
+        "wireEncoding": null,
+        "p50": 1.56,
+        "p95": 1.84,
+        "max": 1.85
+      },
+      "顾客·我的订单": {
+        "name": "顾客·我的订单",
+        "path": "/orders",
+        "status": 200,
+        "bytes": 129,
+        "wireBytes": 129,
+        "wireEncoding": null,
+        "p50": 1.53,
+        "p95": 1.83,
+        "max": 1.97
+      },
+      "后台·我的资料": {
+        "name": "后台·我的资料",
+        "path": "/admin/auth/me",
+        "status": 200,
+        "bytes": 282,
+        "wireBytes": 282,
+        "wireEncoding": null,
+        "p50": 1.28,
+        "p95": 1.43,
+        "max": 1.53
+      },
+      "后台·商品列表": {
+        "name": "后台·商品列表",
+        "path": "/admin/products?pageSize=20",
+        "status": 200,
+        "bytes": 9109,
+        "wireBytes": 9109,
+        "wireEncoding": null,
+        "p50": 3.68,
+        "p95": 4.38,
+        "max": 5.39
+      },
+      "后台·商品详情": {
+        "name": "后台·商品详情",
+        "path": "/admin/products/b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+        "status": 200,
+        "bytes": 3234,
+        "wireBytes": 3234,
+        "wireEncoding": null,
+        "p50": 2.56,
+        "p95": 2.88,
+        "max": 4.3
+      },
+      "后台·分类树": {
+        "name": "后台·分类树",
+        "path": "/admin/categories",
+        "status": 200,
+        "bytes": 3868,
+        "wireBytes": 3868,
+        "wireEncoding": null,
+        "p50": 1.74,
+        "p95": 2.05,
+        "max": 2.14
+      },
+      "后台·轮播列表": {
+        "name": "后台·轮播列表",
+        "path": "/admin/banners",
+        "status": 200,
+        "bytes": 947,
+        "wireBytes": 947,
+        "wireEncoding": null,
+        "p50": 1.23,
+        "p95": 1.36,
+        "max": 1.37
+      },
+      "后台·模板列表": {
+        "name": "后台·模板列表",
+        "path": "/admin/measurement-templates",
+        "status": 200,
+        "bytes": 19434,
+        "wireBytes": 19434,
+        "wireEncoding": null,
+        "p50": 1.9,
+        "p95": 2.72,
+        "max": 4.01
+      },
+      "后台·模板详情": {
+        "name": "后台·模板详情",
+        "path": "/admin/measurement-templates/b7a4846a-a9f4-4c35-bc63-836e43cb6e6f",
+        "status": 200,
+        "bytes": 3172,
+        "wireBytes": 3172,
+        "wireEncoding": null,
+        "p50": 1.34,
+        "p95": 1.92,
+        "max": 3.66
+      },
+      "后台·申请列表": {
+        "name": "后台·申请列表",
+        "path": "/admin/customization-requests?pageSize=20",
+        "status": 200,
+        "bytes": 146893,
+        "wireBytes": 146893,
+        "wireEncoding": null,
+        "p50": 13.06,
+        "p95": 14.01,
+        "max": 14.28
+      },
+      "后台·订单列表": {
+        "name": "后台·订单列表",
+        "path": "/admin/orders?pageSize=20",
+        "status": 200,
+        "bytes": 117973,
+        "wireBytes": 117973,
+        "wireEncoding": null,
+        "p50": 4.33,
+        "p95": 4.54,
+        "max": 4.59
+      },
+      "后台·审计日志": {
+        "name": "后台·审计日志",
+        "path": "/admin/audit-logs?pageSize=20",
+        "status": 200,
+        "bytes": 15027,
+        "wireBytes": 15027,
+        "wireEncoding": null,
+        "p50": 2.15,
+        "p95": 2.57,
+        "max": 3.72
+      },
+      "后台·申请详情": {
+        "name": "后台·申请详情",
+        "path": "/admin/customization-requests/293f1185-3ed4-47a2-8f36-c50092ff4bab",
+        "status": 200,
+        "bytes": 11962,
+        "wireBytes": 11962,
+        "wireEncoding": null,
+        "p50": 2.27,
+        "p95": 2.38,
+        "max": 2.39
+      },
+      "后台·申请报价历史": {
+        "name": "后台·申请报价历史",
+        "path": "/admin/customization-requests/293f1185-3ed4-47a2-8f36-c50092ff4bab/quotes",
+        "status": 200,
+        "bytes": 7498,
+        "wireBytes": 7498,
+        "wireEncoding": null,
+        "p50": 1.41,
+        "p95": 1.52,
+        "max": 1.52
+      },
+      "后台·订单详情": {
+        "name": "后台·订单详情",
+        "path": "/admin/orders/de48b5b8-250b-4dcd-aa40-597634cd924b",
+        "status": 200,
+        "bytes": 5287,
+        "wireBytes": 5287,
+        "wireEncoding": null,
+        "p50": 1.71,
+        "p95": 1.99,
+        "max": 2.02
+      }
+    }
+  },
+  "after": {
+    "label": "3ec6b2c（优化后）",
+    "totalBytes": 140107,
+    "totalWireBytes": 33272,
+    "worstP95": 7.96,
+    "endpoints": {
+      "健康检查": {
+        "name": "健康检查",
+        "path": "/health",
+        "status": 200,
+        "bytes": 196,
+        "wireBytes": 196,
+        "wireEncoding": null,
+        "p50": 1.24,
+        "p95": 1.71,
+        "max": 1.88
+      },
+      "公开·轮播": {
+        "name": "公开·轮播",
+        "path": "/banners",
+        "status": 200,
+        "bytes": 947,
+        "wireBytes": 947,
+        "wireEncoding": null,
+        "p50": 1.67,
+        "p95": 2.1,
+        "max": 2.23
+      },
+      "公开·分类树": {
+        "name": "公开·分类树",
+        "path": "/categories",
+        "status": 200,
+        "bytes": 3868,
+        "wireBytes": 1043,
+        "wireEncoding": "gzip",
+        "p50": 2.98,
+        "p95": 3.81,
+        "max": 3.98
+      },
+      "公开·商品列表": {
+        "name": "公开·商品列表",
+        "path": "/products?pageSize=20",
+        "status": 200,
+        "bytes": 7457,
+        "wireBytes": 1734,
+        "wireEncoding": "gzip",
+        "p50": 4.17,
+        "p95": 4.75,
+        "max": 5.78
+      },
+      "公开·商品详情": {
+        "name": "公开·商品详情",
+        "path": "/products/b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+        "status": 200,
+        "bytes": 3950,
+        "wireBytes": 1087,
+        "wireEncoding": "gzip",
+        "p50": 3.69,
+        "p95": 4.55,
+        "max": 6.15
+      },
+      "公开·图文页": {
+        "name": "公开·图文页",
+        "path": "/guides/measure-top",
+        "status": 200,
+        "bytes": 1443,
+        "wireBytes": 976,
+        "wireEncoding": "gzip",
+        "p50": 1.99,
+        "p95": 2.63,
+        "max": 3.58
+      },
+      "公开·模板解析": {
+        "name": "公开·模板解析",
+        "path": "/measurement-templates/resolve?productId=b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+        "status": 200,
+        "bytes": 3246,
+        "wireBytes": 1321,
+        "wireEncoding": "gzip",
+        "p50": 2.62,
+        "p95": 3.94,
+        "max": 18.53
+      },
+      "顾客·我的资料": {
+        "name": "顾客·我的资料",
+        "path": "/auth/me",
+        "status": 200,
+        "bytes": 194,
+        "wireBytes": 194,
+        "wireEncoding": null,
+        "p50": 1.58,
+        "p95": 2.66,
+        "max": 7.49
+      },
+      "顾客·我的申请": {
+        "name": "顾客·我的申请",
+        "path": "/customization-requests",
+        "status": 200,
+        "bytes": 129,
+        "wireBytes": 129,
+        "wireEncoding": null,
+        "p50": 1.6,
+        "p95": 1.97,
+        "max": 2.33
+      },
+      "顾客·我的订单": {
+        "name": "顾客·我的订单",
+        "path": "/orders",
+        "status": 200,
+        "bytes": 129,
+        "wireBytes": 129,
+        "wireEncoding": null,
+        "p50": 1.75,
+        "p95": 2.11,
+        "max": 2.5
+      },
+      "后台·我的资料": {
+        "name": "后台·我的资料",
+        "path": "/admin/auth/me",
+        "status": 200,
+        "bytes": 282,
+        "wireBytes": 282,
+        "wireEncoding": null,
+        "p50": 1.49,
+        "p95": 1.94,
+        "max": 2.76
+      },
+      "后台·商品列表": {
+        "name": "后台·商品列表",
+        "path": "/admin/products?pageSize=20",
+        "status": 200,
+        "bytes": 10348,
+        "wireBytes": 2172,
+        "wireEncoding": "gzip",
+        "p50": 4.74,
+        "p95": 5.67,
+        "max": 6.04
+      },
+      "后台·商品详情": {
+        "name": "后台·商品详情",
+        "path": "/admin/products/b7b620ff-689a-4a1c-a70a-f496f61e1fbb",
+        "status": 200,
+        "bytes": 3950,
+        "wireBytes": 1086,
+        "wireEncoding": "gzip",
+        "p50": 3.67,
+        "p95": 4.62,
+        "max": 6.32
+      },
+      "后台·分类树": {
+        "name": "后台·分类树",
+        "path": "/admin/categories",
+        "status": 200,
+        "bytes": 3868,
+        "wireBytes": 1043,
+        "wireEncoding": "gzip",
+        "p50": 2.8,
+        "p95": 3.28,
+        "max": 3.67
+      },
+      "后台·轮播列表": {
+        "name": "后台·轮播列表",
+        "path": "/admin/banners",
+        "status": 200,
+        "bytes": 947,
+        "wireBytes": 947,
+        "wireEncoding": null,
+        "p50": 1.53,
+        "p95": 1.66,
+        "max": 2.49
+      },
+      "后台·模板列表": {
+        "name": "后台·模板列表",
+        "path": "/admin/measurement-templates",
+        "status": 200,
+        "bytes": 19434,
+        "wireBytes": 3972,
+        "wireEncoding": "gzip",
+        "p50": 2.91,
+        "p95": 4.27,
+        "max": 5.84
+      },
+      "后台·模板详情": {
+        "name": "后台·模板详情",
+        "path": "/admin/measurement-templates/b7a4846a-a9f4-4c35-bc63-836e43cb6e6f",
+        "status": 200,
+        "bytes": 3172,
+        "wireBytes": 1314,
+        "wireEncoding": "gzip",
+        "p50": 2.14,
+        "p95": 3.37,
+        "max": 4.1
+      },
+      "后台·申请列表": {
+        "name": "后台·申请列表",
+        "path": "/admin/customization-requests?pageSize=20",
+        "status": 200,
+        "bytes": 19027,
+        "wireBytes": 2696,
+        "wireEncoding": "gzip",
+        "p50": 7,
+        "p95": 7.96,
+        "max": 8.07
+      },
+      "后台·订单列表": {
+        "name": "后台·订单列表",
+        "path": "/admin/orders?pageSize=20",
+        "status": 200,
+        "bytes": 17728,
+        "wireBytes": 3345,
+        "wireEncoding": "gzip",
+        "p50": 4.95,
+        "p95": 6.01,
+        "max": 6.38
+      },
+      "后台·审计日志": {
+        "name": "后台·审计日志",
+        "path": "/admin/audit-logs?pageSize=20",
+        "status": 200,
+        "bytes": 15027,
+        "wireBytes": 1709,
+        "wireEncoding": "gzip",
+        "p50": 3.38,
+        "p95": 6.97,
+        "max": 50.8
+      },
+      "后台·申请详情": {
+        "name": "后台·申请详情",
+        "path": "/admin/customization-requests/293f1185-3ed4-47a2-8f36-c50092ff4bab",
+        "status": 200,
+        "bytes": 11962,
+        "wireBytes": 2586,
+        "wireEncoding": "gzip",
+        "p50": 3.89,
+        "p95": 4.56,
+        "max": 6.25
+      },
+      "后台·申请报价历史": {
+        "name": "后台·申请报价历史",
+        "path": "/admin/customization-requests/293f1185-3ed4-47a2-8f36-c50092ff4bab/quotes",
+        "status": 200,
+        "bytes": 7498,
+        "wireBytes": 2259,
+        "wireEncoding": "gzip",
+        "p50": 2.38,
+        "p95": 3.38,
+        "max": 5.22
+      },
+      "后台·订单详情": {
+        "name": "后台·订单详情",
+        "path": "/admin/orders/de48b5b8-250b-4dcd-aa40-597634cd924b",
+        "status": 200,
+        "bytes": 5305,
+        "wireBytes": 2105,
+        "wireEncoding": "gzip",
+        "p50": 3.35,
+        "p95": 3.63,
+        "max": 4.88
+      }
+    }
+  },
+  "delta": [
+    {
+      "name": "健康检查",
+      "beforeBytes": 157,
+      "afterBytes": 196,
+      "bytesPct": 24.8,
+      "beforeWireBytes": 157,
+      "afterWireBytes": 196,
+      "beforeP95": 1.97,
+      "afterP95": 1.71
+    },
+    {
+      "name": "公开·轮播",
+      "beforeBytes": 947,
+      "afterBytes": 947,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 947,
+      "afterWireBytes": 947,
+      "beforeP95": 2.02,
+      "afterP95": 2.1
+    },
+    {
+      "name": "公开·分类树",
+      "beforeBytes": 3868,
+      "afterBytes": 3868,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 3868,
+      "afterWireBytes": 1043,
+      "beforeP95": 2.72,
+      "afterP95": 3.81
+    },
+    {
+      "name": "公开·商品列表",
+      "beforeBytes": 6365,
+      "afterBytes": 7457,
+      "bytesPct": 17.2,
+      "beforeWireBytes": 6365,
+      "afterWireBytes": 1734,
+      "beforeP95": 8.38,
+      "afterP95": 4.75
+    },
+    {
+      "name": "公开·商品详情",
+      "beforeBytes": 3234,
+      "afterBytes": 3950,
+      "bytesPct": 22.1,
+      "beforeWireBytes": 3234,
+      "afterWireBytes": 1087,
+      "beforeP95": 3.51,
+      "afterP95": 4.55
+    },
+    {
+      "name": "公开·图文页",
+      "beforeBytes": 1443,
+      "afterBytes": 1443,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 1443,
+      "afterWireBytes": 976,
+      "beforeP95": 2.33,
+      "afterP95": 2.63
+    },
+    {
+      "name": "公开·模板解析",
+      "beforeBytes": 3246,
+      "afterBytes": 3246,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 3246,
+      "afterWireBytes": 1321,
+      "beforeP95": 2.29,
+      "afterP95": 3.94
+    },
+    {
+      "name": "顾客·我的资料",
+      "beforeBytes": 194,
+      "afterBytes": 194,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 194,
+      "afterWireBytes": 194,
+      "beforeP95": 1.82,
+      "afterP95": 2.66
+    },
+    {
+      "name": "顾客·我的申请",
+      "beforeBytes": 129,
+      "afterBytes": 129,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 129,
+      "afterWireBytes": 129,
+      "beforeP95": 1.84,
+      "afterP95": 1.97
+    },
+    {
+      "name": "顾客·我的订单",
+      "beforeBytes": 129,
+      "afterBytes": 129,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 129,
+      "afterWireBytes": 129,
+      "beforeP95": 1.83,
+      "afterP95": 2.11
+    },
+    {
+      "name": "后台·我的资料",
+      "beforeBytes": 282,
+      "afterBytes": 282,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 282,
+      "afterWireBytes": 282,
+      "beforeP95": 1.43,
+      "afterP95": 1.94
+    },
+    {
+      "name": "后台·商品列表",
+      "beforeBytes": 9109,
+      "afterBytes": 10348,
+      "bytesPct": 13.6,
+      "beforeWireBytes": 9109,
+      "afterWireBytes": 2172,
+      "beforeP95": 4.38,
+      "afterP95": 5.67
+    },
+    {
+      "name": "后台·商品详情",
+      "beforeBytes": 3234,
+      "afterBytes": 3950,
+      "bytesPct": 22.1,
+      "beforeWireBytes": 3234,
+      "afterWireBytes": 1086,
+      "beforeP95": 2.88,
+      "afterP95": 4.62
+    },
+    {
+      "name": "后台·分类树",
+      "beforeBytes": 3868,
+      "afterBytes": 3868,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 3868,
+      "afterWireBytes": 1043,
+      "beforeP95": 2.05,
+      "afterP95": 3.28
+    },
+    {
+      "name": "后台·轮播列表",
+      "beforeBytes": 947,
+      "afterBytes": 947,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 947,
+      "afterWireBytes": 947,
+      "beforeP95": 1.36,
+      "afterP95": 1.66
+    },
+    {
+      "name": "后台·模板列表",
+      "beforeBytes": 19434,
+      "afterBytes": 19434,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 19434,
+      "afterWireBytes": 3972,
+      "beforeP95": 2.72,
+      "afterP95": 4.27
+    },
+    {
+      "name": "后台·模板详情",
+      "beforeBytes": 3172,
+      "afterBytes": 3172,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 3172,
+      "afterWireBytes": 1314,
+      "beforeP95": 1.92,
+      "afterP95": 3.37
+    },
+    {
+      "name": "后台·申请列表",
+      "beforeBytes": 146893,
+      "afterBytes": 19027,
+      "bytesPct": -87.0,
+      "beforeWireBytes": 146893,
+      "afterWireBytes": 2696,
+      "beforeP95": 14.01,
+      "afterP95": 7.96
+    },
+    {
+      "name": "后台·订单列表",
+      "beforeBytes": 117973,
+      "afterBytes": 17728,
+      "bytesPct": -85.0,
+      "beforeWireBytes": 117973,
+      "afterWireBytes": 3345,
+      "beforeP95": 4.54,
+      "afterP95": 6.01
+    },
+    {
+      "name": "后台·审计日志",
+      "beforeBytes": 15027,
+      "afterBytes": 15027,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 15027,
+      "afterWireBytes": 1709,
+      "beforeP95": 2.57,
+      "afterP95": 6.97
+    },
+    {
+      "name": "后台·申请详情",
+      "beforeBytes": 11962,
+      "afterBytes": 11962,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 11962,
+      "afterWireBytes": 2586,
+      "beforeP95": 2.38,
+      "afterP95": 4.56
+    },
+    {
+      "name": "后台·申请报价历史",
+      "beforeBytes": 7498,
+      "afterBytes": 7498,
+      "bytesPct": 0.0,
+      "beforeWireBytes": 7498,
+      "afterWireBytes": 2259,
+      "beforeP95": 1.52,
+      "afterP95": 3.38
+    },
+    {
+      "name": "后台·订单详情",
+      "beforeBytes": 5287,
+      "afterBytes": 5305,
+      "bytesPct": 0.3,
+      "beforeWireBytes": 5287,
+      "afterWireBytes": 2105,
+      "beforeP95": 1.99,
+      "afterP95": 3.63
+    }
+  ]
+}
